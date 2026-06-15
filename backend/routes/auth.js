@@ -25,6 +25,8 @@ router.post('/register', async (req, res) => {
 
     const trimmedMatric = matricNumber ? matricNumber.trim().toLowerCase() : '';
     const trimmedEmail = email ? email.trim().toLowerCase() : '';
+    const isNonStudent = role === 'admin' || role === 'staff';
+    const verificationOTP = generateOTP();
 
     // Check if email is provided (especially for staff/admin or optional student email)
     if (!trimmedEmail && (role === 'staff' || role === 'admin')) {
@@ -38,6 +40,11 @@ router.post('/register', async (req, res) => {
         return res.status(400).json({ message: 'Please provide a valid email address (e.g. name@domain.com).' });
       }
     }
+
+    // Check if user exists by email or matric number
+    const query = [];
+    if (trimmedMatric) query.push({ matricNumber: trimmedMatric });
+    if (trimmedEmail) query.push({ email: trimmedEmail });
 
     if (query.length > 0) {
       const userExists = await User.findOne({ $or: query });
@@ -72,12 +79,6 @@ router.post('/register', async (req, res) => {
         return res.status(400).json({ message: 'User with this matric number or email already exists' });
       }
     }
-
-    // Generate Verification OTP
-    const verificationOTP = generateOTP();
-
-    // Set defaults for admin and staff if student fields are missing
-    const isNonStudent = role === 'admin' || role === 'staff';
     const user = await User.create({
       name: name ? name.trim() : '',
       matricNumber: isNonStudent ? (trimmedEmail || `${role}-${Date.now()}`) : trimmedMatric,
