@@ -23,23 +23,26 @@ router.post('/register', async (req, res) => {
   try {
     const { name, matricNumber, email, faculty, department, level, password, role } = req.body;
 
+    const trimmedMatric = matricNumber ? matricNumber.trim().toLowerCase() : '';
+    const trimmedEmail = email ? email.trim().toLowerCase() : '';
+
     // Check if email is provided (especially for staff/admin or optional student email)
-    if (!email && (role === 'staff' || role === 'admin')) {
+    if (!trimmedEmail && (role === 'staff' || role === 'admin')) {
       return res.status(400).json({ message: 'Email is required for staff or security officer registration.' });
     }
 
     // Validate email format if provided
-    if (email && email.trim() !== '') {
+    if (trimmedEmail) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email.trim())) {
+      if (!emailRegex.test(trimmedEmail)) {
         return res.status(400).json({ message: 'Please provide a valid email address (e.g. name@domain.com).' });
       }
     }
 
     // Check if user exists by email or matric number
     const query = [];
-    if (matricNumber) query.push({ matricNumber: matricNumber.toLowerCase() });
-    if (email) query.push({ email: email.toLowerCase() });
+    if (trimmedMatric) query.push({ matricNumber: trimmedMatric });
+    if (trimmedEmail) query.push({ email: trimmedEmail });
 
     if (query.length > 0) {
       const userExists = await User.findOne({ $or: query });
@@ -54,9 +57,9 @@ router.post('/register', async (req, res) => {
     // Set defaults for admin and staff if student fields are missing
     const isNonStudent = role === 'admin' || role === 'staff';
     const user = await User.create({
-      name,
-      matricNumber: isNonStudent ? (email || `${role}-${Date.now()}`).toLowerCase() : matricNumber,
-      email: email ? email.toLowerCase() : undefined,
+      name: name ? name.trim() : '',
+      matricNumber: isNonStudent ? (trimmedEmail || `${role}-${Date.now()}`) : trimmedMatric,
+      email: trimmedEmail || undefined,
       faculty: isNonStudent ? 'Staff' : faculty,
       department: isNonStudent ? 'Staff' : department,
       level: isNonStudent ? 'Staff' : level,
