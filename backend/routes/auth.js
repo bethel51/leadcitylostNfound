@@ -28,6 +28,14 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'Email is required for staff or security officer registration.' });
     }
 
+    // Validate email format if provided
+    if (email && email.trim() !== '') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.trim())) {
+        return res.status(400).json({ message: 'Please provide a valid email address (e.g. name@domain.com).' });
+      }
+    }
+
     // Check if user exists by email or matric number
     const query = [];
     if (matricNumber) query.push({ matricNumber: matricNumber.toLowerCase() });
