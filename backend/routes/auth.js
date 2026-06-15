@@ -62,6 +62,7 @@ router.post('/register', async (req, res) => {
       // Send verification email in background if email exists
       if (user.email) {
         try {
+          console.log(`[AUTH] Registration OTP generated for ${user.email}: ${verificationOTP}`);
           await sendVerificationEmail(user.email, verificationOTP);
         } catch (mailErr) {
           console.error('Email sending failed during registration:', mailErr);
@@ -144,6 +145,7 @@ router.post('/login', async (req, res) => {
         await user.save();
         
         try {
+          console.log(`[AUTH] Resent Verification OTP for ${user.email}: ${verificationOTP}`);
           await sendVerificationEmail(user.email, verificationOTP);
         } catch (mailErr) {
           console.error('Resending verification email failed:', mailErr);
@@ -195,6 +197,7 @@ router.post('/forgot-password', async (req, res) => {
     await user.save();
 
     try {
+      console.log(`[AUTH] Password Reset OTP generated for ${user.email}: ${resetOTP}`);
       await sendResetEmail(user.email, resetOTP);
     } catch (mailErr) {
       console.error('Password reset email failed:', mailErr);
