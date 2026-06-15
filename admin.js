@@ -120,13 +120,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const itemIdStr = (item._id || item.id).substring(0, 8);
       
       tr.innerHTML = `
-        <td style="font-family: monospace; font-size: 0.8rem; color: var(--text-muted);">${itemIdStr}</td>
-        <td style="font-weight: 600; color: var(--secondary);">${item.title}</td>
-        <td style="text-transform: capitalize;">${item.category}</td>
-        <td>${typeText}</td>
-        <td><span class="status-badge ${badgeClass}">${item.status}</span></td>
-        <td>${item.reporterName}</td>
-        <td>
+        <td data-label="ID" style="font-family: monospace; font-size: 0.8rem; color: var(--text-muted);">${itemIdStr}</td>
+        <td data-label="Item Name" style="font-weight: 600; color: var(--secondary);">${item.title}</td>
+        <td data-label="Category" style="text-transform: capitalize;">${item.category}</td>
+        <td data-label="Type">${typeText}</td>
+        <td data-label="Status"><span class="status-badge ${badgeClass}">${item.status}</span></td>
+        <td data-label="Reporter">${item.reporterName}</td>
+        <td data-label="Actions">
           <button class="btn btn-secondary btn-review" data-id="${item._id || item.id}" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">Review</button>
         </td>
       `;
@@ -477,6 +477,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initial log render to set stats/badge
   renderVerifLog();
+
+  // HAMBURGER MENU
+  const hamburgerBtn = document.getElementById('hamburger-btn');
+  const mainNav = document.getElementById('main-nav');
+
+  if (hamburgerBtn && mainNav) {
+    hamburgerBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      mainNav.classList.toggle('open');
+      hamburgerBtn.classList.toggle('open');
+    });
+
+    // Close menu when clicking navigation links
+    mainNav.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        mainNav.classList.remove('open');
+        hamburgerBtn.classList.remove('open');
+      });
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!mainNav.contains(e.target) && e.target !== hamburgerBtn) {
+        mainNav.classList.remove('open');
+        hamburgerBtn.classList.remove('open');
+      }
+    });
+  }
 });
 
 // ============================================================
@@ -541,12 +569,12 @@ function renderVerifLog() {
     const idShort = String(entry.itemId).substring(0, 10) + '...';
     
     tr.innerHTML = `
-      <td class="log-timestamp">${formattedDate}<br>${formattedTime}</td>
-      <td style="font-weight: 600; color: var(--secondary);">${escapeHtml(entry.itemTitle)}</td>
-      <td style="font-family: monospace; font-size: 0.8rem; color: var(--text-muted);">${idShort}</td>
-      <td>${escapeHtml(entry.claimantName)}</td>
-      <td style="font-family: monospace; font-size: 0.85rem;">${escapeHtml(entry.claimantId)}</td>
-      <td><span class="log-officer">👮 ${escapeHtml(entry.officerName)}</span></td>
+      <td data-label="Timestamp" class="log-timestamp">${formattedDate}<br>${formattedTime}</td>
+      <td data-label="Item Name" style="font-weight: 600; color: var(--secondary);">${escapeHtml(entry.itemTitle)}</td>
+      <td data-label="Item ID" style="font-family: monospace; font-size: 0.8rem; color: var(--text-muted);">${idShort}</td>
+      <td data-label="Claimant" >${escapeHtml(entry.claimantName)}</td>
+      <td data-label="Claimant ID" style="font-family: monospace; font-size: 0.85rem;">${escapeHtml(entry.claimantId)}</td>
+      <td data-label="Officer"><span class="log-officer">👮 ${escapeHtml(entry.officerName)}</span></td>
     `;
     tbody.appendChild(tr);
   });

@@ -17,7 +17,12 @@
           <p>Admin Portal</p>
         </div>
       </div>
-      <nav>
+      <!-- Mobile hamburger -->
+      <button class="hamburger" id="hamburger-btn" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav id="main-nav">
         <a href="#" class="active" id="nav-dashboard">Dashboard</a>
         <a href="#" id="nav-verif-log">Verification Log <span class="nav-badge" id="verif-log-badge" style="display:none;">0</span></a>
         <a href="#" id="nav-scanner">QR Scanner</a>
@@ -106,7 +111,7 @@
         </div>
 
         <!-- Summary stat cards for log -->
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 1.5rem;">
+        <div class="log-stats-grid">
           <div class="stat-card" style="padding: 1rem; text-align: left;">
             <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 0.25rem;">Total Handovers</div>
             <div style="font-size: 1.75rem; font-weight: 800; color: var(--primary); font-family: 'Outfit', sans-serif;" id="log-stat-total">0</div>

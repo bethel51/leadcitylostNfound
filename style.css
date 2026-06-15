@@ -1946,3 +1946,80 @@ nav a.active-admin {
 nav a.active-admin::after {
   width: 100% !important;
 }
+
+/* === RESPONSIVE ADMIN PORTAL STYLING === */
+.log-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .log-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .data-table-wrapper {
+    background: transparent;
+    box-shadow: none !important;
+  }
+  
+  .data-table {
+    border: none;
+    background: transparent;
+  }
+  
+  .data-table thead {
+    display: none;
+  }
+  
+  .data-table tbody,
+  .data-table tr,
+  .data-table td {
+    display: block;
+    width: 100%;
+  }
+  
+  .data-table tr {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-smooth);
+  }
+  
+  .data-table td {
+    text-align: right;
+    padding: 0.65rem 0;
+    position: relative;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .data-table td:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-top: 0.5rem;
+    text-align: center;
+  }
+  
+  .data-table td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 0;
+    font-weight: 700;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .data-table td .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.6rem;
+  }
+}
