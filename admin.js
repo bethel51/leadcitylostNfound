@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const API_URL = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost'
     ? 'http://127.0.0.1:5000/api'
-    : 'https://leadcitylostnfound-backend.onrender.com/api';
+    : 'https://leadcitylostnfound.onrender.com/api';
 
   async function loadData() {
     try {
