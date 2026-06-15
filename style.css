@@ -1993,28 +1993,32 @@ nav a.active-admin::after {
   }
   
   .data-table td {
-    text-align: right;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
     padding: 0.65rem 0;
-    position: relative;
     border-bottom: 1px solid var(--border-color);
+    text-align: right;
   }
   
   .data-table td:last-child {
     border-bottom: none;
     padding-bottom: 0;
     margin-top: 0.5rem;
+    display: block;
     text-align: center;
   }
   
   .data-table td::before {
     content: attr(data-label);
-    position: absolute;
-    left: 0;
     font-weight: 700;
     color: var(--text-muted);
     font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    flex-shrink: 0;
+    margin-right: 1.5rem;
+    text-align: left;
   }
   
   .data-table td .btn {
