@@ -968,6 +968,9 @@ function setupEventListeners() {
   const authModalTitle = document.getElementById('auth-modal-title');
 
   const openAuthModal = (view) => {
+    if (formLogin) formLogin.reset();
+    if (formSignup) formSignup.reset();
+    
     toggleModal('modal-auth', true);
     if (view === 'login') {
       if(tabLogin) tabLogin.classList.add('active');
