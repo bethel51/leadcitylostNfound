@@ -126,8 +126,9 @@ document.addEventListener('DOMContentLoaded', () => {
         <td data-label="Type">${typeText}</td>
         <td data-label="Status"><span class="status-badge ${badgeClass}">${item.status}</span></td>
         <td data-label="Reporter">${item.reporterName}</td>
-        <td data-label="Actions">
+        <td data-label="Actions" class="action-cell" style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center;">
           <button class="btn btn-secondary btn-review" data-id="${item._id || item.id}" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">Review</button>
+          <button class="btn btn-secondary btn-delete-row" data-id="${item._id || item.id}" style="padding: 0.25rem 0.6rem; font-size: 0.75rem; color: var(--danger); border-color: var(--danger);">Delete</button>
         </td>
       `;
       tbody.appendChild(tr);
@@ -137,6 +138,31 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.btn-review').forEach(btn => {
       btn.addEventListener('click', (e) => {
         openAdminDetail(e.target.getAttribute('data-id'));
+      });
+    });
+
+    // Attach delete listeners
+    document.querySelectorAll('.btn-delete-row').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = e.target.getAttribute('data-id');
+        if (confirm("Are you sure you want to delete this record entirely?")) {
+          try {
+            const token = localStorage.getItem('lcu_findme_token');
+            const res = await fetch(`${API_URL}/items/${id}`, {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+            if (res.ok) {
+              await loadData();
+            } else {
+              alert('Failed to delete record. Ensure you are authorized.');
+            }
+          } catch (err) {
+            alert('Network connection error.');
+          }
+        }
       });
     });
 
@@ -184,8 +210,11 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     } else {
       actionHtml = `
-        <div style="margin-top: 1.5rem; padding: 1rem; background-color: var(--success-bg); color: var(--success); border-radius: var(--radius-md); font-weight: 600; text-align: center;">
+        <div style="margin-top: 1.5rem; padding: 1rem; background-color: var(--success-bg); color: var(--success); border-radius: var(--radius-md); font-weight: 600; text-align: center; margin-bottom: 1rem;">
           This item has been successfully resolved and returned.
+        </div>
+        <div style="display: flex; gap: 1rem;">
+          <button class="btn btn-secondary" id="btn-admin-delete" style="flex: 1; justify-content: center; color: var(--danger); border-color: var(--danger);">Delete Record</button>
         </div>
       `;
     }
