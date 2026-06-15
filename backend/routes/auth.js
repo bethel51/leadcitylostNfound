@@ -39,14 +39,36 @@ router.post('/register', async (req, res) => {
       }
     }
 
-    // Check if user exists by email or matric number
-    const query = [];
-    if (trimmedMatric) query.push({ matricNumber: trimmedMatric });
-    if (trimmedEmail) query.push({ email: trimmedEmail });
-
     if (query.length > 0) {
       const userExists = await User.findOne({ $or: query });
       if (userExists) {
+        // If the existing user is NOT verified, allow overwriting their account details (self-healing for typos/network failures)
+        if (!userExists.isVerified) {
+          userExists.name = name ? name.trim() : '';
+          userExists.matricNumber = isNonStudent ? (trimmedEmail || `${role}-${Date.now()}`) : trimmedMatric;
+          userExists.email = trimmedEmail || undefined;
+          userExists.faculty = isNonStudent ? 'Staff' : faculty;
+          userExists.department = isNonStudent ? 'Staff' : department;
+          userExists.level = isNonStudent ? 'Staff' : level;
+          userExists.password = password; // Pre-save hook will hash it
+          userExists.role = role || 'student';
+          userExists.emailVerificationOTP = verificationOTP;
+          await userExists.save();
+
+          if (userExists.email) {
+            try {
+              await sendVerificationEmail(userExists.email, verificationOTP);
+            } catch (mailErr) {
+              console.error('Email sending failed during registration overwrite:', mailErr);
+            }
+          }
+
+          return res.status(201).json({
+            message: 'Registration updated! A new OTP verification code has been sent to your email.',
+            requiresVerification: true,
+            email: userExists.email
+          });
+        }
         return res.status(400).json({ message: 'User with this matric number or email already exists' });
       }
     }
@@ -137,12 +159,13 @@ router.post('/verify-otp', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { identifier, password } = req.body; 
+    const trimmedIdentifier = identifier ? identifier.trim().toLowerCase() : '';
 
     // Find user by matricNumber or email
     const user = await User.findOne({
       $or: [
-        { matricNumber: identifier.toLowerCase() },
-        { email: identifier.toLowerCase() }
+        { matricNumber: trimmedIdentifier },
+        { email: trimmedIdentifier }
       ]
     });
 
