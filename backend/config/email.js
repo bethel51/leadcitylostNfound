@@ -3,16 +3,33 @@ const https = require('https');
 /**
  * Send email via Brevo Transactional Email HTTP API (port 443 — never blocked).
  * Docs: https://developers.brevo.com/reference/sendtransacemail
+ *
+ * Spam-prevention best practices applied:
+ *  - replyTo header set
+ *  - Both htmlContent AND textContent provided (plain-text fallback)
+ *  - Proper sender name to build trust
  */
-const sendEmail = async ({ to, subject, html }) => {
+const sendEmail = async ({ to, subject, html, text }) => {
+  const senderEmail = process.env.SMTP_SENDER || '2bethel4u@gmail.com';
+  const senderName = process.env.SMTP_FROM_NAME || 'LCU FindMe Portal';
+
   const payload = JSON.stringify({
     sender: {
-      name: process.env.SMTP_FROM_NAME || 'LCU FindMe',
-      email: process.env.SMTP_SENDER || '2bethel4u@gmail.com'
+      name: senderName,
+      email: senderEmail
     },
     to: [{ email: to }],
+    replyTo: {
+      name: senderName,
+      email: senderEmail
+    },
     subject,
-    htmlContent: html
+    htmlContent: html,
+    textContent: text || html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(),
+    headers: {
+      'X-Mailer': 'LCU-FindMe-Portal/1.0',
+      'Precedence': 'bulk'
+    }
   });
 
   return new Promise((resolve, reject) => {
@@ -60,7 +77,9 @@ const sendVerificationEmail = async (email, otp) => {
       <p style="text-align: center; font-size: 0.8rem; color: #94a3b8;">&copy; 2026 Lead City University Security Unit</p>
     </div>
   `;
-  await sendEmail({ to: email, subject: 'Verify your LCU FindMe Account', html });
+  const text = `LCU FindMe — Verify Your Account\n\nHello,\n\nThank you for registering on the LCU Lost and Found Portal.\nYour verification code is: ${otp}\n\nThis code is valid for 15 minutes. If you did not create this account, please ignore this email.\n\n© 2026 Lead City University Security Unit`;
+
+  await sendEmail({ to: email, subject: 'Verify your LCU FindMe Account', html, text });
 };
 
 const sendResetEmail = async (email, otp) => {
@@ -77,7 +96,9 @@ const sendResetEmail = async (email, otp) => {
       <p style="text-align: center; font-size: 0.8rem; color: #94a3b8;">&copy; 2026 Lead City University Security Unit</p>
     </div>
   `;
-  await sendEmail({ to: email, subject: 'Reset your LCU FindMe Password', html });
+  const text = `LCU FindMe — Password Reset Request\n\nHello,\n\nWe received a request to reset your password.\nYour password reset code is: ${otp}\n\nThis code is valid for 10 minutes. If you did not request this, please change your security settings immediately.\n\n© 2026 Lead City University Security Unit`;
+
+  await sendEmail({ to: email, subject: 'Reset your LCU FindMe Password', html, text });
 };
 
 module.exports = { sendVerificationEmail, sendResetEmail };
