@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Tag Verification | LCU FindMe</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background-color: var(--bg-secondary);
+      color: var(--text-dark);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
+    }
+    .slip-container {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-premium);
+      border: 1px solid var(--border-color);
+      width: 100%;
+      max-width: 500px;
+      padding: 2rem;
+      animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.95) translateY(15px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .slip-ticket {
+      border: 2px dashed var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.75rem;
+      background: var(--bg-tertiary);
+      position: relative;
+    }
+    .ticket-header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      border-bottom: 2px dashed var(--border-color);
+      padding-bottom: 1.25rem;
+    }
+    .ticket-header h2 {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 1.5rem;
+      color: var(--primary);
+      margin: 0;
+      letter-spacing: 0.5px;
+    }
+    .ticket-header p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin: 0.35rem 0 0;
+      font-weight: 600;
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      padding: 0.75rem 0;
+      font-size: 0.9rem;
+    }
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+    .detail-label {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .detail-value {
+      color: var(--text-dark);
+      font-weight: 700;
+      text-align: right;
+    }
+    .credentials-box {
+      background: var(--bg-primary);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      border: 1px solid var(--border-color);
+      margin-top: 1rem;
+    }
+    .credentials-title {
+      margin: 0 0 0.6rem 0;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .loading-view {
+      text-align: center;
+      padding: 3rem 1.5rem;
+    }
+    .error-view {
+      text-align: center;
+      padding: 3rem 1.5rem;
+      color: var(--danger);
+    }
+    .status-badge {
+      display: inline-flex;
+      padding: 0.25rem 0.65rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .status-active {
+      background-color: var(--warning-bg);
+      color: var(--warning);
+    }
+    .status-returned {
+      background-color: var(--success-bg);
+      color: var(--success);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="slip-container">
+    <!-- Loading State -->
+    <div id="loading" class="loading-view">
+      <div style="display:inline-block;width:32px;height:32px;border:3px solid var(--border-color);border-top-color:var(--primary);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+      <p style="margin-top: 1rem; font-weight: 500; color: var(--text-muted);">Fetching Security Slip Record...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error" class="error-view" style="display: none;">
+      <span style="font-size: 3rem;">⚠️</span>
+      <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; margin: 1rem 0 0.5rem;">Verification Failed</h3>
+      <p id="error-msg" style="font-size: 0.9rem; color: var(--text-muted);">The requested verification tag is invalid or could not be retrieved.</p>
+      <a href="index.html" class="btn btn-secondary" style="margin-top: 1.5rem; display: inline-flex; justify-content: center; padding: 0.6rem 1.5rem;">Return to Homepage</a>
+    </div>
+
+    <!-- Slip Record -->
+    <div id="slip-content" style="display: none;">
+      <div class="slip-ticket">
+        <div class="ticket-header">
+          <h2>LCU FINDME</h2>
+          <p>Security Tag Verification</p>
+        </div>
+
+        <div class="detail-row">
+          <span class="detail-label">Slip Reference:</span>
+          <span class="detail-value" id="slip-ref" style="font-family: monospace;">REF-XXXXXXXX</span>
+        </div>
+
+        <div class="detail-row">
+          <span class="detail-label">Tag Status:</span>
+          <span class="detail-value"><span class="status-badge" id="slip-status">ACTIVE</span></span>
+        </div>
+
+        <div class="detail-row" style="flex-direction: column; align-items: stretch; gap: 0.25rem;">
+          <span class="detail-label">Item / Description:</span>
+          <span class="detail-value" id="slip-title" style="text-align: left; font-size: 1rem;">Casio Wristwatch</span>
+        </div>
+
+        <div class="detail-row">
+          <span class="detail-label">Category:</span>
+          <span class="detail-value" id="slip-category">Electronics</span>
+        </div>
+
+        <div class="detail-row">
+          <span class="detail-label">Location Logged:</span>
+          <span class="detail-value" id="slip-location">FSS Cafe</span>
+        </div>
+
+        <div class="detail-row">
+          <span class="detail-label">Date Logged:</span>
+          <span class="detail-value" id="slip-date">June 16, 2026</span>
+        </div>
+
+        <!-- STRICT REPORTER CREDENTIALS DISPLAY -->
+        <div class="credentials-box">
+          <h5 class="credentials-title">Reporter Credentials</h5>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.85rem;">
+            <div style="display: flex; justify-content: space-between;">
+              <span class="detail-label">Full Name:</span>
+              <strong id="slip-reporter-name" style="color: var(--text-dark);">John Doe</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span class="detail-label">Contact / ID:</span>
+              <strong id="slip-reporter-contact" style="color: var(--text-dark);">Not Provided</strong>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 2px dashed var(--border-color);">
+          <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px;">Lead City University</div>
+          <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem;">Campus Security Division • Verification Record</div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+        <button class="btn btn-primary" id="btn-print" style="flex: 1; justify-content: center; padding: 0.75rem; font-weight: 600;">
+          🖨️ Print Slip
+        </button>
+        <a href="index.html" class="btn btn-secondary" style="flex: 1; justify-content: center; align-items: center; padding: 0.75rem; font-weight: 600; text-decoration: none; display: flex;">
+          Public Site
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+      ? 'http://localhost:5000/api' 
+      : 'https://leadcitylostnfound.onrender.com/api';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const itemId = urlParams.get('item');
+
+      if (!itemId) {
+        showError('No item parameter specified in request URL.');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/items/${itemId}`);
+        if (!res.ok) {
+          showError('The requested verification tag is invalid or does not exist.');
+          return;
+        }
+        const item = await res.json();
+
+        // Populate fields
+        document.getElementById('slip-ref').textContent = `REF-${item._id ? item._id.substring(item._id.length - 8).toUpperCase() : 'UNKNOWN'}`;
+        
+        const statusEl = document.getElementById('slip-status');
+        if (statusEl) {
+          statusEl.textContent = (item.status || 'FOUND').toUpperCase();
+          statusEl.className = `status-badge ${item.status === 'returned' ? 'status-returned' : 'status-active'}`;
+        }
+
+        document.getElementById('slip-title').textContent = item.title;
+        document.getElementById('slip-category').textContent = item.category;
+        document.getElementById('slip-location').textContent = item.location;
+        document.getElementById('slip-date').textContent = new Date(item.date).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+
+        document.getElementById('slip-reporter-name').textContent = item.reporterName || 'Anonymous';
+        document.getElementById('slip-reporter-contact').textContent = item.reporterContact || 'Not Provided';
+
+        // Swap view
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('slip-content').style.display = 'block';
+
+        // Print listener
+        document.getElementById('btn-print').addEventListener('click', () => {
+          window.print();
+        });
+
+      } catch (err) {
+        showError('Connection error. Failed to reach the security backend server.');
+      }
+    });
+
+    function showError(msg) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error-msg').textContent = msg;
+      document.getElementById('error').style.display = 'block';
+    }
+  </script>
+</body>
+</html>

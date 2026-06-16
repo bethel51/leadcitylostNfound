@@ -469,8 +469,16 @@ function openDetailModal(itemId) {
       document.getElementById('qr-label-location').textContent = item.location;
       
       const qrCanvas = document.getElementById('qr-canvas');
-      const baseUrl = window.location.origin !== "null" ? window.location.origin + window.location.pathname : 'https://lcufindme.edu.ng';
-      const itemUrl = `${baseUrl}?item=${item._id || item.id}`;
+      const originUrl = window.location.origin !== "null" ? window.location.origin : 'https://lcufindme.edu.ng';
+      let path = window.location.pathname;
+      if (path.endsWith('index.html')) {
+        path = path.replace('index.html', 'slip.html');
+      } else if (path.endsWith('/')) {
+        path += 'slip.html';
+      } else {
+        path = '/slip.html';
+      }
+      const itemUrl = `${originUrl}${path}?item=${item._id || item.id}`;
       window.QRCode.draw(itemUrl, qrCanvas, { size: 120, margin: 5, color: '#0f172a' });
       
       toggleModal('modal-qr', true);
@@ -2008,7 +2016,7 @@ async function checkUrlParams() {
             </style>
           </head>
           <body>
-            \${slipContent}
+            ${slipContent}
             <script>
               window.onload = function() {
                 window.print();
@@ -2025,7 +2033,7 @@ async function checkUrlParams() {
   try {
     showToast('Loading verified security slip details...', 'info');
     
-    const res = await fetch(\`\${API_URL}/items/\${itemId}\`);
+    const res = await fetch(`${API_URL}/items/${itemId}`);
     if (!res.ok) {
       showToast('Could not retrieve item verification details.', 'error');
       return;
@@ -2033,12 +2041,12 @@ async function checkUrlParams() {
     const item = await res.json();
     
     // Populate slip modal fields
-    document.getElementById('slip-ref').textContent = \`REF-\${item._id ? item._id.substring(item._id.length - 8).toUpperCase() : 'UNKNOWN'}\`;
+    document.getElementById('slip-ref').textContent = `REF-${item._id ? item._id.substring(item._id.length - 8).toUpperCase() : 'UNKNOWN'}`;
     
     const statusEl = document.getElementById('slip-status');
     if (statusEl) {
       statusEl.textContent = (item.status || 'FOUND').toUpperCase();
-      statusEl.className = \`status-badge \${item.status === 'returned' ? 'status-returned' : 'status-active'}\`;
+      statusEl.className = `status-badge ${item.status === 'returned' ? 'status-returned' : 'status-active'}`;
     }
     
     document.getElementById('slip-title').textContent = item.title;
