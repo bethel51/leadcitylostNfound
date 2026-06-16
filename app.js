@@ -1440,10 +1440,10 @@ function setupEventListeners() {
       }, 1000);
 
       try {
-        const res = await fetch(`${API_URL}/auth/register`, {
+        await fetch(`${API_URL}/auth/resend-otp`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, resendOtp: true })
+          body: JSON.stringify({ email })
         });
         showToast('A new verification code has been sent to your email.');
       } catch (err) {

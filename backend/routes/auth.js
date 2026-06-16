@@ -113,6 +113,39 @@ router.post('/register', async (req, res) => {
   }
 });
 
+// @route   POST api/auth/resend-otp
+// @desc    Resend verification OTP to user's email
+// @access  Public
+router.post('/resend-otp', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required.' });
+    }
+
+    const user = await User.findOne({ email: email.trim().toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ message: 'No account found with this email.' });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ message: 'Account is already verified. Please log in.' });
+    }
+
+    const newOTP = generateOTP();
+    user.emailVerificationOTP = newOTP;
+    await user.save();
+
+    sendVerificationEmail(user.email, newOTP).catch(mailErr => {
+      console.error('Resend OTP email failed:', mailErr);
+    });
+
+    res.json({ message: 'A new verification code has been sent to your email.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+});
+
 // @route   POST api/auth/verify-otp
 // @desc    Verify registration OTP
 // @access  Public
