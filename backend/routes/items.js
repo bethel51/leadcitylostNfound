@@ -41,6 +41,21 @@ router.get('/', async (req, res) => {
   }
 });
 
+// @route   GET api/items/:id
+// @desc    Get item by ID
+// @access  Public
+router.get('/:id', async (req, res) => {
+  try {
+    const item = await Item.findById(req.params.id);
+    if (!item) {
+      return res.status(404).json({ message: 'Item not found' });
+    }
+    res.json(item);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+});
+
 // @route   POST api/items
 // @desc    Create a new report and perform fuzzy auto-match check
 // @access  Protected

@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initTheme();
   setupEventListeners();
   await initData();
+  checkUrlParams();
 });
 
 // Initialize theme from storage
@@ -745,6 +746,12 @@ function setupEventListeners() {
     reportForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       
+      const btnSubmit = document.getElementById('btn-submit-report');
+      if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = `<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.6s linear infinite;margin-right:8px;vertical-align:middle;"></span> Submitting...`;
+      }
+      
       const payload = {
         title: document.getElementById('report-title').value.trim(),
         type: selectedReportType,
@@ -814,6 +821,11 @@ function setupEventListeners() {
         }
       } catch (err) {
         showToast('Connection error connecting to backend.', 'error');
+      } finally {
+        if (btnSubmit) {
+          btnSubmit.disabled = false;
+          btnSubmit.innerHTML = `Submit Report`;
+        }
       }
     });
   }
@@ -1963,3 +1975,84 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+async function checkUrlParams() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const itemId = urlParams.get('item');
+  if (!itemId) return;
+
+  // Wire slip close buttons
+  const btnCloseSlip = document.getElementById('btn-close-slip');
+  const btnDismissSlip = document.getElementById('btn-dismiss-slip');
+  if (btnCloseSlip) btnCloseSlip.addEventListener('click', () => toggleModal('modal-verify-slip', false));
+  if (btnDismissSlip) btnDismissSlip.addEventListener('click', () => toggleModal('modal-verify-slip', false));
+  
+  // Wire slip print button
+  const btnPrintSlip = document.getElementById('btn-print-slip');
+  if (btnPrintSlip) {
+    btnPrintSlip.addEventListener('click', () => {
+      const slipContent = document.querySelector('.security-slip').outerHTML;
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>LCU FindMe Security Slip</title>
+            <style>
+              body { font-family: 'Inter', sans-serif; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #fff; }
+              .security-slip { border: 2px dashed #64748b; border-radius: 12px; padding: 24px; background: #f8fafc; width: 400px; }
+              strong { color: #0f172a; }
+              span { color: #64748b; }
+              .status-badge { display: inline-flex; padding: 0.25rem 0.65rem; border-radius: 50px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+              .status-active { background-color: #fffbeb; color: #f59e0b; }
+              .status-returned { background-color: #ecfdf5; color: #10b981; }
+            </style>
+          </head>
+          <body>
+            \${slipContent}
+            <script>
+              window.onload = function() {
+                window.print();
+                setTimeout(() => window.close(), 500);
+              };
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    });
+  }
+
+  try {
+    showToast('Loading verified security slip details...', 'info');
+    
+    const res = await fetch(\`\${API_URL}/items/\${itemId}\`);
+    if (!res.ok) {
+      showToast('Could not retrieve item verification details.', 'error');
+      return;
+    }
+    const item = await res.json();
+    
+    // Populate slip modal fields
+    document.getElementById('slip-ref').textContent = \`REF-\${item._id ? item._id.substring(item._id.length - 8).toUpperCase() : 'UNKNOWN'}\`;
+    
+    const statusEl = document.getElementById('slip-status');
+    if (statusEl) {
+      statusEl.textContent = (item.status || 'FOUND').toUpperCase();
+      statusEl.className = \`status-badge \${item.status === 'returned' ? 'status-returned' : 'status-active'}\`;
+    }
+    
+    document.getElementById('slip-title').textContent = item.title;
+    document.getElementById('slip-category').textContent = item.category;
+    document.getElementById('slip-location').textContent = item.location;
+    document.getElementById('slip-date').textContent = formatDate(item.date);
+    
+    // STRICTLY DISPLAY REPORTER CREDENTIALS
+    document.getElementById('slip-reporter-name').textContent = item.reporterName || 'Anonymous';
+    document.getElementById('slip-reporter-contact').textContent = item.reporterContact || 'Not Provided';
+    
+    // Open Slip Modal
+    toggleModal('modal-verify-slip', true);
+  } catch (err) {
+    showToast('Connection error loading security slip.', 'error');
+  }
+}
