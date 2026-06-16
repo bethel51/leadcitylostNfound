@@ -433,15 +433,12 @@ function openDetailModal(itemId) {
       <div class="verification-box" style="background-color: var(--primary-light); border-color: rgba(37, 99, 235, 0.2);">
         <div class="verification-title">🙋 Did you find this item?</div>
         <p>If you have found this item or have any information, please reach out to the reporter immediately.</p>
-        <div style="background-color: white; padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 1rem;">
+        <div style="background-color: white; padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 0rem;">
           <div style="font-size: 0.85rem; color: var(--text-muted);">Reporter</div>
           <div style="font-weight: 700; color: var(--secondary); margin-bottom: 0.5rem;">${item.reporterName}</div>
           <div style="font-size: 0.85rem; color: var(--text-muted);">Contact Details</div>
           <div style="font-family: monospace; font-weight: 600; color: var(--primary);">${item.reporterContact}</div>
         </div>
-        <button class="btn btn-primary" id="btn-mark-returned-lost" style="width: 100%; justify-content: center;">
-          I Have Returned This Item
-        </button>
       </div>
     `;
   }
@@ -548,31 +545,6 @@ function openDetailModal(itemId) {
           showToast(`Verification claim notice submitted to Security successfully.`);
         } else {
           showToast('Failed to submit claim verification request.', 'error');
-        }
-      } catch (err) {
-        showToast('Connection error connecting to backend.', 'error');
-      }
-    });
-  }
-  
-  // Return button for lost items
-  const btnMarkReturnedLost = document.getElementById('btn-mark-returned-lost');
-  if (btnMarkReturnedLost) {
-    btnMarkReturnedLost.addEventListener('click', async () => {
-      try {
-        const token = localStorage.getItem('lcu_findme_token');
-        const res = await fetch(`${API_URL}/items/${item._id}/resolve`, { 
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        if (res.ok) {
-          toggleModal('modal-detail', false);
-          render();
-          showToast(`Item successfully marked as Returned! Thank you for your honesty.`);
-        } else {
-          showToast('Failed to mark item as returned.', 'error');
         }
       } catch (err) {
         showToast('Connection error connecting to backend.', 'error');

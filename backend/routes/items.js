@@ -143,8 +143,8 @@ router.post('/:id/claim', protect, async (req, res) => {
 
 // @route   PUT api/items/:id/resolve
 // @desc    Mark item as returned/resolved
-// @access  Protected (Admin or Reporter)
-router.put('/:id/resolve', protect, async (req, res) => {
+// @access  Protected (Admin only)
+router.put('/:id/resolve', protect, adminOnly, async (req, res) => {
   try {
     const item = await Item.findById(req.params.id);
 
@@ -152,19 +152,12 @@ router.put('/:id/resolve', protect, async (req, res) => {
       return res.status(404).json({ message: 'Item not found' });
     }
 
-    // Allow if the user is an admin or is the reporter who registered the item
-    const isAdmin = req.user.role === 'admin';
-    const isReporter = req.user.name === item.reporterName;
-
-    if (!isAdmin && !isReporter) {
-      return res.status(403).json({ message: 'Not authorized to resolve this item' });
-    }
-
     item.status = 'returned';
     
     // Resolve all claims if any
     item.verificationClaims.forEach(claim => {
       claim.resolved = true;
+      claim.status = 'accepted';
     });
 
     await item.save();
