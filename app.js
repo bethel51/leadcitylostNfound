@@ -1816,6 +1816,19 @@ function repositionTourElement() {
 function showTourStep(stepIndex) {
   const step = tourSteps[stepIndex];
   if (!step) { endTour(); return; }
+
+  // Auto-toggle modals to ensure targets are fully visible
+  if (step.targetId === 'btn-toggle-map') {
+    const reportModal = document.getElementById('modal-report');
+    if (reportModal && !reportModal.classList.contains('active')) {
+      toggleModal('modal-report', true);
+    }
+  } else {
+    const reportModal = document.getElementById('modal-report');
+    if (reportModal && reportModal.classList.contains('active')) {
+      toggleModal('modal-report', false);
+    }
+  }
   
   // Update tooltip content
   const pill = document.getElementById('tour-step-pill');
