@@ -281,10 +281,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const tr = document.createElement('tr');
       const badgeClass = item.status === 'returned' ? 'status-returned' : 'status-active';
       const itemId = item._id || item.id;
+      
+      const hasPending = item.status !== 'returned' && item.verificationClaims && item.verificationClaims.some(c => c.status === 'pending' || !c.status);
+      const pendingBadge = hasPending ? ` <span class="status-badge status-active" style="background-color: var(--warning-bg); color: var(--warning); font-size: 0.65rem; padding: 0.15rem 0.45rem; vertical-align: middle; margin-left: 0.25rem;">⚠️ Claim pending</span>` : '';
 
       tr.innerHTML = `
         <td data-label="ID" style="font-family:monospace;font-size:0.8rem;color:var(--text-muted);">${itemId.substring(0, 8)}</td>
-        <td data-label="Item Name" style="font-weight:600;color:var(--secondary);">${item.title}</td>
+        <td data-label="Item Name" style="font-weight:600;color:var(--secondary);">${item.title}${pendingBadge}</td>
         <td data-label="Category" style="text-transform:capitalize;">${item.category}</td>
         <td data-label="Type">${item.type === 'found' ? 'Found' : 'Lost'}</td>
         <td data-label="Status"><span class="status-badge ${badgeClass}">${item.status}</span></td>
@@ -316,6 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Sync verif log badge
     renderVerifLog();
+    checkForPendingClaims();
   }
 
   // ---- DELETE ITEM ----
@@ -775,6 +779,94 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // ---- TOAST HELPERS ----
+  function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast-notification');
+    const msgEl = document.getElementById('toast-message');
+    const iconEl = toast ? toast.querySelector('.toast-icon') : null;
+    
+    if (!toast || !msgEl) return;
+    
+    msgEl.textContent = message;
+    
+    if (iconEl) {
+      if (type === 'success') {
+        iconEl.innerHTML = `✓`;
+      } else if (type === 'error') {
+        iconEl.innerHTML = `✗`;
+      } else if (type === 'warning') {
+        iconEl.innerHTML = `⚠️`;
+      } else if (type === 'info') {
+        iconEl.innerHTML = `ℹ️`;
+      }
+    }
+    
+    toast.classList.remove('active');
+    void toast.offsetWidth; // trigger reflow
+    toast.className = `toast toast-${type} active`;
+    
+    if (window.toastTimeout) {
+      clearTimeout(window.toastTimeout);
+    }
+    
+    window.toastTimeout = setTimeout(() => {
+      toast.classList.remove('active');
+    }, 4000);
+  }
+
+  // ---- CHECK PENDING CLAIMS ----
+  function checkForPendingClaims() {
+    if (!adminItems || adminItems.length === 0) return;
+    
+    const itemsWithPendingClaims = adminItems.filter(item => 
+      item.status !== 'returned' && 
+      item.verificationClaims && 
+      item.verificationClaims.some(c => c.status === 'pending' || !c.status)
+    );
+    
+    const alertBanner = document.getElementById('admin-pending-claims-alert');
+    const alertText = document.getElementById('pending-claims-text');
+    const reviewBtn = document.getElementById('btn-view-pending-claims');
+    
+    if (itemsWithPendingClaims.length > 0) {
+      if (alertBanner && alertText) {
+        alertText.innerHTML = `You have <strong>${itemsWithPendingClaims.length}</strong> pending verification claim request(s) waiting for review!`;
+        alertBanner.style.display = 'flex';
+        
+        const newBtn = reviewBtn.cloneNode(true);
+        reviewBtn.parentNode.replaceChild(newBtn, reviewBtn);
+        newBtn.addEventListener('click', () => {
+          openAdminDetail(itemsWithPendingClaims[0]._id || itemsWithPendingClaims[0].id);
+        });
+      }
+      
+      const lastNotified = sessionStorage.getItem('admin_claim_notified_count');
+      if (lastNotified != itemsWithPendingClaims.length) {
+        showToast(`🔔 Notice: ${itemsWithPendingClaims.length} pending claim request(s) need review!`, 'warning');
+        sessionStorage.setItem('admin_claim_notified_count', itemsWithPendingClaims.length);
+      }
+    } else {
+      if (alertBanner) alertBanner.style.display = 'none';
+      sessionStorage.removeItem('admin_claim_notified_count');
+    }
+  }
+
+  // Polling for live updates (claims and items) every 5 seconds
+  setInterval(async () => {
+    const overlay = document.getElementById('admin-login-overlay');
+    if (overlay && overlay.style.display === 'none') {
+      try {
+        const res = await fetch(`${API_URL}/items`);
+        if (res.ok) {
+          adminItems = await res.json();
+          renderDashboard();
+        }
+      } catch (err) {
+        console.error('Error polling admin items:', err);
+      }
+    }
+  }, 5000);
 
   // ---- INITIAL RENDER ----
   updateAdminHeader();

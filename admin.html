@@ -76,7 +76,15 @@
             <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">All lost and found claims across the university. Review and verify claims here.</p>
           </div>
         </div>
-
+        
+        <!-- Pending Claims Alert Banner -->
+        <div id="admin-pending-claims-alert" style="display: none; background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.15); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; align-items: center; justify-content: space-between; font-weight: 500;">
+          <span style="display: flex; align-items: center; gap: 0.5rem;">
+            🔔 <strong>Claim Notice:</strong> <span id="pending-claims-text">You have pending verification claim requests.</span>
+          </span>
+          <button class="btn btn-secondary" id="btn-view-pending-claims" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; border-color: var(--warning); color: var(--warning); background: none; cursor: pointer;">Review First Claim</button>
+        </div>
+ 
         <!-- Master Data Table -->
         <div class="data-table-wrapper" style="box-shadow: var(--shadow-premium);">
           <table class="data-table" id="admin-table">
@@ -296,6 +304,10 @@
         <a href="index.html" style="font-size: 0.85rem; color: var(--text-muted); text-decoration: none; font-weight: 600; transition: color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted)'">← Return to Public Site</a>
       </div>
     </div>
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast toast-success" id="toast-notification">
+    <div class="toast-icon">✓</div>
+    <div class="toast-content" id="toast-message">Action completed successfully!</div>
   </div>
 
   <style>
