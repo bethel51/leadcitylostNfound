@@ -32,6 +32,28 @@
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 4px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
           Report Item
         </button>
+
+        <div class="auth-buttons-container" id="auth-container">
+          <button class="btn btn-secondary" id="btn-header-login" style="padding: 0.4rem 1.2rem; font-size: 0.85rem;">Log In</button>
+          <button class="btn btn-primary" id="btn-header-signup" style="padding: 0.4rem 1.2rem; font-size: 0.85rem;">Sign Up</button>
+        </div>
+
+        <!-- Hidden User Profile (For post-login state) -->
+        <div class="user-profile-mock" id="user-profile-container" style="display: none; gap: 1rem; align-items: center;">
+          <!-- Notification Bell -->
+          <div class="notif-bell" id="notif-bell" title="Notifications">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="notif-badge" id="notif-badge" style="display:none;">0</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div class="avatar" id="header-avatar">U</div>
+            <span id="header-username">LCU Student</span>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-secondary" id="btn-edit-profile" style="padding: 0.35rem 0.85rem; font-size: 0.75rem;">Edit</button>
+            <button class="btn btn-secondary" id="btn-logout" style="padding: 0.35rem 0.85rem; font-size: 0.75rem; border-color: transparent; color: var(--danger); background-color: var(--danger-bg);">Logout</button>
+          </div>
+        </div>
       </nav>
 
       <!-- Theme Toggle Button -->
@@ -39,28 +61,6 @@
         <svg class="sun-icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"></path></svg>
         <svg class="moon-icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
       </button>
-
-      <div class="auth-buttons-container" id="auth-container">
-        <button class="btn btn-secondary" id="btn-header-login" style="padding: 0.4rem 1.2rem; font-size: 0.85rem;">Log In</button>
-        <button class="btn btn-primary" id="btn-header-signup" style="padding: 0.4rem 1.2rem; font-size: 0.85rem;">Sign Up</button>
-      </div>
-
-      <!-- Hidden User Profile (For post-login state) -->
-      <div class="user-profile-mock" id="user-profile-container" style="display: none; gap: 1rem; align-items: center;">
-        <!-- Notification Bell -->
-        <div class="notif-bell" id="notif-bell" title="Notifications">
-          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          <span class="notif-badge" id="notif-badge" style="display:none;">0</span>
-        </div>
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <div class="avatar" id="header-avatar">U</div>
-          <span id="header-username">LCU Student</span>
-        </div>
-        <div style="display: flex; gap: 0.5rem;">
-          <button class="btn btn-secondary" id="btn-edit-profile" style="padding: 0.35rem 0.85rem; font-size: 0.75rem;">Edit</button>
-          <button class="btn btn-secondary" id="btn-logout" style="padding: 0.35rem 0.85rem; font-size: 0.75rem; border-color: transparent; color: var(--danger); background-color: var(--danger-bg);">Logout</button>
-        </div>
-      </div>
     </header>
 
     <!-- Notification Dropdown -->
