@@ -64,9 +64,9 @@ router.post('/register', async (req, res) => {
 
           if (userExists.email) {
             try {
-              await sendVerificationEmail(userExists.email, verificationOTP);
-            } catch (mailErr) {
-              console.error('Email sending failed during registration overwrite:', mailErr);
+              sendVerificationEmail(userExists.email, verificationOTP).catch(mailErr => {
+                console.error('Email sending failed during registration overwrite:', mailErr);
+              });
             }
           }
 
@@ -96,9 +96,9 @@ router.post('/register', async (req, res) => {
       // Send verification email in background if email exists
       if (user.email) {
         try {
-          await sendVerificationEmail(user.email, verificationOTP);
-        } catch (mailErr) {
-          console.error('Email sending failed during registration:', mailErr);
+          sendVerificationEmail(user.email, verificationOTP).catch(mailErr => {
+            console.error('Email sending failed during registration:', mailErr);
+          });
         }
       }
 
@@ -179,9 +179,9 @@ router.post('/login', async (req, res) => {
         await user.save();
         
         try {
-          await sendVerificationEmail(user.email, verificationOTP);
-        } catch (mailErr) {
-          console.error('Resending verification email failed:', mailErr);
+          sendVerificationEmail(user.email, verificationOTP).catch(mailErr => {
+            console.error('Resending verification email failed:', mailErr);
+          });
         }
 
         return res.status(403).json({

@@ -292,13 +292,35 @@ function toggleModal(modalId, show = true) {
 function showToast(message, type = 'success') {
   const toast = document.getElementById('toast-notification');
   const msgEl = document.getElementById('toast-message');
+  const iconEl = toast ? toast.querySelector('.toast-icon') : null;
   
   if (!toast || !msgEl) return;
   
   msgEl.textContent = message;
+  
+  // Set premium SVG icons based on type
+  if (iconEl) {
+    if (type === 'success') {
+      iconEl.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+    } else if (type === 'error') {
+      iconEl.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+    } else if (type === 'warning') {
+      iconEl.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+    } else if (type === 'info') {
+      iconEl.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+    }
+  }
+  
+  // Reset the active class and trigger reflow for progress bar animation
+  toast.classList.remove('active');
+  void toast.offsetWidth; // trigger reflow
   toast.className = `toast toast-${type} active`;
   
-  setTimeout(() => {
+  if (window.toastTimeout) {
+    clearTimeout(window.toastTimeout);
+  }
+  
+  window.toastTimeout = setTimeout(() => {
     toast.classList.remove('active');
   }, 4000);
 }
@@ -566,20 +588,21 @@ function setupEventListeners() {
   const btnCloseDetail = document.getElementById('btn-close-detail');
   if (btnCloseDetail) btnCloseDetail.addEventListener('click', () => toggleModal('modal-detail', false));
   
-  // Close modals on clicking outside the dialog container
-  window.addEventListener('click', (e) => {
-    const reportModal = document.getElementById('modal-report');
-    if (e.target === reportModal) {
-      toggleModal('modal-report', false);
-    }
-    const detailModal = document.getElementById('modal-detail');
-    if (e.target === detailModal) {
-      toggleModal('modal-detail', false);
-    }
-    const authModal = document.getElementById('modal-auth');
-    if (e.target === authModal) {
-      toggleModal('modal-auth', false);
-    }
+  // Stop click propagation on all modal containers so button clicks don't leak to backdrop
+  document.querySelectorAll('.modal-container').forEach(container => {
+    container.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+  });
+
+  // Close modals ONLY when clicking the backdrop itself (not any child element)
+  document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+    backdrop.addEventListener('click', (e) => {
+      // Only close if the click target is the backdrop itself, not anything inside
+      if (e.target === backdrop) {
+        toggleModal(backdrop.id, false);
+      }
+    });
   });
 
   // Report Type selections (I Found / I Lost toggles)
@@ -854,14 +877,16 @@ function setupEventListeners() {
   // Modal Closures for Phase 2 Modals
   const btnCloseMatch = document.getElementById('btn-close-match');
   if (btnCloseMatch) {
-    btnCloseMatch.addEventListener('click', () => {
+    btnCloseMatch.addEventListener('click', (e) => {
+      e.stopPropagation();
       toggleModal('modal-match', false);
     });
   }
 
   const btnCloseQr = document.getElementById('btn-close-qr');
   if (btnCloseQr) {
-    btnCloseQr.addEventListener('click', () => {
+    btnCloseQr.addEventListener('click', (e) => {
+      e.stopPropagation();
       toggleModal('modal-qr', false);
     });
   }
@@ -1221,12 +1246,18 @@ function setupEventListeners() {
       const newContact = document.getElementById('edit-profile-contact').value.trim();
       
       if (newName) {
-        // Persist all extra fields into state
+        // Update user object fields
+        state.currentUser.name = newName;
+        state.currentUser.contact = newContact || state.currentUser.contact;
         state.currentUser.matric = document.getElementById('edit-profile-matric').value.trim();
         state.currentUser.dept   = document.getElementById('edit-profile-dept').value.trim();
         state.currentUser.phone  = document.getElementById('edit-profile-phone').value.trim();
         
-        loginUser(newName, newContact || state.currentUser.contact);
+        // Persist to localStorage
+        localStorage.setItem('lcu_findme_user', JSON.stringify(state.currentUser));
+
+        // Sync UI
+        syncLoginUI();
         toggleModal('modal-edit-profile', false);
         showToast('Profile updated successfully.');
       }
@@ -1239,6 +1270,62 @@ function setupEventListeners() {
   const btnCloseOtp = document.getElementById('btn-close-otp');
   if (btnCloseOtp) btnCloseOtp.addEventListener('click', () => toggleModal('modal-otp', false));
 
+  // OTP Digits Auto-focus & Paste handling logic
+  const otpInputs = document.querySelectorAll('.otp-digit-input');
+  const hiddenOtpCode = document.getElementById('otp-code');
+  
+  if (otpInputs.length > 0 && hiddenOtpCode) {
+    const updateHiddenOtp = () => {
+      let code = '';
+      otpInputs.forEach(inp => code += inp.value);
+      hiddenOtpCode.value = code;
+    };
+
+    otpInputs.forEach((input, index) => {
+      input.addEventListener('focus', () => {
+        input.select();
+      });
+
+      input.addEventListener('input', (e) => {
+        const val = e.target.value;
+        if (val.length > 1) {
+          e.target.value = val.slice(-1);
+        }
+        
+        if (e.target.value && index < otpInputs.length - 1) {
+          otpInputs[index + 1].focus();
+        }
+        
+        updateHiddenOtp();
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace') {
+          if (!input.value && index > 0) {
+            otpInputs[index - 1].value = '';
+            otpInputs[index - 1].focus();
+          } else {
+            input.value = '';
+          }
+          updateHiddenOtp();
+          e.preventDefault();
+        }
+      });
+      
+      input.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const text = (e.clipboardData || window.clipboardData).getData('text').trim();
+        if (/^\d{6}$/.test(text)) {
+          otpInputs.forEach((inp, idx) => {
+            inp.value = text[idx];
+          });
+          otpInputs[5].focus();
+          updateHiddenOtp();
+        }
+      });
+    });
+  }
+
   const formVerifyOtp = document.getElementById('form-verify-otp');
   if (formVerifyOtp) {
     formVerifyOtp.addEventListener('submit', async (e) => {
@@ -1246,10 +1333,17 @@ function setupEventListeners() {
       const otp = document.getElementById('otp-code').value.trim();
       const email = state.pendingVerifEmail;
       const errorMsg = document.getElementById('otp-error-msg');
+      const verifyBtn = document.getElementById('btn-verify-otp');
 
       if (!email) {
         if (errorMsg) { errorMsg.textContent = 'Session expired. Please register again.'; errorMsg.style.display = 'block'; }
         return;
+      }
+
+      // Disable button and show loading state
+      if (verifyBtn) {
+        verifyBtn.disabled = true;
+        verifyBtn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.6s linear infinite;"></span> Verifying...';
       }
 
       try {
@@ -1270,6 +1364,49 @@ function setupEventListeners() {
         }
       } catch (err) {
         if (errorMsg) { errorMsg.textContent = 'Connection error. Please try again.'; errorMsg.style.display = 'block'; }
+      } finally {
+        // Re-enable button
+        if (verifyBtn) {
+          verifyBtn.disabled = false;
+          verifyBtn.innerHTML = 'Verify Account';
+        }
+      }
+    });
+  }
+
+  // Resend OTP button logic with cooldown
+  const btnResendOtp = document.getElementById('btn-resend-otp');
+  if (btnResendOtp) {
+    btnResendOtp.addEventListener('click', async () => {
+      const email = state.pendingVerifEmail;
+      if (!email) {
+        showToast('Session expired. Please register again.', 'error');
+        return;
+      }
+
+      // Start cooldown
+      btnResendOtp.disabled = true;
+      let cooldown = 60;
+      btnResendOtp.textContent = `Resend in ${cooldown}s`;
+      const cooldownTimer = setInterval(() => {
+        cooldown--;
+        btnResendOtp.textContent = `Resend in ${cooldown}s`;
+        if (cooldown <= 0) {
+          clearInterval(cooldownTimer);
+          btnResendOtp.disabled = false;
+          btnResendOtp.textContent = "Didn't receive it? Resend Code";
+        }
+      }, 1000);
+
+      try {
+        const res = await fetch(`${API_URL}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, resendOtp: true })
+        });
+        showToast('A new verification code has been sent to your email.');
+      } catch (err) {
+        showToast('Failed to resend code. Please try again.', 'error');
       }
     });
   }
@@ -1393,12 +1530,29 @@ function renderNotifications() {
     return;
   }
 
-  list.innerHTML = notifications.map((n, i) => `
-    <div class="notif-item ${n.read ? '' : 'unread'}" data-index="${i}">
-      <div>${n.message}</div>
-      <div class="notif-time">${timeAgo(n.time)}</div>
-    </div>
-  `).join('');
+  list.innerHTML = notifications.map((n, i) => {
+    let icon = '🔔';
+    const msgLower = n.message.toLowerCase();
+    if (msgLower.includes('approved') || msgLower.includes('success') || msgLower.includes('marked')) {
+      icon = '✅';
+    } else if (msgLower.includes('reject') || msgLower.includes('fail') || msgLower.includes('expired')) {
+      icon = '❌';
+    } else if (msgLower.includes('verify') || msgLower.includes('claim')) {
+      icon = '🔒';
+    } else if (msgLower.includes('match') || msgLower.includes('found')) {
+      icon = '✨';
+    }
+
+    return `
+      <div class="notif-item ${n.read ? '' : 'unread'}" data-index="${i}">
+        <div class="notif-icon-badge">${icon}</div>
+        <div class="notif-content-wrapper">
+          <div class="notif-message-text" style="font-weight: 500;">${n.message}</div>
+          <span class="notif-time">${timeAgo(n.time)}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
 
   list.querySelectorAll('.notif-item').forEach(el => {
     el.addEventListener('click', () => {
@@ -1584,6 +1738,10 @@ function startTour() {
   const overlay = document.getElementById('tour-overlay');
   if (overlay) overlay.classList.add('active');
   
+  // Register tracking event listeners
+  window.addEventListener('scroll', repositionTourElement, { passive: true });
+  window.addEventListener('resize', repositionTourElement, { passive: true });
+  
   showTourStep(tourCurrentStep);
   
   // Wire Next button
@@ -1608,6 +1766,50 @@ function startTour() {
     const newSkip = btnSkip.cloneNode(true);
     btnSkip.parentNode.replaceChild(newSkip, btnSkip);
     newSkip.addEventListener('click', () => endTour());
+  }
+}
+
+function repositionTourElement() {
+  if (!tourActive) return;
+  const step = tourSteps[tourCurrentStep];
+  if (!step) return;
+  const targetEl = document.getElementById(step.targetId);
+  const tooltip = document.getElementById('tour-tooltip');
+  const ring = document.getElementById('tour-spotlight-ring');
+  if (!targetEl) return;
+
+  const rect = targetEl.getBoundingClientRect();
+  const PAD = 10;
+  
+  if (ring) {
+    ring.style.top    = `${rect.top - PAD}px`;
+    ring.style.left   = `${rect.left - PAD}px`;
+    ring.style.width  = `${rect.width + PAD * 2}px`;
+    ring.style.height = `${rect.height + PAD * 2}px`;
+  }
+  
+  if (tooltip) {
+    const TIP_W = 320;
+    const TIP_H = 190;
+    const viewH = window.innerHeight;
+    const viewW = window.innerWidth;
+    
+    let top, left;
+    const MARGIN = 16;
+    
+    if (step.tooltipPos === 'below' && rect.bottom + TIP_H + MARGIN < viewH) {
+      top  = rect.bottom + MARGIN;
+      left = Math.max(MARGIN, Math.min(viewW - TIP_W - MARGIN, rect.left + rect.width / 2 - TIP_W / 2));
+    } else if (step.tooltipPos === 'above' && rect.top - TIP_H - MARGIN > 0) {
+      top  = rect.top - TIP_H - MARGIN;
+      left = Math.max(MARGIN, Math.min(viewW - TIP_W - MARGIN, rect.left + rect.width / 2 - TIP_W / 2));
+    } else {
+      top  = Math.max(MARGIN, viewH / 2 - TIP_H / 2);
+      left = Math.max(MARGIN, viewW / 2 - TIP_W / 2);
+    }
+    
+    tooltip.style.top  = `${top}px`;
+    tooltip.style.left = `${left}px`;
   }
 }
 
@@ -1651,64 +1853,55 @@ function showTourStep(stepIndex) {
     return;
   }
   
+  // Add transitioning class for smooth move animation between steps
+  if (ring) ring.classList.add('transitioning');
+  if (tooltip) tooltip.classList.add('transitioning');
+  
   // Scroll target into view
   targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
   
-  // Use rAF to wait for scroll + layout
-  requestAnimationFrame(() => {
+  // Continuously reposition during smooth scrolling (approx 500ms duration)
+  let scrollTime = 0;
+  const scrollInterval = setInterval(() => {
+    repositionTourElement();
+    scrollTime += 30;
+    if (scrollTime >= 600 || !tourActive) {
+      clearInterval(scrollInterval);
+    }
+  }, 30);
+  
+  setTimeout(() => {
+    repositionTourElement();
+    if (ring) ring.classList.add('visible');
+    if (tooltip) tooltip.classList.add('visible');
+    
+    // Remove transitioning after movement completes
     setTimeout(() => {
-      const rect = targetEl.getBoundingClientRect();
-      const PAD = 10;
-      
-      // Position spotlight ring
-      if (ring) {
-        ring.style.top    = `${rect.top - PAD}px`;
-        ring.style.left   = `${rect.left - PAD}px`;
-        ring.style.width  = `${rect.width + PAD * 2}px`;
-        ring.style.height = `${rect.height + PAD * 2}px`;
-        ring.classList.add('visible');
-      }
-      
-      // Position tooltip
-      if (tooltip) {
-        const TIP_W = 320;
-        const TIP_H = 190;
-        const viewH = window.innerHeight;
-        const viewW = window.innerWidth;
-        
-        let top, left;
-        const MARGIN = 16;
-        
-        if (step.tooltipPos === 'below' && rect.bottom + TIP_H + MARGIN < viewH) {
-          top  = rect.bottom + MARGIN;
-          left = Math.max(MARGIN, Math.min(viewW - TIP_W - MARGIN, rect.left + rect.width / 2 - TIP_W / 2));
-        } else if (step.tooltipPos === 'above' && rect.top - TIP_H - MARGIN > 0) {
-          top  = rect.top - TIP_H - MARGIN;
-          left = Math.max(MARGIN, Math.min(viewW - TIP_W - MARGIN, rect.left + rect.width / 2 - TIP_W / 2));
-        } else {
-          // Fallback: center in viewport
-          top  = Math.max(MARGIN, viewH / 2 - TIP_H / 2);
-          left = Math.max(MARGIN, viewW / 2 - TIP_W / 2);
-        }
-        
-        tooltip.style.top  = `${top}px`;
-        tooltip.style.left = `${left}px`;
-        tooltip.classList.add('visible');
-      }
+      if (ring) ring.classList.remove('transitioning');
+      if (tooltip) tooltip.classList.remove('transitioning');
     }, 350);
-  });
+  }, 100);
 }
 
 function endTour() {
   tourActive = false;
+  
+  window.removeEventListener('scroll', repositionTourElement);
+  window.removeEventListener('resize', repositionTourElement);
   
   const overlay = document.getElementById('tour-overlay');
   const tooltip = document.getElementById('tour-tooltip');
   const ring    = document.getElementById('tour-spotlight-ring');
   
   if (overlay) overlay.classList.remove('active');
-  if (tooltip) tooltip.classList.remove('visible');
-  if (ring)    ring.classList.remove('visible');
+  if (tooltip) {
+    tooltip.classList.remove('visible');
+    tooltip.classList.remove('transitioning');
+  }
+  if (ring) {
+    ring.classList.remove('visible');
+    ring.classList.remove('transitioning');
+  }
   
   // Mark tour as done
   localStorage.setItem(TOUR_STORAGE_KEY, TOUR_VERSION);

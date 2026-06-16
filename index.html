@@ -617,32 +617,40 @@
 
   <!-- MODAL: OTP Verification -->
   <div class="modal-backdrop" id="modal-otp">
-    <div class="modal-container" style="max-width: 420px;">
-      <div class="modal-header">
+    <div class="modal-container" style="max-width: 420px; border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-premium); border: 1px solid var(--border-color);">
+      <div class="modal-header" style="background: linear-gradient(135deg, var(--primary-light), transparent); padding: 1.5rem 1.5rem 1rem; border-bottom: none;">
         <div style="display: flex; flex-direction: column;">
-          <h3 class="modal-title">📧 Verify Your Email</h3>
+          <h3 class="modal-title" style="font-size: 1.25rem; font-family: 'Outfit', sans-serif;">📧 Verify Your Email</h3>
           <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">Enter the 6-digit OTP code sent to your email.</p>
         </div>
         <button class="modal-close" id="btn-close-otp">&times;</button>
       </div>
-      <div class="modal-body">
-        <div id="otp-info-msg" style="background: var(--primary-light); color: var(--primary); font-size: 0.82rem; padding: 0.6rem 0.85rem; border-radius: var(--radius-sm); border: 1px solid rgba(37, 99, 235, 0.15); text-align: center; font-weight: 500; margin-bottom: 1.25rem;">
+      <div class="modal-body" style="padding: 1.5rem;">
+        <div id="otp-info-msg" style="background: var(--primary-light); color: var(--primary); font-size: 0.82rem; padding: 0.75rem 1rem; border-radius: var(--radius-md); border: 1px solid rgba(37, 99, 235, 0.15); text-align: center; font-weight: 500; margin-bottom: 1.25rem;">
           A verification code was sent to <strong id="otp-email-display">your email</strong>.
         </div>
-        <div id="otp-error-msg" style="display: none; background: var(--danger-bg); color: var(--danger); font-size: 0.82rem; padding: 0.6rem 0.85rem; border-radius: var(--radius-sm); border: 1px solid rgba(239, 68, 68, 0.15); text-align: center; font-weight: 500; margin-bottom: 1rem;"></div>
+        <div id="otp-error-msg" style="display: none; background: var(--danger-bg); color: var(--danger); font-size: 0.82rem; padding: 0.75rem 1rem; border-radius: var(--radius-md); border: 1px solid rgba(239, 68, 68, 0.15); text-align: center; font-weight: 500; margin-bottom: 1rem;"></div>
         <form id="form-verify-otp">
           <div class="form-group">
-            <label class="form-label" for="otp-code">Verification Code</label>
-            <div class="input-icon-wrapper" style="position: relative; display: flex; align-items: center;">
-              <span style="position: absolute; left: 1rem; color: var(--text-muted); pointer-events: none; display: flex; align-items: center;">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-              </span>
-              <input type="text" class="form-control" id="otp-code" placeholder="e.g. 482901" maxlength="6" pattern="\d{6}" style="padding-left: 2.75rem; text-align: center; font-size: 1.4rem; font-weight: 700; letter-spacing: 8px; font-family: monospace;" required>
+            <label class="form-label" style="text-align: center; display: block; margin-bottom: 1rem; font-weight: 600; color: var(--text-dark);">Verification Code</label>
+            <div class="otp-inputs-container">
+              <input type="text" class="otp-digit-input" maxlength="1" pattern="\d" inputmode="numeric" required>
+              <input type="text" class="otp-digit-input" maxlength="1" pattern="\d" inputmode="numeric" required>
+              <input type="text" class="otp-digit-input" maxlength="1" pattern="\d" inputmode="numeric" required>
+              <input type="text" class="otp-digit-input" maxlength="1" pattern="\d" inputmode="numeric" required>
+              <input type="text" class="otp-digit-input" maxlength="1" pattern="\d" inputmode="numeric" required>
+              <input type="text" class="otp-digit-input" maxlength="1" pattern="\d" inputmode="numeric" required>
             </div>
+            <input type="hidden" id="otp-code" required>
           </div>
-          <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.85rem; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);">
+          <button type="submit" class="btn btn-primary" id="btn-verify-otp" style="width: 100%; justify-content: center; padding: 0.85rem; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);">
             Verify Account
           </button>
+          <div style="text-align: center; margin-top: 1rem;">
+            <button type="button" class="btn btn-secondary" id="btn-resend-otp" style="padding: 0.5rem 1rem; font-size: 0.82rem; border: none; background: none; color: var(--primary); font-weight: 600; cursor: pointer;">
+              Didn't receive it? Resend Code
+            </button>
+          </div>
         </form>
       </div>
     </div>
