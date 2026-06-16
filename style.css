@@ -723,6 +723,7 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
+  align-self: flex-start;
 }
 
 .modal-close:hover {
@@ -2264,7 +2265,6 @@ nav a.active-admin::after {
 .otp-digit-input:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 4px var(--primary-light);
-  transform: translateY(-2px);
 }
 
 .otp-digit-input::selection {

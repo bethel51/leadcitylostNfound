@@ -282,6 +282,14 @@ function toggleModal(modalId, show = true) {
   if (show) {
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
+    
+    // Autofocus first input inside the modal for better UX/accessibility
+    setTimeout(() => {
+      const firstInput = modal.querySelector('.otp-digit-input, input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled])');
+      if (firstInput) {
+        firstInput.focus();
+      }
+    }, 100);
   } else {
     modal.classList.remove('active');
     document.body.style.overflow = '';
@@ -1287,9 +1295,12 @@ function setupEventListeners() {
       });
 
       input.addEventListener('input', (e) => {
-        const val = e.target.value;
-        if (val.length > 1) {
-          e.target.value = val.slice(-1);
+        // Strip non-digits to prevent invalid character entry
+        const cleanVal = e.target.value.replace(/\D/g, '');
+        e.target.value = cleanVal;
+
+        if (cleanVal.length > 1) {
+          e.target.value = cleanVal.slice(-1);
         }
         
         if (e.target.value && index < otpInputs.length - 1) {
@@ -1308,6 +1319,12 @@ function setupEventListeners() {
             input.value = '';
           }
           updateHiddenOtp();
+          e.preventDefault();
+        } else if (e.key === 'ArrowLeft' && index > 0) {
+          otpInputs[index - 1].focus();
+          e.preventDefault();
+        } else if (e.key === 'ArrowRight' && index < otpInputs.length - 1) {
+          otpInputs[index + 1].focus();
           e.preventDefault();
         }
       });
