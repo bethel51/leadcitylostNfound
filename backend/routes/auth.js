@@ -63,11 +63,9 @@ router.post('/register', async (req, res) => {
           await userExists.save();
 
           if (userExists.email) {
-            try {
-              sendVerificationEmail(userExists.email, verificationOTP).catch(mailErr => {
-                console.error('Email sending failed during registration overwrite:', mailErr);
-              });
-            }
+            sendVerificationEmail(userExists.email, verificationOTP).catch(mailErr => {
+              console.error('Email sending failed during registration overwrite:', mailErr);
+            });
           }
 
           return res.status(201).json({
@@ -95,11 +93,9 @@ router.post('/register', async (req, res) => {
     if (user) {
       // Send verification email in background if email exists
       if (user.email) {
-        try {
-          sendVerificationEmail(user.email, verificationOTP).catch(mailErr => {
-            console.error('Email sending failed during registration:', mailErr);
-          });
-        }
+        sendVerificationEmail(user.email, verificationOTP).catch(mailErr => {
+          console.error('Email sending failed during registration:', mailErr);
+        });
       }
 
       res.status(201).json({
@@ -178,11 +174,9 @@ router.post('/login', async (req, res) => {
         user.emailVerificationOTP = verificationOTP;
         await user.save();
         
-        try {
-          sendVerificationEmail(user.email, verificationOTP).catch(mailErr => {
-            console.error('Resending verification email failed:', mailErr);
-          });
-        }
+        sendVerificationEmail(user.email, verificationOTP).catch(mailErr => {
+          console.error('Resending verification email failed:', mailErr);
+        });
 
         return res.status(403).json({
           message: 'Account not verified. A new verification OTP code has been sent to your email.',
