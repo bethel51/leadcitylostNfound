@@ -28,9 +28,9 @@ router.post('/register', async (req, res) => {
     const isNonStudent = role === 'admin' || role === 'staff';
     const verificationOTP = generateOTP();
 
-    // Check if email is provided (especially for staff/admin or optional student email)
-    if (!trimmedEmail && (role === 'staff' || role === 'admin')) {
-      return res.status(400).json({ message: 'Email is required for staff or security officer registration.' });
+    // Email is required for all account types (used for OTP verification)
+    if (!trimmedEmail) {
+      return res.status(400).json({ message: 'Email is required for account verification.' });
     }
 
     // Validate email format if provided

@@ -1074,8 +1074,8 @@ function setupEventListeners() {
         document.getElementById('signup-faculty').required = true;
         document.getElementById('signup-dept').required = true;
         if (signupEmail) {
-          signupEmail.required = false;
-          signupEmailLabel.textContent = "University Email (Optional)";
+          signupEmail.required = true;
+          signupEmailLabel.textContent = "University Email *";
         }
         if (btnSubmitSignup) btnSubmitSignup.textContent = "Create Student Account";
       } else {
