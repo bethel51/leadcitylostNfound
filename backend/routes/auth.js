@@ -21,7 +21,7 @@ const generateOTP = () => {
 // @access  Public
 router.post('/register', async (req, res) => {
   try {
-    const { name, matricNumber, email, faculty, department, level, password, role } = req.body;
+    const { name, matricNumber, email, phoneNumber, faculty, department, level, password, role } = req.body;
 
     const trimmedMatric = matricNumber ? matricNumber.trim().toLowerCase() : '';
     const trimmedEmail = email ? email.trim().toLowerCase() : '';
@@ -54,6 +54,7 @@ router.post('/register', async (req, res) => {
           userExists.name = name ? name.trim() : '';
           userExists.matricNumber = isNonStudent ? (trimmedEmail || `${role}-${Date.now()}`) : trimmedMatric;
           userExists.email = trimmedEmail || undefined;
+          userExists.phoneNumber = phoneNumber ? phoneNumber.trim() : undefined;
           userExists.faculty = isNonStudent ? 'Staff' : faculty;
           userExists.department = isNonStudent ? 'Staff' : department;
           userExists.level = isNonStudent ? 'Staff' : level;
@@ -81,6 +82,7 @@ router.post('/register', async (req, res) => {
       name: name ? name.trim() : '',
       matricNumber: isNonStudent ? (trimmedEmail || `${role}-${Date.now()}`) : trimmedMatric,
       email: trimmedEmail || undefined,
+      phoneNumber: phoneNumber ? phoneNumber.trim() : undefined,
       faculty: isNonStudent ? 'Staff' : faculty,
       department: isNonStudent ? 'Staff' : department,
       level: isNonStudent ? 'Staff' : level,
@@ -139,6 +141,7 @@ router.post('/verify-otp', async (req, res) => {
         name: user.name,
         matricNumber: user.matricNumber,
         email: user.email,
+        phoneNumber: user.phoneNumber,
         faculty: user.faculty,
         department: user.department,
         level: user.level,
@@ -192,6 +195,7 @@ router.post('/login', async (req, res) => {
           name: user.name,
           matricNumber: user.matricNumber,
           email: user.email,
+          phoneNumber: user.phoneNumber,
           faculty: user.faculty,
           department: user.department,
           level: user.level,

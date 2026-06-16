@@ -103,12 +103,14 @@ async function initData() {
     syncLoginUI();
   }
   await fetchItems();
+  updateStats();
+  renderItems();
 }
 
 // UI Rendering Controller
 async function render() {
-  updateStats();
   await fetchItems();
+  updateStats();
   renderItems();
 }
 
@@ -1157,6 +1159,7 @@ function setupEventListeners() {
       const role = document.getElementById('signup-role').value;
       const name = document.getElementById('signup-name').value;
       const email = document.getElementById('signup-email').value;
+      const phoneNumber = document.getElementById('signup-phone').value;
       const pass = document.getElementById('signup-password').value;
       const confirm = document.getElementById('signup-confirm').value;
 
@@ -1169,6 +1172,7 @@ function setupEventListeners() {
         role,
         name,
         email,
+        phoneNumber,
         password: pass
       };
 

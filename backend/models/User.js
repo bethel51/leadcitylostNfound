@@ -28,6 +28,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  phoneNumber: {
+    type: String,
+    trim: true
+  },
   level: {
     type: String,
     required: true
