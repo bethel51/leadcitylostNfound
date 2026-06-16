@@ -411,20 +411,6 @@ function openDetailModal(itemId) {
         <button class="btn btn-primary" id="btn-start-claim" style="width: 100%; justify-content: center;">
           Notify Security I'm Coming to Claim
         </button>
-        
-        <form id="form-claim-verification" style="display: none; margin-top: 1.25rem; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
-          <div class="form-group">
-            <label class="form-label" for="claim-desc">Briefly specify how you will prove ownership in person</label>
-            <textarea class="form-control" id="claim-desc" placeholder="e.g. I have the passcode, I can describe the engraving, showing student ID..." required></textarea>
-          </div>
-          <div class="form-group" style="display: none;">
-            <input type="text" class="form-control" id="claim-time" value="In Person Visit">
-            <input type="text" class="form-control" id="claim-phone" value="Verified In Person">
-          </div>
-          <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
-            Submit Claim Visit Notice
-          </button>
-        </form>
       </div>
     `;
   } else {
@@ -515,20 +501,23 @@ function openDetailModal(itemId) {
   
   // Attach Verification flow interactive events
   const btnStartClaim = document.getElementById('btn-start-claim');
-  const claimForm = document.getElementById('form-claim-verification');
-  if (btnStartClaim && claimForm) {
-    btnStartClaim.addEventListener('click', () => {
-      btnStartClaim.style.display = 'none';
-      claimForm.style.display = 'block';
-      claimForm.scrollIntoView({ behavior: 'smooth' });
-    });
-    
-    claimForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const claimantName = state.currentUser ? state.currentUser.name : 'Anonymous Student';
-      const claimantMatric = state.currentUser ? state.currentUser.matricNumber : 'LCU/UG/00/00000';
-      const claimDetails = document.getElementById('claim-desc').value;
-      
+  if (btnStartClaim) {
+    btnStartClaim.addEventListener('click', async () => {
+      if (!state.currentUser) {
+        showToast('Please log in or create an account to submit claim notices.', 'warning');
+        toggleModal('modal-detail', false);
+        const headerLogin = document.getElementById('btn-header-login');
+        if (headerLogin) headerLogin.click();
+        return;
+      }
+
+      btnStartClaim.disabled = true;
+      btnStartClaim.textContent = 'Submitting notice...';
+
+      const claimantName = state.currentUser.name;
+      const claimantMatric = state.currentUser.matricNumber || state.currentUser.email || 'N/A';
+      const claimDetails = `Claimant is coming in person to verify and retrieve this item. Registered Email: ${state.currentUser.email || 'N/A'}. Phone: ${state.currentUser.phoneNumber || 'N/A'}.`;
+
       try {
         const token = localStorage.getItem('lcu_findme_token');
         const res = await fetch(`${API_URL}/items/${item._id}/claim`, {
@@ -545,9 +534,13 @@ function openDetailModal(itemId) {
           showToast(`Verification claim notice submitted to Security successfully.`);
         } else {
           showToast('Failed to submit claim verification request.', 'error');
+          btnStartClaim.disabled = false;
+          btnStartClaim.textContent = "Notify Security I'm Coming to Claim";
         }
       } catch (err) {
         showToast('Connection error connecting to backend.', 'error');
+        btnStartClaim.disabled = false;
+        btnStartClaim.textContent = "Notify Security I'm Coming to Claim";
       }
     });
   }
