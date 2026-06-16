@@ -355,10 +355,18 @@ document.addEventListener('DOMContentLoaded', () => {
         <div style="margin-top:1rem;border-top:1px dashed var(--border-color);padding-top:1rem;">
           <h4 style="font-size:0.9rem;color:var(--text-dark);margin-bottom:0.5rem;">🚨 In-Person Claim Visit Notices:</h4>
           ${item.verificationClaims.map(c => `
-            <div style="background:var(--bg-tertiary);padding:0.75rem;border-radius:var(--radius-sm);margin-bottom:0.5rem;font-size:0.82rem;">
+            <div style="background:var(--bg-tertiary);padding:0.75rem;border-radius:var(--radius-sm);margin-bottom:0.5rem;font-size:0.82rem;border-left: 3px solid ${c.status === 'accepted' ? 'var(--success)' : c.status === 'declined' ? 'var(--danger)' : 'var(--warning)'};">
               <div><strong>Claimant Name:</strong> ${escapeHtml(c.claimantName)}</div>
               <div><strong>Matric No:</strong> ${escapeHtml(c.claimantMatric)}</div>
               <div><strong>Verification Note:</strong> ${escapeHtml(c.claimDetails)}</div>
+              <div><strong>Status:</strong> <span style="text-transform:uppercase; font-weight:bold; color:${c.status === 'accepted' ? 'var(--success)' : c.status === 'declined' ? 'var(--danger)' : 'var(--warning)'};">${escapeHtml(c.status || 'pending')}</span></div>
+              
+              ${(c.status === 'pending' || !c.status) && item.status !== 'returned' ? `
+                <div style="margin-top:0.5rem; display:flex; gap:0.5rem;">
+                  <button class="btn btn-primary btn-claim-respond" data-claim-id="${c._id}" data-action="accept" style="padding:0.25rem 0.5rem; font-size:0.75rem; background:var(--success); border-color:var(--success); color:white; cursor:pointer;">Accept Claim</button>
+                  <button class="btn btn-secondary btn-claim-respond" data-claim-id="${c._id}" data-action="decline" style="padding:0.25rem 0.5rem; font-size:0.75rem; color:var(--danger); border-color:var(--danger); background:none; cursor:pointer;">Decline Claim</button>
+                </div>
+              ` : ''}
             </div>
           `).join('')}
         </div>`;
@@ -408,6 +416,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
     toggleModal('modal-admin-detail', true);
 
+    // Wire claim response buttons
+    body.querySelectorAll('.btn-claim-respond').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const claimId = e.currentTarget.getAttribute('data-claim-id');
+        const action = e.currentTarget.getAttribute('data-action');
+        btn.disabled = true;
+        btn.textContent = 'Processing...';
+
+        try {
+          const token = localStorage.getItem('lcu_findme_token');
+          const res = await fetch(`${API_URL}/items/${itemId}/claims/${claimId}/respond`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ action })
+          });
+          if (res.ok) {
+            const updatedData = await res.json();
+            // Re-fetch data and reload view
+            await loadData();
+            
+            // Add entry to verification log if accepted
+            if (action === 'accept') {
+              const claim = item.verificationClaims.find(c => c._id === claimId);
+              appendVerifLog({
+                itemTitle:    item.title,
+                itemId:       itemId,
+                claimantName: claim ? claim.claimantName : 'Walk-in Claimant',
+                claimantId:   claim ? claim.claimantMatric : 'N/A',
+                officerName:  adminName,
+                timestamp:    new Date().toISOString()
+              });
+            }
+
+            openAdminDetail(itemId); // refresh details view in modal
+          } else {
+            const data = await res.json().catch(() => ({}));
+            alert(data.message || 'Failed to process response.');
+            btn.disabled = false;
+            btn.textContent = action === 'accept' ? 'Accept Claim' : 'Decline Claim';
+          }
+        } catch (err) {
+          alert('Network error. Please try again.');
+          btn.disabled = false;
+          btn.textContent = action === 'accept' ? 'Accept Claim' : 'Decline Claim';
+        }
+      });
+    });
+
     // Wire verify button
     const btnVerify = document.getElementById('btn-admin-verify');
     if (btnVerify) {
@@ -428,7 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
               itemTitle:    item.title,
               itemId:       itemId,
               claimantName: claimant ? claimant.claimantName : 'Walk-in Claimant',
-              claimantId:   claimant ? claimant.claimantMatric : 'N/A',
+              claimantId:   claim ? claimant.claimantMatric : 'N/A',
               officerName:  adminName,
               timestamp:    new Date().toISOString()
             });
@@ -498,19 +557,27 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Handle a decoded QR result
-  function handleScanResult(decodedText) {
+  async function handleScanResult(decodedText) {
     stopScanner();
     toggleModal('modal-scanner', false);
 
     let itemId = decodedText.trim();
     if (decodedText.includes('item=')) {
       try {
-        itemId = new URL(decodedText).searchParams.get('item') || itemId;
+        let urlObj;
+        if (decodedText.startsWith('http://') || decodedText.startsWith('https://')) {
+          urlObj = new URL(decodedText);
+        } else {
+          urlObj = new URL(decodedText, window.location.origin);
+        }
+        itemId = urlObj.searchParams.get('item') || itemId;
       } catch {
-        const m = decodedText.match(/item=([^&]+)/);
+        const m = decodedText.match(/[?&]item=([^&]+)/);
         if (m) itemId = m[1];
       }
     }
+
+    await loadData();
 
     const exists = adminItems.find(i =>
       (i._id || i.id) === itemId ||

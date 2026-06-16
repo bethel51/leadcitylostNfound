@@ -126,9 +126,9 @@ const categoryIcons = {
 
 // Update Stats counters on Dashboard
 function updateStats() {
-  const total = state.items.length;
-  const lost = state.items.filter(item => item.type === 'lost' && item.status !== 'returned').length;
-  const returned = state.items.filter(item => item.status === 'returned').length;
+  const total = state.currentUser ? state.items.length : 0;
+  const lost = state.currentUser ? state.items.filter(item => item.type === 'lost' && item.status !== 'returned').length : 0;
+  const returned = state.currentUser ? state.items.filter(item => item.status === 'returned').length : 0;
   
   animateCounter('stat-total', total);
   animateCounter('stat-lost', lost);
@@ -168,6 +168,35 @@ function renderItems() {
   if (!grid) return;
   
   grid.innerHTML = '';
+  
+  if (!state.currentUser) {
+    grid.innerHTML = `
+      <div class="empty-state" style="padding: 4rem 2rem; border: 1px dashed var(--border-color); border-radius: var(--radius-lg); background: var(--bg-secondary); margin-top: 1rem;">
+        <p class="empty-desc" style="max-width: 380px; margin: 0.5rem auto 1.5rem auto; color: var(--text-muted); font-size: 0.95rem; font-weight: 500;">
+          pls login or create your account
+        </p>
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+          <button class="btn btn-primary" id="btn-login-lock" style="padding: 0.6rem 1.5rem;">Log In</button>
+          <button class="btn btn-secondary" id="btn-signup-lock" style="padding: 0.6rem 1.5rem;">Create Account</button>
+        </div>
+      </div>
+    `;
+    const loginLockBtn = document.getElementById('btn-login-lock');
+    const signupLockBtn = document.getElementById('btn-signup-lock');
+    if (loginLockBtn) {
+      loginLockBtn.addEventListener('click', () => {
+        const headerLogin = document.getElementById('btn-header-login');
+        if (headerLogin) headerLogin.click();
+      });
+    }
+    if (signupLockBtn) {
+      signupLockBtn.addEventListener('click', () => {
+        const headerSignup = document.getElementById('btn-header-signup');
+        if (headerSignup) headerSignup.click();
+      });
+    }
+    return;
+  }
   
   // Filter logic
   let filtered = state.items.filter(item => {
@@ -466,7 +495,7 @@ function openDetailModal(itemId) {
   if (btnGenQR) {
     btnGenQR.addEventListener('click', () => {
       document.getElementById('qr-label-title').textContent = item.title;
-      document.getElementById('qr-label-id').textContent = item.id;
+      document.getElementById('qr-label-id').textContent = item._id || item.id;
       document.getElementById('qr-label-category').textContent = item.category;
       document.getElementById('qr-label-location').textContent = item.location;
       
@@ -514,15 +543,9 @@ function openDetailModal(itemId) {
           body: JSON.stringify({ claimantName, claimantMatric, claimDetails })
         });
         if (res.ok) {
-          await fetch(`${API_URL}/items/${item._id}/resolve`, { 
-            method: 'PUT',
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
           toggleModal('modal-detail', false);
           render();
-          showToast(`Verification submitted successfully! The item is now marked as Returned.`);
+          showToast(`Verification claim notice submitted to Security successfully.`);
         } else {
           showToast('Failed to submit claim verification request.', 'error');
         }
@@ -933,6 +956,11 @@ function setupEventListeners() {
   const filterTabs = document.querySelectorAll('.filter-tab[data-type]');
   filterTabs.forEach(tab => {
     tab.addEventListener('click', (e) => {
+      if (!state.currentUser) {
+        showToast('Please log in or create an account to filter listings.', 'warning');
+        openAuthModal('login');
+        return;
+      }
       filterTabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       state.filters.type = tab.getAttribute('data-type');
@@ -944,6 +972,11 @@ function setupEventListeners() {
   const categoryChips = document.querySelectorAll('.category-chip');
   categoryChips.forEach(chip => {
     chip.addEventListener('click', () => {
+      if (!state.currentUser) {
+        showToast('Please log in or create an account to view categories.', 'warning');
+        openAuthModal('login');
+        return;
+      }
       categoryChips.forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
       state.filters.category = chip.getAttribute('data-category');
@@ -956,6 +989,11 @@ function setupEventListeners() {
   const searchButton = document.getElementById('search-button');
   
   const executeSearch = () => {
+    if (!state.currentUser) {
+      showToast('Please log in or create an account to search listings.', 'warning');
+      openAuthModal('login');
+      return;
+    }
     state.filters.search = searchInput.value;
     render();
     document.getElementById('listings-section').scrollIntoView({ behavior: 'smooth' });

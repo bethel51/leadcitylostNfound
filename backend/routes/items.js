@@ -174,6 +174,50 @@ router.put('/:id/resolve', protect, async (req, res) => {
   }
 });
 
+// @route   PUT api/items/:id/claims/:claimId/respond
+// @desc    Respond to a verification claim (accept or decline)
+// @access  Protected (Admin only)
+router.put('/:id/claims/:claimId/respond', protect, adminOnly, async (req, res) => {
+  try {
+    const { action } = req.body;
+    if (!['accept', 'decline'].includes(action)) {
+      return res.status(400).json({ message: 'Invalid action. Must be accept or decline.' });
+    }
+
+    const item = await Item.findById(req.params.id);
+    if (!item) {
+      return res.status(404).json({ message: 'Item not found' });
+    }
+
+    const claim = item.verificationClaims.id(req.params.claimId);
+    if (!claim) {
+      return res.status(404).json({ message: 'Claim not found' });
+    }
+
+    if (action === 'accept') {
+      claim.status = 'accepted';
+      claim.resolved = true;
+      item.status = 'returned';
+      
+      // Mark other claims on this item as resolved & declined
+      item.verificationClaims.forEach(c => {
+        if (c._id.toString() !== claim._id.toString()) {
+          c.status = 'declined';
+          c.resolved = true;
+        }
+      });
+    } else {
+      claim.status = 'declined';
+      claim.resolved = true;
+    }
+
+    await item.save();
+    res.json({ message: `Claim request ${action}ed successfully`, item });
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+});
+
 // @route   GET api/items/notifications
 // @desc    Get recent notifications for the logged in user
 // @access  Protected
@@ -186,7 +230,7 @@ router.get('/notifications', protect, async (req, res) => {
     const myReturnedItems = await Item.find({
       reporterName: req.user.name,
       status: 'returned',
-      updatedAt: { $gte: oneHourAgo } // Requires timestamps on model (we'll query based on date if timestamps not active, or just check returned)
+      updatedAt: { $gte: oneHourAgo }
     });
 
     myReturnedItems.forEach(item => {
@@ -213,6 +257,33 @@ router.get('/notifications', protect, async (req, res) => {
           message: `✨ New ${item.type} listing matches your interest: "${item.title}" in ${item.location}.`,
           time: item.createdAt,
           type: 'match'
+        });
+      });
+    }
+
+    // 3. Check for verification claim status updates for this user
+    if (req.user.matricNumber) {
+      const myClaimedItems = await Item.find({
+        'verificationClaims.claimantMatric': { $regex: new RegExp('^' + req.user.matricNumber + '$', 'i') }
+      });
+
+      myClaimedItems.forEach(item => {
+        item.verificationClaims.forEach(claim => {
+          if (claim.claimantMatric.toLowerCase() === req.user.matricNumber.toLowerCase()) {
+            if (claim.status === 'accepted') {
+              notifications.push({
+                message: `👮 Security has accepted your user verification claim request for "${item.title}".`,
+                time: claim.claimDate || item.updatedAt,
+                type: 'accepted'
+              });
+            } else if (claim.status === 'declined') {
+              notifications.push({
+                message: `❌ Security has declined your user verification claim request for "${item.title}".`,
+                time: claim.claimDate || item.updatedAt,
+                type: 'declined'
+              });
+            }
+          }
         });
       });
     }

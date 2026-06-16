@@ -5,7 +5,12 @@ const ClaimSchema = new mongoose.Schema({
   claimantMatric: { type: String, required: true },
   claimDetails: { type: String, required: true },
   claimDate: { type: Date, default: Date.now },
-  resolved: { type: Boolean, default: false }
+  resolved: { type: Boolean, default: false },
+  status: {
+    type: String,
+    enum: ['pending', 'accepted', 'declined'],
+    default: 'pending'
+  }
 });
 
 const ItemSchema = new mongoose.Schema({
