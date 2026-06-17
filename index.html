@@ -28,6 +28,7 @@
       <nav id="main-nav">
         <a href="#" class="active" id="nav-home">Dashboard</a>
         <a href="#" id="nav-my-items">My Reports</a>
+        <a href="#" id="nav-profile" style="display: none;">My Profile</a>
         <button class="btn btn-primary" id="btn-report-header" style="padding: 0.5rem 1.25rem; font-size: 0.9rem;">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 4px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
           Report Item
@@ -149,6 +150,57 @@
         <!-- Items Grid -->
         <div class="items-grid" id="items-grid">
           <!-- Rendered dynamically by app.js -->
+        </div>
+      </section>
+
+      <!-- Profile Details Section -->
+      <section class="dashboard-section" id="profile-section" style="display: none; padding-top: 1rem;">
+        <div class="section-header">
+          <div>
+            <h2>My Profile</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">View and manage your academic profile and contact details.</p>
+          </div>
+        </div>
+        
+        <div class="profile-card-container" style="background: var(--modal-bg); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-premium); display: flex; flex-direction: column; gap: 1.5rem; max-width: 600px; margin: 1.5rem auto 0 auto;">
+          <div style="display: flex; gap: 1.5rem; align-items: center;">
+            <div id="profile-card-avatar" style="width: 70px; height: 70px; background: var(--primary-light); color: var(--primary); font-size: 2rem; font-weight: 800; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Outfit', sans-serif;">U</div>
+            <div>
+              <h3 id="profile-card-name" style="font-size: 1.4rem; font-family: 'Outfit', sans-serif; color: var(--secondary); margin-bottom: 0.25rem; margin-top: 0;">John Doe</h3>
+              <span id="profile-card-role" class="status-badge status-active" style="text-transform: uppercase; font-size: 0.75rem;">Student</span>
+            </div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; border-top: 1px dashed var(--border-color); padding-top: 1.5rem;">
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Matriculation / Staff Number</div>
+              <strong id="profile-card-matric" style="font-family: monospace; font-size: 0.95rem; color: var(--text-dark);">—</strong>
+            </div>
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Email Address</div>
+              <strong id="profile-card-email" style="font-size: 0.95rem; color: var(--text-dark);">—</strong>
+            </div>
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Faculty</div>
+              <strong id="profile-card-faculty" style="font-size: 0.95rem; color: var(--text-dark);">—</strong>
+            </div>
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Department</div>
+              <strong id="profile-card-dept" style="font-size: 0.95rem; color: var(--text-dark);">—</strong>
+            </div>
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Level</div>
+              <strong id="profile-card-level" style="font-size: 0.95rem; color: var(--text-dark);">—</strong>
+            </div>
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Phone Number</div>
+              <strong id="profile-card-phone" style="font-size: 0.95rem; color: var(--text-dark);">—</strong>
+            </div>
+          </div>
+          
+          <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+            <button class="btn btn-primary" id="btn-profile-card-edit" style="width: 100%; justify-content: center;">Edit Profile Settings</button>
+          </div>
         </div>
       </section>
     </main>
@@ -785,17 +837,17 @@
               <span style="color: var(--text-muted); font-weight: 500;">Date Logged:</span>
               <strong id="slip-date" style="color: var(--text-dark);">June 16, 2026</strong>
             </div>
-            <div style="background: var(--bg-tertiary); border-radius: var(--radius-sm); padding: 0.85rem; border: 1px solid var(--border-color);">
-              <h5 style="margin: 0 0 0.5rem 0; font-family: 'Outfit', sans-serif; font-size: 0.82rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px;">Reporter Credentials</h5>
-              <div style="display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.82rem;">
-                <div style="display: flex; justify-content: space-between;">
-                  <span style="color: var(--text-muted);">Name:</span>
-                  <strong id="slip-reporter-name" style="color: var(--text-dark);">John Doe</strong>
-                </div>
-                <div style="display: flex; justify-content: space-between;">
-                  <span style="color: var(--text-muted);">Contact Details:</span>
-                  <strong id="slip-reporter-contact" style="color: var(--text-dark);">08123456789</strong>
-                </div>
+            <!-- Reporter Credentials Box -->
+            <div class="credentials-box" id="modal-slip-reporter-box" style="background: var(--bg-tertiary); border-radius: var(--radius-sm); padding: 0.85rem; border: 1px solid var(--border-color); margin-bottom: 0.75rem;">
+              <h5 id="modal-slip-reporter-title" style="margin: 0 0 0.5rem 0; font-family: 'Outfit', sans-serif; font-size: 0.82rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px;">Reporter Credentials</h5>
+              <div style="display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.82rem;" id="modal-slip-reporter-list">
+              </div>
+            </div>
+            
+            <!-- Claimant Credentials Box -->
+            <div class="credentials-box" id="modal-slip-claimant-box" style="display: none; background: var(--bg-tertiary); border-radius: var(--radius-sm); padding: 0.85rem; border: 1px solid var(--border-color); margin-bottom: 0.75rem;">
+              <h5 style="margin: 0 0 0.5rem 0; font-family: 'Outfit', sans-serif; font-size: 0.82rem; font-weight: 700; color: var(--success); text-transform: uppercase; letter-spacing: 0.5px;">Claimant / Owner Credentials</h5>
+              <div style="display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.82rem;" id="modal-slip-claimant-list">
               </div>
             </div>
           </div>

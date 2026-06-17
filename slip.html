@@ -178,17 +178,18 @@
         </div>
 
         <!-- STRICT REPORTER CREDENTIALS DISPLAY -->
-        <div class="credentials-box">
-          <h5 class="credentials-title">Reporter Credentials</h5>
-          <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.85rem;">
-            <div style="display: flex; justify-content: space-between;">
-              <span class="detail-label">Full Name:</span>
-              <strong id="slip-reporter-name" style="color: var(--text-dark);">John Doe</strong>
-            </div>
-            <div style="display: flex; justify-content: space-between;">
-              <span class="detail-label">Contact / ID:</span>
-              <strong id="slip-reporter-contact" style="color: var(--text-dark);">Not Provided</strong>
-            </div>
+        <div class="credentials-box" id="reporter-credentials-box">
+          <h5 class="credentials-title" id="reporter-title-label">Reporter Credentials</h5>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.85rem;" id="reporter-details-list">
+            <!-- Dynamic reporter details -->
+          </div>
+        </div>
+
+        <!-- CLAIMANT CREDENTIALS DISPLAY -->
+        <div class="credentials-box" id="claimant-credentials-box" style="display: none; margin-top: 1rem;">
+          <h5 class="credentials-title" style="color: var(--success);">Claimant / Owner Credentials</h5>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.85rem;" id="claimant-details-list">
+            <!-- Dynamic claimant details -->
           </div>
         </div>
 
@@ -249,8 +250,119 @@
           day: 'numeric'
         });
 
-        document.getElementById('slip-reporter-name').textContent = item.reporterName || 'Anonymous';
-        document.getElementById('slip-reporter-contact').textContent = item.reporterContact || 'Not Provided';
+        const isFound = item.type === 'found';
+        document.getElementById('reporter-title-label').textContent = isFound ? 'Founder Credentials' : 'Reporter Credentials';
+        
+        let reporterHtml = `
+          <div style="display: flex; justify-content: space-between;">
+            <span class="detail-label">Full Name:</span>
+            <strong style="color: var(--text-dark);">${item.reporterName || 'Anonymous'}</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span class="detail-label">Contact Phone:</span>
+            <strong style="color: var(--text-dark);">${item.reporterContact || 'Not Provided'}</strong>
+          </div>
+        `;
+        if (item.reporterEmail) {
+          reporterHtml += `
+            <div style="display: flex; justify-content: space-between;">
+              <span class="detail-label">Email:</span>
+              <strong style="color: var(--text-dark);">${item.reporterEmail}</strong>
+            </div>
+          `;
+        }
+        if (item.reporterMatric) {
+          reporterHtml += `
+            <div style="display: flex; justify-content: space-between;">
+              <span class="detail-label">Matric / Staff ID:</span>
+              <strong style="color: var(--text-dark); font-family: monospace;">${item.reporterMatric}</strong>
+            </div>
+          `;
+        }
+        if (item.reporterFaculty) {
+          reporterHtml += `
+            <div style="display: flex; justify-content: space-between;">
+              <span class="detail-label">Faculty:</span>
+              <strong style="color: var(--text-dark);">${item.reporterFaculty}</strong>
+            </div>
+          `;
+        }
+        if (item.reporterDept) {
+          reporterHtml += `
+            <div style="display: flex; justify-content: space-between;">
+              <span class="detail-label">Department:</span>
+              <strong style="color: var(--text-dark);">${item.reporterDept}</strong>
+            </div>
+          `;
+        }
+        if (item.reporterLevel) {
+          reporterHtml += `
+            <div style="display: flex; justify-content: space-between;">
+              <span class="detail-label">Level:</span>
+              <strong style="color: var(--text-dark);">${item.reporterLevel} Level</strong>
+            </div>
+          `;
+        }
+        document.getElementById('reporter-details-list').innerHTML = reporterHtml;
+
+        // Check if there are accepted claims
+        const acceptedClaim = item.verificationClaims && item.verificationClaims.find(c => c.status === 'accepted' || c.resolved);
+        if (acceptedClaim) {
+          let claimantHtml = `
+            <div style="display: flex; justify-content: space-between;">
+              <span class="detail-label">Claimer Name:</span>
+              <strong style="color: var(--text-dark);">${acceptedClaim.claimantName}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span class="detail-label">Matric / Staff ID:</span>
+              <strong style="color: var(--text-dark); font-family: monospace;">${acceptedClaim.claimantMatric}</strong>
+            </div>
+          `;
+          if (acceptedClaim.claimantPhone) {
+            claimantHtml += `
+              <div style="display: flex; justify-content: space-between;">
+                <span class="detail-label">Phone:</span>
+                <strong style="color: var(--text-dark);">${acceptedClaim.claimantPhone}</strong>
+              </div>
+            `;
+          }
+          if (acceptedClaim.claimantEmail) {
+            claimantHtml += `
+              <div style="display: flex; justify-content: space-between;">
+                <span class="detail-label">Email:</span>
+                <strong style="color: var(--text-dark);">${acceptedClaim.claimantEmail}</strong>
+              </div>
+            `;
+          }
+          if (acceptedClaim.claimantFaculty) {
+            claimantHtml += `
+              <div style="display: flex; justify-content: space-between;">
+                <span class="detail-label">Faculty:</span>
+                <strong style="color: var(--text-dark);">${acceptedClaim.claimantFaculty}</strong>
+              </div>
+            `;
+          }
+          if (acceptedClaim.claimantDept) {
+            claimantHtml += `
+              <div style="display: flex; justify-content: space-between;">
+                <span class="detail-label">Department:</span>
+                <strong style="color: var(--text-dark);">${acceptedClaim.claimantDept}</strong>
+              </div>
+            `;
+          }
+          if (acceptedClaim.claimantLevel) {
+            claimantHtml += `
+              <div style="display: flex; justify-content: space-between;">
+                <span class="detail-label">Level:</span>
+                <strong style="color: var(--text-dark);">${acceptedClaim.claimantLevel} Level</strong>
+              </div>
+            `;
+          }
+          document.getElementById('claimant-details-list').innerHTML = claimantHtml;
+          document.getElementById('claimant-credentials-box').style.display = 'block';
+        } else {
+          document.getElementById('claimant-credentials-box').style.display = 'none';
+        }
 
         // Swap view
         document.getElementById('loading').style.display = 'none';

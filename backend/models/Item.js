@@ -4,6 +4,11 @@ const ClaimSchema = new mongoose.Schema({
   claimantName: { type: String, required: true },
   claimantMatric: { type: String, required: true },
   claimDetails: { type: String, required: true },
+  claimantEmail: { type: String, default: '' },
+  claimantPhone: { type: String, default: '' },
+  claimantFaculty: { type: String, default: '' },
+  claimantDept: { type: String, default: '' },
+  claimantLevel: { type: String, default: '' },
   claimDate: { type: Date, default: Date.now },
   resolved: { type: Boolean, default: false },
   status: {
@@ -47,6 +52,26 @@ const ItemSchema = new mongoose.Schema({
   reporterContact: {
     type: String,
     required: true
+  },
+  reporterEmail: {
+    type: String,
+    default: ''
+  },
+  reporterMatric: {
+    type: String,
+    default: ''
+  },
+  reporterFaculty: {
+    type: String,
+    default: ''
+  },
+  reporterDept: {
+    type: String,
+    default: ''
+  },
+  reporterLevel: {
+    type: String,
+    default: ''
   },
   status: {
     type: String,

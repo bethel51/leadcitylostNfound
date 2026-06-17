@@ -72,7 +72,12 @@ router.post('/', protect, async (req, res) => {
       description,
       reporterName,
       reporterContact,
-      image
+      image,
+      reporterEmail: req.user.email || '',
+      reporterMatric: req.user.matricNumber || '',
+      reporterFaculty: req.user.faculty || '',
+      reporterDept: req.user.department || '',
+      reporterLevel: req.user.level || ''
     });
 
     // Fuzzy token match check
@@ -131,7 +136,12 @@ router.post('/:id/claim', protect, async (req, res) => {
     item.verificationClaims.push({
       claimantName,
       claimantMatric,
-      claimDetails
+      claimDetails,
+      claimantEmail: req.user.email || '',
+      claimantPhone: req.user.phoneNumber || '',
+      claimantFaculty: req.user.faculty || '',
+      claimantDept: req.user.department || '',
+      claimantLevel: req.user.level || ''
     });
 
     await item.save();

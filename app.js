@@ -79,6 +79,7 @@ async function fetchItems() {
 }
 
 function syncLoginUI() {
+  const navProfile = document.getElementById('nav-profile');
   if (state.currentUser) {
     const authContainer = document.getElementById('auth-container');
     if (authContainer) authContainer.style.display = 'none';
@@ -91,6 +92,40 @@ function syncLoginUI() {
       const avatar = profileMock.querySelector('.avatar');
       if(avatar) avatar.textContent = state.currentUser.name.charAt(0).toUpperCase();
     }
+    if (navProfile) navProfile.style.display = 'inline-block';
+
+    // Populate new My Profile view fields
+    const cardAvatar = document.getElementById('profile-card-avatar');
+    if (cardAvatar) cardAvatar.textContent = state.currentUser.name.charAt(0).toUpperCase();
+    
+    const cardName = document.getElementById('profile-card-name');
+    if (cardName) cardName.textContent = state.currentUser.name;
+    
+    const cardRole = document.getElementById('profile-card-role');
+    if (cardRole) {
+      cardRole.textContent = state.currentUser.role || 'Student';
+      cardRole.className = `status-badge ${state.currentUser.role === 'admin' ? 'status-returned' : 'status-active'}`;
+    }
+    
+    const cardMatric = document.getElementById('profile-card-matric');
+    if (cardMatric) cardMatric.textContent = state.currentUser.matricNumber || state.currentUser.matric || '—';
+    
+    const cardEmail = document.getElementById('profile-card-email');
+    if (cardEmail) cardEmail.textContent = state.currentUser.email || state.currentUser.contact || '—';
+    
+    const cardFaculty = document.getElementById('profile-card-faculty');
+    if (cardFaculty) cardFaculty.textContent = state.currentUser.faculty || '—';
+    
+    const cardDept = document.getElementById('profile-card-dept');
+    if (cardDept) cardDept.textContent = state.currentUser.department || state.currentUser.dept || '—';
+    
+    const cardLevel = document.getElementById('profile-card-level');
+    if (cardLevel) cardLevel.textContent = state.currentUser.level ? `${state.currentUser.level} Level` : '—';
+    
+    const cardPhone = document.getElementById('profile-card-phone');
+    if (cardPhone) cardPhone.textContent = state.currentUser.phoneNumber || state.currentUser.phone || '—';
+  } else {
+    if (navProfile) navProfile.style.display = 'none';
   }
 }
 
@@ -101,6 +136,7 @@ async function initData() {
   if (token && savedUser) {
     state.currentUser = JSON.parse(savedUser);
     syncLoginUI();
+    fetchNotifications();
   }
   await fetchItems();
   updateStats();
@@ -502,7 +538,7 @@ function openDetailModal(itemId) {
   // Attach Verification flow interactive events
   const btnStartClaim = document.getElementById('btn-start-claim');
   if (btnStartClaim) {
-    btnStartClaim.addEventListener('click', async () => {
+    btnStartClaim.addEventListener('click', () => {
       if (!state.currentUser) {
         showToast('Please log in or create an account to submit claim notices.', 'warning');
         toggleModal('modal-detail', false);
@@ -511,36 +547,91 @@ function openDetailModal(itemId) {
         return;
       }
 
-      btnStartClaim.disabled = true;
-      btnStartClaim.textContent = 'Submitting notice...';
+      const claimSection = document.getElementById('claim-verification-section');
+      if (claimSection) {
+        const defaultName = state.currentUser.name || '';
+        const defaultMatric = state.currentUser.matricNumber || state.currentUser.email || '';
+        
+        claimSection.innerHTML = `
+          <div class="verification-title" style="margin-bottom: 0.5rem;">📍 LCU In-Person Claim Verification</div>
+          <p style="font-size: 0.82rem; margin-bottom: 0.75rem; color: var(--text-muted);">
+            Please enter details to verify your ownership of this item before visiting the Security Office.
+          </p>
+          <form id="claim-details-form" style="display: flex; flex-direction: column; gap: 0.75rem; text-align: left;">
+            <div class="form-group">
+              <label class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem; display: block; font-weight: 600;">Claimant Name</label>
+              <input type="text" class="form-control" id="claim-claimant-name" value="${defaultName}" style="padding: 0.5rem; width: 100%; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-primary); color: var(--text-dark);" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem; display: block; font-weight: 600;">Matric Number / Email</label>
+              <input type="text" class="form-control" id="claim-claimant-matric" value="${defaultMatric}" style="padding: 0.5rem; width: 100%; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-primary); color: var(--text-dark);" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem; display: block; font-weight: 600;">Verification details (Description, passcode, contents, etc.)</label>
+              <textarea class="form-control" id="claim-claimant-details" placeholder="Describe the item's unique characteristics, passcode details, contents, or other proof of ownership..." style="padding: 0.5rem; min-height: 80px; width: 100%; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-primary); color: var(--text-dark); font-family: inherit; resize: vertical;" required></textarea>
+            </div>
+            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+              <button type="button" class="btn btn-secondary" id="btn-cancel-claim" style="flex: 1; justify-content: center; font-size: 0.85rem; padding: 0.5rem;">Cancel</button>
+              <button type="submit" class="btn btn-primary" id="btn-submit-claim-form" style="flex: 2; justify-content: center; font-size: 0.85rem; padding: 0.5rem;">Submit Claim Request</button>
+            </div>
+          </form>
+        `;
 
-      const claimantName = state.currentUser.name;
-      const claimantMatric = state.currentUser.matricNumber || state.currentUser.email || 'N/A';
-      const claimDetails = `Claimant is coming in person to verify and retrieve this item. Registered Email: ${state.currentUser.email || 'N/A'}. Phone: ${state.currentUser.phoneNumber || 'N/A'}.`;
-
-      try {
-        const token = localStorage.getItem('lcu_findme_token');
-        const res = await fetch(`${API_URL}/items/${item._id}/claim`, {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ claimantName, claimantMatric, claimDetails })
-        });
-        if (res.ok) {
-          toggleModal('modal-detail', false);
-          render();
-          showToast(`Verification claim notice submitted to Security successfully.`);
-        } else {
-          showToast('Failed to submit claim verification request.', 'error');
-          btnStartClaim.disabled = false;
-          btnStartClaim.textContent = "Notify Security I'm Coming to Claim";
+        // Attach cancel button event
+        const btnCancelClaim = document.getElementById('btn-cancel-claim');
+        if (btnCancelClaim) {
+          btnCancelClaim.addEventListener('click', () => {
+            // Re-render the detail modal to reset the section
+            openDetailModal(item._id || item.id);
+          });
         }
-      } catch (err) {
-        showToast('Connection error connecting to backend.', 'error');
-        btnStartClaim.disabled = false;
-        btnStartClaim.textContent = "Notify Security I'm Coming to Claim";
+
+        // Attach form submit event
+        const claimForm = document.getElementById('claim-details-form');
+        if (claimForm) {
+          claimForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btnSubmit = document.getElementById('btn-submit-claim-form');
+            if (btnSubmit) {
+              btnSubmit.disabled = true;
+              btnSubmit.textContent = 'Submitting...';
+            }
+
+            const claimantName = document.getElementById('claim-claimant-name').value.trim();
+            const claimantMatric = document.getElementById('claim-claimant-matric').value.trim();
+            const claimDetails = document.getElementById('claim-claimant-details').value.trim();
+
+            try {
+              const token = localStorage.getItem('lcu_findme_token');
+              const res = await fetch(`${API_URL}/items/${item._id}/claim`, {
+                method: 'POST',
+                headers: { 
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ claimantName, claimantMatric, claimDetails })
+              });
+              if (res.ok) {
+                toggleModal('modal-detail', false);
+                render();
+                showToast(`Verification claim notice submitted to Security successfully.`);
+              } else {
+                const data = await res.json().catch(() => ({}));
+                showToast(data.message || 'Failed to submit claim verification request.', 'error');
+                if (btnSubmit) {
+                  btnSubmit.disabled = false;
+                  btnSubmit.textContent = 'Submit Claim Request';
+                }
+              }
+            } catch (err) {
+              showToast('Connection error connecting to backend.', 'error');
+              if (btnSubmit) {
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = 'Submit Claim Request';
+              }
+            }
+          });
+        }
       }
     });
   }
@@ -583,7 +674,7 @@ function setupEventListeners() {
     
     // Set Reporter to current active user
     document.getElementById('report-reporter').value = state.currentUser.name;
-    document.getElementById('report-contact').value = state.currentUser.contact;
+    document.getElementById('report-contact').value = state.currentUser.phoneNumber || state.currentUser.phone || '';
     
     toggleModal('modal-report', true);
   };
@@ -978,15 +1069,37 @@ function setupEventListeners() {
   // Navigation Links
   const navHome = document.getElementById('nav-home');
   const navMyItems = document.getElementById('nav-my-items');
+  const navProfile = document.getElementById('nav-profile');
   const sectionTitle = document.getElementById('section-title');
+
+  const switchSectionVisibility = (view) => {
+    const listingsSection = document.getElementById('listings-section');
+    const profileSection = document.getElementById('profile-section');
+    const heroSection = document.querySelector('.hero-section');
+    const statsContainer = document.querySelector('.stats-container');
+
+    if (view === 'profile') {
+      if (listingsSection) listingsSection.style.display = 'none';
+      if (profileSection) profileSection.style.display = 'block';
+      if (heroSection) heroSection.style.display = 'none';
+      if (statsContainer) statsContainer.style.display = 'none';
+    } else {
+      if (listingsSection) listingsSection.style.display = 'block';
+      if (profileSection) profileSection.style.display = 'none';
+      if (heroSection) heroSection.style.display = 'block';
+      if (statsContainer) statsContainer.style.display = 'grid';
+    }
+  };
   
   if (navHome) {
     navHome.addEventListener('click', (e) => {
       e.preventDefault();
       navHome.classList.add('active');
       if (navMyItems) navMyItems.classList.remove('active');
+      if (navProfile) navProfile.classList.remove('active');
       state.currentView = 'dashboard';
       if (sectionTitle) sectionTitle.textContent = "Recent Listings";
+      switchSectionVisibility('dashboard');
       render();
     });
   }
@@ -1001,9 +1114,37 @@ function setupEventListeners() {
       }
       navMyItems.classList.add('active');
       if (navHome) navHome.classList.remove('active');
+      if (navProfile) navProfile.classList.remove('active');
       state.currentView = 'my-items';
       if (sectionTitle) sectionTitle.textContent = "My Reported Listings";
+      switchSectionVisibility('my-items');
       render();
+    });
+  }
+
+  if (navProfile) {
+    navProfile.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (!state.currentUser) {
+        showToast('Please log in to view your profile.', 'warning');
+        openAuthModal('login');
+        return;
+      }
+      navProfile.classList.add('active');
+      if (navHome) navHome.classList.remove('active');
+      if (navMyItems) navMyItems.classList.remove('active');
+      state.currentView = 'profile';
+      switchSectionVisibility('profile');
+      syncLoginUI();
+    });
+  }
+
+  // Edit Profile Settings trigger inside card
+  const btnProfileCardEdit = document.getElementById('btn-profile-card-edit');
+  if (btnProfileCardEdit) {
+    btnProfileCardEdit.addEventListener('click', () => {
+      const editBtn = document.getElementById('btn-edit-profile');
+      if (editBtn) editBtn.click();
     });
   }
 
@@ -1079,6 +1220,7 @@ function setupEventListeners() {
     }
     
     toggleModal('modal-auth', false);
+    fetchNotifications();
   };
 
   if (formLogin) {
@@ -1230,7 +1372,7 @@ function setupEventListeners() {
       showToast('You have securely logged out.');
       
       // Redirect to dashboard if on protected route
-      if (state.currentView === 'my-items') {
+      if (state.currentView === 'my-items' || state.currentView === 'profile') {
         const navHome = document.getElementById('nav-home');
         if (navHome) navHome.click();
       } else {
@@ -1248,10 +1390,10 @@ function setupEventListeners() {
     btnEditProfile.addEventListener('click', () => {
       if (state.currentUser) {
         document.getElementById('edit-profile-name').value = state.currentUser.name || '';
-        document.getElementById('edit-profile-contact').value = state.currentUser.contact || '';
-        document.getElementById('edit-profile-matric').value = state.currentUser.matric || '';
-        document.getElementById('edit-profile-dept').value = state.currentUser.dept || '';
-        document.getElementById('edit-profile-phone').value = state.currentUser.phone || '';
+        document.getElementById('edit-profile-contact').value = state.currentUser.email || state.currentUser.contact || '';
+        document.getElementById('edit-profile-matric').value = state.currentUser.matricNumber || state.currentUser.matric || '';
+        document.getElementById('edit-profile-dept').value = state.currentUser.department || state.currentUser.dept || '';
+        document.getElementById('edit-profile-phone').value = state.currentUser.phoneNumber || state.currentUser.phone || '';
         
         // Live avatar preview
         const avatarPreview = document.getElementById('edit-avatar-preview');
@@ -1283,10 +1425,20 @@ function setupEventListeners() {
       if (newName) {
         // Update user object fields
         state.currentUser.name = newName;
-        state.currentUser.contact = newContact || state.currentUser.contact;
-        state.currentUser.matric = document.getElementById('edit-profile-matric').value.trim();
-        state.currentUser.dept   = document.getElementById('edit-profile-dept').value.trim();
-        state.currentUser.phone  = document.getElementById('edit-profile-phone').value.trim();
+        state.currentUser.email = newContact;
+        state.currentUser.contact = newContact;
+        
+        const matricVal = document.getElementById('edit-profile-matric').value.trim();
+        state.currentUser.matricNumber = matricVal;
+        state.currentUser.matric = matricVal;
+        
+        const deptVal = document.getElementById('edit-profile-dept').value.trim();
+        state.currentUser.department = deptVal;
+        state.currentUser.dept = deptVal;
+        
+        const phoneVal = document.getElementById('edit-profile-phone').value.trim();
+        state.currentUser.phoneNumber = phoneVal;
+        state.currentUser.phone = phoneVal;
         
         // Persist to localStorage
         localStorage.setItem('lcu_findme_user', JSON.stringify(state.currentUser));
@@ -1546,6 +1698,43 @@ function setupEventListeners() {
 // NOTIFICATION SYSTEM
 // ============================================================
 const notifications = JSON.parse(localStorage.getItem('lcu_findme_notifs') || '[]');
+
+async function fetchNotifications() {
+  if (!state.currentUser) return;
+  try {
+    const token = localStorage.getItem('lcu_findme_token');
+    const res = await fetch(`${API_URL}/items/notifications`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (res.ok) {
+      const dbNotifs = await res.json();
+      let hasNew = false;
+      dbNotifs.forEach(dbN => {
+        const exists = notifications.some(n => n.message === dbN.message);
+        if (!exists) {
+          notifications.unshift({
+            message: dbN.message,
+            time: dbN.time || new Date().toISOString(),
+            read: false
+          });
+          hasNew = true;
+        }
+      });
+      if (notifications.length > 20) notifications.length = 20;
+      if (hasNew) {
+        saveNotifs();
+        renderNotifications();
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+  }
+}
+
+// Poll for notifications every 15 seconds
+setInterval(fetchNotifications, 15000);
 
 function saveNotifs() {
   localStorage.setItem('lcu_findme_notifs', JSON.stringify(notifications));
@@ -2062,8 +2251,124 @@ async function checkUrlParams() {
     document.getElementById('slip-date').textContent = formatDate(item.date);
     
     // STRICTLY DISPLAY REPORTER CREDENTIALS
-    document.getElementById('slip-reporter-name').textContent = item.reporterName || 'Anonymous';
-    document.getElementById('slip-reporter-contact').textContent = item.reporterContact || 'Not Provided';
+    const isFound = item.type === 'found';
+    const repTitleEl = document.getElementById('modal-slip-reporter-title');
+    if (repTitleEl) repTitleEl.textContent = isFound ? 'Founder Credentials' : 'Reporter Credentials';
+    
+    let reporterHtml = `
+      <div style="display: flex; justify-content: space-between;">
+        <span style="color: var(--text-muted);">Name:</span>
+        <strong style="color: var(--text-dark);">${item.reporterName || 'Anonymous'}</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <span style="color: var(--text-muted);">Contact Details:</span>
+        <strong style="color: var(--text-dark);">${item.reporterContact || 'Not Provided'}</strong>
+      </div>
+    `;
+    if (item.reporterEmail) {
+      reporterHtml += `
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-muted);">Email:</span>
+          <strong style="color: var(--text-dark);">${item.reporterEmail}</strong>
+        </div>
+      `;
+    }
+    if (item.reporterMatric) {
+      reporterHtml += `
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-muted);">Matric / Staff ID:</span>
+          <strong style="color: var(--text-dark); font-family: monospace;">${item.reporterMatric}</strong>
+        </div>
+      `;
+    }
+    if (item.reporterFaculty) {
+      reporterHtml += `
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-muted);">Faculty:</span>
+          <strong style="color: var(--text-dark);">${item.reporterFaculty}</strong>
+        </div>
+      `;
+    }
+    if (item.reporterDept) {
+      reporterHtml += `
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-muted);">Department:</span>
+          <strong style="color: var(--text-dark);">${item.reporterDept}</strong>
+        </div>
+      `;
+    }
+    if (item.reporterLevel) {
+      reporterHtml += `
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-muted);">Level:</span>
+          <strong style="color: var(--text-dark);">${item.reporterLevel} Level</strong>
+        </div>
+      `;
+    }
+    const repListEl = document.getElementById('modal-slip-reporter-list');
+    if (repListEl) repListEl.innerHTML = reporterHtml;
+
+    // Check if there are accepted claims
+    const acceptedClaim = item.verificationClaims && item.verificationClaims.find(c => c.status === 'accepted' || c.resolved);
+    const claimBoxEl = document.getElementById('modal-slip-claimant-box');
+    const claimListEl = document.getElementById('modal-slip-claimant-list');
+    
+    if (acceptedClaim) {
+      let claimantHtml = `
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-muted);">Claimer Name:</span>
+          <strong style="color: var(--text-dark);">${acceptedClaim.claimantName}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-muted);">Matric / Staff ID:</span>
+          <strong style="color: var(--text-dark); font-family: monospace;">${acceptedClaim.claimantMatric}</strong>
+        </div>
+      `;
+      if (acceptedClaim.claimantPhone) {
+        claimantHtml += `
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">Phone:</span>
+            <strong style="color: var(--text-dark);">${acceptedClaim.claimantPhone}</strong>
+          </div>
+        `;
+      }
+      if (acceptedClaim.claimantEmail) {
+        claimantHtml += `
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">Email:</span>
+            <strong style="color: var(--text-dark);">${acceptedClaim.claimantEmail}</strong>
+          </div>
+        `;
+      }
+      if (acceptedClaim.claimantFaculty) {
+        claimantHtml += `
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">Faculty:</span>
+            <strong style="color: var(--text-dark);">${acceptedClaim.claimantFaculty}</strong>
+          </div>
+        `;
+      }
+      if (acceptedClaim.claimantDept) {
+        claimantHtml += `
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">Department:</span>
+            <strong style="color: var(--text-dark);">${acceptedClaim.claimantDept}</strong>
+          </div>
+        `;
+      }
+      if (acceptedClaim.claimantLevel) {
+        claimantHtml += `
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">Level:</span>
+            <strong style="color: var(--text-dark);">${acceptedClaim.claimantLevel} Level</strong>
+          </div>
+        `;
+      }
+      if (claimListEl) claimListEl.innerHTML = claimantHtml;
+      if (claimBoxEl) claimBoxEl.style.display = 'block';
+    } else {
+      if (claimBoxEl) claimBoxEl.style.display = 'none';
+    }
     
     // Open Slip Modal
     toggleModal('modal-verify-slip', true);

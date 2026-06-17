@@ -361,7 +361,12 @@ document.addEventListener('DOMContentLoaded', () => {
           ${item.verificationClaims.map(c => `
             <div style="background:var(--bg-tertiary);padding:0.75rem;border-radius:var(--radius-sm);margin-bottom:0.5rem;font-size:0.82rem;border-left: 3px solid ${c.status === 'accepted' ? 'var(--success)' : c.status === 'declined' ? 'var(--danger)' : 'var(--warning)'};">
               <div><strong>Claimant Name:</strong> ${escapeHtml(c.claimantName)}</div>
-              <div><strong>Matric No:</strong> ${escapeHtml(c.claimantMatric)}</div>
+              <div><strong>Matric / ID:</strong> ${escapeHtml(c.claimantMatric)}</div>
+              ${c.claimantFaculty ? `<div><strong>Faculty:</strong> ${escapeHtml(c.claimantFaculty)}</div>` : ''}
+              ${c.claimantDept ? `<div><strong>Department:</strong> ${escapeHtml(c.claimantDept)}</div>` : ''}
+              ${c.claimantLevel ? `<div><strong>Level:</strong> ${escapeHtml(c.claimantLevel)} Level</div>` : ''}
+              ${c.claimantEmail ? `<div><strong>Email:</strong> ${escapeHtml(c.claimantEmail)}</div>` : ''}
+              ${c.claimantPhone ? `<div><strong>Phone:</strong> ${escapeHtml(c.claimantPhone)}</div>` : ''}
               <div><strong>Verification Note:</strong> ${escapeHtml(c.claimDetails)}</div>
               <div><strong>Status:</strong> <span style="text-transform:uppercase; font-weight:bold; color:${c.status === 'accepted' ? 'var(--success)' : c.status === 'declined' ? 'var(--danger)' : 'var(--warning)'};">${escapeHtml(c.status || 'pending')}</span></div>
               
@@ -405,8 +410,13 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="font-family:monospace;font-size:0.85rem;color:var(--text-muted);">ID: ${itemId} | Type: ${item.type.toUpperCase()}</div>
         </div>
         <div style="background:var(--bg-secondary);padding:1rem;border-radius:var(--radius-md);">
-          <div style="margin-bottom:0.5rem;"><strong>Reporter:</strong> ${escapeHtml(item.reporterName)}</div>
-          <div style="margin-bottom:0.5rem;"><strong>Contact:</strong> ${escapeHtml(item.reporterContact)}</div>
+          <div style="margin-bottom:0.5rem;"><strong>Reporter Name:</strong> ${escapeHtml(item.reporterName)}</div>
+          <div style="margin-bottom:0.5rem;"><strong>Reporter Contact:</strong> ${escapeHtml(item.reporterContact)}</div>
+          ${item.reporterEmail ? `<div style="margin-bottom:0.5rem;"><strong>Reporter Email:</strong> ${escapeHtml(item.reporterEmail)}</div>` : ''}
+          ${item.reporterMatric ? `<div style="margin-bottom:0.5rem;"><strong>Reporter Matric / ID:</strong> ${escapeHtml(item.reporterMatric)}</div>` : ''}
+          ${item.reporterFaculty ? `<div style="margin-bottom:0.5rem;"><strong>Reporter Faculty:</strong> ${escapeHtml(item.reporterFaculty)}</div>` : ''}
+          ${item.reporterDept ? `<div style="margin-bottom:0.5rem;"><strong>Reporter Department:</strong> ${escapeHtml(item.reporterDept)}</div>` : ''}
+          ${item.reporterLevel ? `<div style="margin-bottom:0.5rem;"><strong>Reporter Level:</strong> ${escapeHtml(item.reporterLevel)} Level</div>` : ''}
           <div style="margin-bottom:0.5rem;"><strong>Location:</strong> ${escapeHtml(item.location)}</div>
           <div><strong>Date:</strong> ${formatDate(item.date)}</div>
         </div>
@@ -704,6 +714,16 @@ document.addEventListener('DOMContentLoaded', () => {
     btnEditAdminProfile.addEventListener('click', () => {
       const nameInput = document.getElementById('edit-admin-name');
       if (nameInput) nameInput.value = adminName;
+      
+      const rankInput = document.getElementById('edit-admin-rank');
+      if (rankInput) rankInput.value = localStorage.getItem('lcu_findme_admin_rank') || '';
+      
+      const emailInput = document.getElementById('edit-admin-email');
+      if (emailInput) emailInput.value = localStorage.getItem('lcu_findme_admin_email') || '';
+      
+      const officeInput = document.getElementById('edit-admin-office');
+      if (officeInput) officeInput.value = localStorage.getItem('lcu_findme_admin_office') || '';
+      
       const preview = document.getElementById('admin-edit-avatar-preview');
       if (preview) preview.textContent = adminName.charAt(0).toUpperCase();
       toggleModal('modal-edit-admin-profile', true);
@@ -720,11 +740,21 @@ document.addEventListener('DOMContentLoaded', () => {
     formEditAdminProfile.addEventListener('submit', e => {
       e.preventDefault();
       const newName = document.getElementById('edit-admin-name').value.trim();
+      const newRank = document.getElementById('edit-admin-rank').value.trim();
+      const newEmail = document.getElementById('edit-admin-email').value.trim();
+      const newOffice = document.getElementById('edit-admin-office').value.trim();
+      
       if (newName) {
         adminName = newName;
         localStorage.setItem('lcu_findme_admin_name', adminName);
+        localStorage.setItem('lcu_findme_admin_rank', newRank);
+        localStorage.setItem('lcu_findme_admin_email', newEmail);
+        localStorage.setItem('lcu_findme_admin_office', newOffice);
         updateAdminHeader();
         toggleModal('modal-edit-admin-profile', false);
+        if (typeof showToast === 'function') {
+          showToast('Admin profile updated successfully.');
+        }
       }
     });
   }
