@@ -1206,20 +1206,9 @@ function setupEventListeners() {
       return;
     }
     
-    const authContainer = document.getElementById('auth-container');
-    if (authContainer) authContainer.style.display = 'none';
-    const profileMock = document.getElementById('user-profile-container');
-    if (profileMock) {
-      profileMock.style.display = 'flex';
-      const nameSpan = profileMock.querySelector('span');
-      if(nameSpan) nameSpan.textContent = user.name;
-      
-      // Update avatar initials
-      const avatar = profileMock.querySelector('.avatar');
-      if(avatar) avatar.textContent = user.name.charAt(0).toUpperCase();
-    }
-    
+    syncLoginUI();
     toggleModal('modal-auth', false);
+    render();
     fetchNotifications();
   };
 
