@@ -41,6 +41,82 @@ router.get('/', async (req, res) => {
   }
 });
 
+// @route   GET api/items/notifications
+// @desc    Get recent notifications for the logged in user
+// @access  Protected
+router.get('/notifications', protect, async (req, res) => {
+  try {
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const notifications = [];
+
+    // 1. Check if any of the user's reports got marked as returned recently
+    const myReturnedItems = await Item.find({
+      reporterName: req.user.name,
+      status: 'returned',
+      updatedAt: { $gte: oneHourAgo }
+    });
+
+    myReturnedItems.forEach(item => {
+      notifications.push({
+        message: `✅ Your item "${item.title}" has been successfully resolved/returned.`,
+        time: item.date,
+        type: 'resolved'
+      });
+    });
+
+    // 2. Check for newly reported items in the same categories that the user reported
+    const myReports = await Item.find({ reporterName: req.user.name });
+    const categoriesOfInterest = [...new Set(myReports.map(item => item.category))];
+
+    if (categoriesOfInterest.length > 0) {
+      const recentMatches = await Item.find({
+        category: { $in: categoriesOfInterest },
+        reporterName: { $ne: req.user.name },
+        createdAt: { $gte: oneHourAgo }
+      }).limit(5);
+
+      recentMatches.forEach(item => {
+        notifications.push({
+          message: `✨ New ${item.type} listing matches your interest: "${item.title}" in ${item.location}.`,
+          time: item.createdAt,
+          type: 'match'
+        });
+      });
+    }
+
+    // 3. Check for verification claim status updates for this user
+    if (req.user.matricNumber) {
+      const myClaimedItems = await Item.find({
+        'verificationClaims.claimantMatric': { $regex: new RegExp('^' + req.user.matricNumber + '$', 'i') }
+      });
+
+      myClaimedItems.forEach(item => {
+        item.verificationClaims.forEach(claim => {
+          if (claim.claimantMatric.toLowerCase() === req.user.matricNumber.toLowerCase()) {
+            if (claim.status === 'accepted') {
+              notifications.push({
+                message: `👮 Security has accepted your user verification claim request for "${item.title}".`,
+                time: claim.claimDate || item.updatedAt,
+                type: 'accepted'
+              });
+            } else if (claim.status === 'declined') {
+              notifications.push({
+                message: `❌ Security has declined your user verification claim request for "${item.title}".`,
+                time: claim.claimDate || item.updatedAt,
+                type: 'declined'
+              });
+            }
+          }
+        });
+      });
+    }
+
+    res.json(notifications);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+});
+
 // @route   GET api/items/:id
 // @desc    Get item by ID
 // @access  Public
@@ -221,81 +297,7 @@ router.put('/:id/claims/:claimId/respond', protect, adminOnly, async (req, res) 
   }
 });
 
-// @route   GET api/items/notifications
-// @desc    Get recent notifications for the logged in user
-// @access  Protected
-router.get('/notifications', protect, async (req, res) => {
-  try {
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-    const notifications = [];
 
-    // 1. Check if any of the user's reports got marked as returned recently
-    const myReturnedItems = await Item.find({
-      reporterName: req.user.name,
-      status: 'returned',
-      updatedAt: { $gte: oneHourAgo }
-    });
-
-    myReturnedItems.forEach(item => {
-      notifications.push({
-        message: `✅ Your item "${item.title}" has been successfully resolved/returned.`,
-        time: item.date,
-        type: 'resolved'
-      });
-    });
-
-    // 2. Check for newly reported items in the same categories that the user reported
-    const myReports = await Item.find({ reporterName: req.user.name });
-    const categoriesOfInterest = [...new Set(myReports.map(item => item.category))];
-
-    if (categoriesOfInterest.length > 0) {
-      const recentMatches = await Item.find({
-        category: { $in: categoriesOfInterest },
-        reporterName: { $ne: req.user.name },
-        createdAt: { $gte: oneHourAgo }
-      }).limit(5);
-
-      recentMatches.forEach(item => {
-        notifications.push({
-          message: `✨ New ${item.type} listing matches your interest: "${item.title}" in ${item.location}.`,
-          time: item.createdAt,
-          type: 'match'
-        });
-      });
-    }
-
-    // 3. Check for verification claim status updates for this user
-    if (req.user.matricNumber) {
-      const myClaimedItems = await Item.find({
-        'verificationClaims.claimantMatric': { $regex: new RegExp('^' + req.user.matricNumber + '$', 'i') }
-      });
-
-      myClaimedItems.forEach(item => {
-        item.verificationClaims.forEach(claim => {
-          if (claim.claimantMatric.toLowerCase() === req.user.matricNumber.toLowerCase()) {
-            if (claim.status === 'accepted') {
-              notifications.push({
-                message: `👮 Security has accepted your user verification claim request for "${item.title}".`,
-                time: claim.claimDate || item.updatedAt,
-                type: 'accepted'
-              });
-            } else if (claim.status === 'declined') {
-              notifications.push({
-                message: `❌ Security has declined your user verification claim request for "${item.title}".`,
-                time: claim.claimDate || item.updatedAt,
-                type: 'declined'
-              });
-            }
-          }
-        });
-      });
-    }
-
-    res.json(notifications);
-  } catch (error) {
-    res.status(500).json({ message: 'Server Error', error: error.message });
-  }
-});
 
 // @route   DELETE api/items/:id
 // @desc    Delete item record
