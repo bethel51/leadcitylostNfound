@@ -1,0 +1,10 @@
+{
+  "python.analysis.exclude": [
+    "c:/__pyrefly_virtual__/**",
+    "**/*.py"
+  ],
+  "python.analysis.ignore": [
+    "c:/__pyrefly_virtual__/**"
+  ],
+  "python.linting.enabled": false
+}
