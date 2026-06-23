@@ -3,242 +3,409 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="LCU FindMe Dashboard - Manage your reports, search campus listings, and verify claims.">
-  <title>User Dashboard | LCU FindMe</title>
+  <meta name="description" content="LCU FindMe — Your Personal Dashboard. Manage your lost and found reports, track your activity, and claim items on Lead City University campus.">
+  <title>My Dashboard | LCU FindMe</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="dashboard.css">
 </head>
-<body>
+<body class="db-body">
 
-  <!-- Authentication Guard Script (Checks login before loading the rest of the body) -->
+  <!-- Authentication Guard -->
   <script>
     if (!localStorage.getItem('lcu_findme_token') || !localStorage.getItem('lcu_findme_user')) {
       window.location.href = 'index.html?login=required';
     }
   </script>
 
-  <div class="app-container">
-    <!-- Header -->
-    <header>
-      <div class="logo-container">
-        <img src="logo.png" alt="LCU Logo" class="logo-image" style="width: 52px; height: 52px; object-fit: contain; border-radius: 50%;">
-        <div class="logo-text">
-          <h1 style="color: var(--primary);">LCU FindMe</h1>
-          <p>User Dashboard</p>
-        </div>
-      </div>
-
+  <!-- ===== TOP HEADER ===== -->
+  <header class="db-header">
+    <div class="db-header-left">
       <!-- Mobile hamburger -->
-      <button class="hamburger" id="hamburger-btn" aria-label="Open menu">
+      <button class="db-hamburger" id="db-hamburger" aria-label="Toggle menu">
         <span></span><span></span><span></span>
       </button>
-
-      <nav id="main-nav">
-        <a href="#" class="active" id="nav-home">Dashboard</a>
-        <a href="#" id="nav-my-items">My Reports</a>
-        <a href="#" id="nav-profile">My Profile</a>
-        <button class="btn btn-primary" id="btn-report-header" style="padding: 0.5rem 1.25rem; font-size: 0.9rem;">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 4px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
-          Report Item
-        </button>
-
-        <!-- User Profile -->
-        <div class="user-profile-mock" id="user-profile-container" style="display: flex; gap: 1rem; align-items: center;">
-          <!-- Notification Bell -->
-          <div class="notif-bell" id="notif-bell" title="Notifications">
-            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-            <span class="notif-badge" id="notif-badge" style="display:none;">0</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 0.75rem;">
-            <div class="avatar" id="header-avatar">U</div>
-            <span id="header-username">LCU Student</span>
-          </div>
-          <div style="display: flex; gap: 0.5rem;">
-            <button class="btn btn-secondary" id="btn-edit-profile" style="padding: 0.35rem 0.85rem; font-size: 0.75rem;">Edit</button>
-            <button class="btn btn-secondary" id="btn-logout" style="padding: 0.35rem 0.85rem; font-size: 0.75rem; border-color: transparent; color: var(--danger); background-color: var(--danger-bg);">Logout</button>
-          </div>
+      
+      <!-- Logo -->
+      <div class="logo-container">
+        <img src="logo.png" alt="LCU Logo" class="logo-image" style="width: 46px; height: 46px; object-fit: contain; border-radius: 50%;">
+        <div class="logo-text">
+          <h1 style="color: var(--primary); font-size: 1.25rem;">LCU FindMe</h1>
+          <p style="font-size: 0.7rem;">Student Portal</p>
         </div>
-      </nav>
-
-      <!-- Theme Toggle Button -->
-      <button class="theme-toggle-btn" id="theme-toggle" title="Toggle Dark/Light Mode" aria-label="Toggle Dark/Light Mode" style="margin-left: auto; margin-right: 1rem;">
-        <svg class="sun-icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"></path></svg>
-        <svg class="moon-icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-      </button>
-    </header>
-
-    <!-- Notification Dropdown -->
-    <div class="notif-dropdown" id="notif-dropdown">
-      <div class="notif-header">
-        <span>Notifications</span>
-        <button id="btn-clear-notifs" style="font-size:0.75rem; color:var(--text-muted); background:none; border:none; cursor:pointer;">Clear all</button>
-      </div>
-      <div id="notif-list">
-        <div class="notif-empty">No notifications yet.</div>
       </div>
     </div>
 
-    <!-- Main Content -->
-    <main>
-      <!-- Hero Section -->
-      <section class="hero-section">
-        <span class="hero-tag">Lead City University</span>
-        <h2>Misplaced Something? <br><span>Let's help you find it.</span></h2>
-        <p>A secure, rapid verification system matching lost items with their rightful owners across LCU Campus.</p>
-        
-        <div class="action-buttons">
-          <button class="btn btn-primary" id="btn-report-hero">
-            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
-            Report an Item
-          </button>
-          <button class="btn btn-secondary" id="btn-scroll-dashboard">
-            Browse Listings
-          </button>
-        </div>
+    <!-- Navigation links -->
+    <nav class="db-nav-top" id="db-nav-top">
+      <a href="#" class="db-nav-item active" data-view="home" id="db-nav-home">
+        <span>Overview</span>
+      </a>
+      <a href="#" class="db-nav-item" data-view="my-reports" id="db-nav-my-reports">
+        <span>My Reports</span>
+        <span class="db-nav-badge" id="my-reports-badge" style="display:none;">0</span>
+      </a>
+      <a href="#" class="db-nav-item" data-view="browse" id="db-nav-browse">
+        <span>Browse Listings</span>
+      </a>
+      <a href="#" class="db-nav-item" data-view="profile" id="db-nav-profile">
+        <span>My Profile</span>
+      </a>
+      <button class="btn btn-primary btn-report-nav" id="db-nav-report-btn">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="margin-right: 4px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        Report Item
+      </button>
+    </nav>
 
-        <!-- Search Bar -->
-        <div class="search-container">
-          <div class="search-wrapper">
-            <span class="search-icon">
-              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            </span>
-            <input type="text" class="search-input" id="search-input" placeholder="Search by item name, location, or keyword (e.g. key, cafe, iPhone)...">
-            <button class="search-btn" id="search-button">Search</button>
-          </div>
-        </div>
-      </section>
+    <div class="db-header-right">
+      <!-- Theme Toggle -->
+      <button class="theme-toggle-btn" id="db-theme-toggle" title="Toggle Dark/Light Mode" aria-label="Toggle Dark/Light Mode">
+        <svg class="sun-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"></path></svg>
+        <svg class="moon-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        <span id="db-theme-label" style="display:none;">Dark Mode</span>
+      </button>
 
-      <!-- Stats Area -->
-      <section class="stats-container">
-        <div class="stat-card">
-          <h3 id="stat-total">0</h3>
-          <p>Total Items Reported</p>
-        </div>
-        <div class="stat-card">
-          <h3 id="stat-lost">0</h3>
-          <p>Lost Requests</p>
-        </div>
-        <div class="stat-card">
-          <h3 id="stat-returned">0</h3>
-          <p>Returned to Owners</p>
-        </div>
-      </section>
-
-      <!-- Dashboard Items -->
-      <section class="dashboard-section" id="listings-section">
-        <div class="section-header">
-          <div>
-            <h2 id="section-title">Recent Listings</h2>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Browse active lost and found items on campus.</p>
+      <!-- Notification Bell -->
+      <div class="db-notif-wrapper">
+        <button class="db-icon-btn" id="db-notif-btn" title="Notifications">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="db-notif-dot" id="db-notif-dot" style="display:none;"></span>
+        </button>
+        <!-- Notification Panel -->
+        <div class="db-notif-panel" id="db-notif-panel">
+          <div class="db-notif-panel-header">
+            <span>Notifications</span>
+            <button id="db-clear-notifs">Clear all</button>
           </div>
-          
-          <div class="filter-tabs">
-            <button class="filter-tab active" data-type="all">All Items</button>
-            <button class="filter-tab" data-type="found">Found Items</button>
-            <button class="filter-tab" data-type="lost">Lost Items</button>
+          <div id="db-notif-list">
+            <div class="db-notif-empty">No notifications yet.</div>
           </div>
-        </div>
-
-        <!-- Category Chips -->
-        <div class="category-scroller">
-          <button class="category-chip active" data-category="all">All Categories</button>
-          <button class="category-chip" data-category="electronics">📱 Electronics</button>
-          <button class="category-chip" data-category="documents">📄 Documents / IDs</button>
-          <button class="category-chip" data-category="accessories">🔑 Accessories & Keys</button>
-          <button class="category-chip" data-category="books">📚 Books & Stationery</button>
-          <button class="category-chip" data-category="clothing">👕 Apparel</button>
-          <button class="category-chip" data-category="other">🎒 Other Items</button>
-        </div>
-
-        <!-- Items Grid -->
-        <div class="items-grid" id="items-grid">
-          <!-- Rendered dynamically by dashboard.js -->
-        </div>
-      </section>
-
-      <!-- Profile Details Section -->
-      <section class="dashboard-section" id="profile-section" style="display: none; padding-top: 1rem;">
-        <div class="section-header">
-          <div>
-            <h2>My Profile</h2>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">View and manage your academic profile and contact details.</p>
-          </div>
-        </div>
-        
-        <div class="profile-card-container" style="background: var(--modal-bg); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-premium); display: flex; flex-direction: column; gap: 1.5rem; max-width: 600px; margin: 1.5rem auto 0 auto;">
-          <div style="display: flex; gap: 1.5rem; align-items: center;">
-            <div id="profile-card-avatar" style="width: 70px; height: 70px; background: var(--primary-light); color: var(--primary); font-size: 2rem; font-weight: 800; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Outfit', sans-serif;">U</div>
-            <div>
-              <h3 id="profile-card-name" style="font-size: 1.4rem; font-family: 'Outfit', sans-serif; color: var(--secondary); margin-bottom: 0.25rem; margin-top: 0;">John Doe</h3>
-              <span id="profile-card-role" class="status-badge status-active" style="text-transform: uppercase; font-size: 0.75rem;">Student</span>
-            </div>
-          </div>
-          
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; border-top: 1px dashed var(--border-color); padding-top: 1.5rem;">
-            <div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Matriculation / Staff Number</div>
-              <strong id="profile-card-matric" style="font-family: monospace; font-size: 0.95rem; color: var(--text-dark);">—</strong>
-            </div>
-            <div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Email Address</div>
-              <strong id="profile-card-email" style="font-size: 0.95rem; color: var(--text-dark);">—</strong>
-            </div>
-            <div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Faculty</div>
-              <strong id="profile-card-faculty" style="font-size: 0.95rem; color: var(--text-dark);">—</strong>
-            </div>
-            <div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Department</div>
-              <strong id="profile-card-dept" style="font-size: 0.95rem; color: var(--text-dark);">—</strong>
-            </div>
-            <div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Level</div>
-              <strong id="profile-card-level" style="font-size: 0.95rem; color: var(--text-dark);">—</strong>
-            </div>
-            <div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Phone Number</div>
-              <strong id="profile-card-phone" style="font-size: 0.95rem; color: var(--text-dark);">—</strong>
-            </div>
-          </div>
-          
-          <div style="margin-top: 1rem; display: flex; gap: 1rem;">
-            <button class="btn btn-primary" id="btn-profile-card-edit" style="width: 100%; justify-content: center;">Edit Profile Settings</button>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <!-- Footer -->
-    <footer>
-      <div class="footer-grid">
-        <div class="footer-brand">
-          <h3 style="color: var(--primary);">LCU FindMe</h3>
-          <p>Connecting Lead City University students and staff to return misplaced items securely and swiftly.</p>
-        </div>
-        <div class="footer-links">
-          <h4>Campus Contacts</h4>
-          <ul>
-            <li><a href="#">Security Office (Senate)</a></li>
-            <li><a href="#">Student Affairs Division</a></li>
-            <li><a href="#">Information Center</a></li>
-          </ul>
-        </div>
-        <div class="footer-links">
-          <h4>Portal Links</h4>
-          <ul>
-            <li><a href="https://portal.lcu.edu.ng" target="_blank" rel="noopener noreferrer">LCU Portal</a></li>
-            <li><a href="#">Help & Support</a></li>
-            <li><a href="#">Privacy Policy</a></li>
-          </ul>
         </div>
       </div>
-      <div class="footer-bottom">
-        <p>&copy; 2026 Lead City University. Senior Software Project by LCU Dev. All rights reserved.</p>
+
+      <!-- User Avatar / Dropdown wrapper -->
+      <div class="db-user-dropdown-wrapper" id="db-user-dropdown-wrapper">
+        <button class="db-avatar-btn" id="db-avatar-btn" aria-label="User profile menu">
+          <div class="db-topbar-avatar" id="topbar-avatar">U</div>
+        </button>
+        <div class="db-user-dropdown" id="db-user-dropdown-menu">
+          <div class="db-dropdown-user-info">
+            <div class="db-sidebar-avatar" id="sidebar-avatar">U</div>
+            <div style="display:flex; flex-direction:column; min-width:0;">
+              <span class="db-dropdown-name" id="sidebar-username">Loading...</span>
+              <span class="db-dropdown-role" id="sidebar-role">Student</span>
+            </div>
+          </div>
+          <div class="db-dropdown-divider"></div>
+          <a href="#" class="db-dropdown-item" id="db-dropdown-profile-btn" data-view="profile">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            My Profile
+          </a>
+          <button class="db-dropdown-item db-logout-btn" id="db-logout-btn">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            <span>Logout</span>
+          </button>
+        </div>
       </div>
-    </footer>
-  </div>
+    </div>
+  </header>
+
+  <!-- Mobile Sidebar Overlay -->
+  <div class="db-overlay" id="db-overlay"></div>
+
+  <!-- ===== MAIN CONTENT AREA ===== -->
+  <div class="db-main" id="db-main">
+
+
+    <!-- ===== VIEW: OVERVIEW (HOME) ===== -->
+    <section class="db-view active" id="view-home">
+      <!-- Welcome Banner -->
+      <div class="db-welcome-banner">
+        <div class="db-welcome-text">
+          <div class="db-welcome-greeting" id="welcome-greeting">Good morning,</div>
+          <h1 class="db-welcome-name" id="welcome-name">Student 👋</h1>
+          <p class="db-welcome-sub">Here's what's happening with your LCU FindMe account today.</p>
+        </div>
+        <button class="btn db-report-cta" id="btn-report-cta">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          Report an Item
+        </button>
+      </div>
+
+      <!-- Personal Stats -->
+      <div class="db-stats-grid">
+        <div class="db-stat-card db-stat-blue">
+          <div class="db-stat-icon">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          </div>
+          <div class="db-stat-info">
+            <div class="db-stat-value" id="my-stat-total">0</div>
+            <div class="db-stat-label">My Total Reports</div>
+          </div>
+        </div>
+        <div class="db-stat-card db-stat-orange">
+          <div class="db-stat-icon">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          </div>
+          <div class="db-stat-info">
+            <div class="db-stat-value" id="my-stat-lost">0</div>
+            <div class="db-stat-label">Active Lost Reports</div>
+          </div>
+        </div>
+        <div class="db-stat-card db-stat-green">
+          <div class="db-stat-icon">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <div class="db-stat-info">
+            <div class="db-stat-value" id="my-stat-returned">0</div>
+            <div class="db-stat-label">Items Returned</div>
+          </div>
+        </div>
+        <div class="db-stat-card db-stat-purple">
+          <div class="db-stat-icon">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <div class="db-stat-info">
+            <div class="db-stat-value" id="my-stat-campus">0</div>
+            <div class="db-stat-label">Campus Listings</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two-column layout: Recent Reports + Quick Actions -->
+      <div class="db-two-col">
+        <!-- Left: Recent My Reports -->
+        <div class="db-card">
+          <div class="db-card-header">
+            <h2 class="db-card-title">My Recent Reports</h2>
+            <a href="#" class="db-card-link" id="link-view-all-reports">View All →</a>
+          </div>
+          <div id="db-recent-reports-list" class="db-report-list">
+            <div class="db-empty-mini">
+              <span>📋</span>
+              <p>You haven't submitted any reports yet.</p>
+              <button class="btn db-btn-sm" id="btn-report-empty">Report Your First Item</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Quick Actions + Campus Activity -->
+        <div class="db-right-col">
+          <!-- Quick Actions -->
+          <div class="db-card">
+            <div class="db-card-header">
+              <h2 class="db-card-title">Quick Actions</h2>
+            </div>
+            <div class="db-quick-actions">
+              <button class="db-action-tile" id="btn-action-report">
+                <div class="db-action-icon db-action-icon-blue">
+                  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                </div>
+                <span class="db-action-label">Report Item</span>
+              </button>
+              <button class="db-action-tile" id="btn-action-browse" data-view="browse">
+                <div class="db-action-icon db-action-icon-green">
+                  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/></svg>
+                </div>
+                <span class="db-action-label">Browse All</span>
+              </button>
+              <button class="db-action-tile" id="btn-action-profile" data-view="profile">
+                <div class="db-action-icon db-action-icon-purple">
+                  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                </div>
+                <span class="db-action-label">My Profile</span>
+              </button>
+              <button class="db-action-tile" id="btn-action-myreports" data-view="my-reports">
+                <div class="db-action-icon db-action-icon-orange">
+                  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                </div>
+                <span class="db-action-label">My Reports</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Campus Activity Summary -->
+          <div class="db-card db-activity-card">
+            <div class="db-card-header">
+              <h2 class="db-card-title">Campus Activity</h2>
+            </div>
+            <div class="db-activity-bars" id="db-activity-bars">
+              <div class="db-activity-row">
+                <span class="db-activity-label">Found Items</span>
+                <div class="db-bar-wrap"><div class="db-bar db-bar-green" id="bar-found" style="width:0%"></div></div>
+                <span class="db-activity-count" id="count-found">0</span>
+              </div>
+              <div class="db-activity-row">
+                <span class="db-activity-label">Lost Items</span>
+                <div class="db-bar-wrap"><div class="db-bar db-bar-red" id="bar-lost" style="width:0%"></div></div>
+                <span class="db-activity-count" id="count-lost">0</span>
+              </div>
+              <div class="db-activity-row">
+                <span class="db-activity-label">Returned</span>
+                <div class="db-bar-wrap"><div class="db-bar db-bar-blue" id="bar-returned" style="width:0%"></div></div>
+                <span class="db-activity-count" id="count-returned">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== VIEW: MY REPORTS ===== -->
+    <section class="db-view" id="view-my-reports">
+      <div class="db-view-header">
+        <div>
+          <h1 class="db-view-title">My Reports</h1>
+          <p class="db-view-sub">Items you've submitted to the LCU FindMe system.</p>
+        </div>
+        <button class="btn db-report-cta" id="btn-report-my-reports">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          Report New Item
+        </button>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="db-filter-row">
+        <button class="db-filter-chip active" data-my-filter="all">All</button>
+        <button class="db-filter-chip" data-my-filter="found">Found</button>
+        <button class="db-filter-chip" data-my-filter="lost">Lost</button>
+        <button class="db-filter-chip" data-my-filter="returned">Returned</button>
+      </div>
+
+      <div class="db-reports-grid" id="db-my-reports-grid">
+        <!-- Populated by JS -->
+      </div>
+    </section>
+
+    <!-- ===== VIEW: BROWSE ===== -->
+    <section class="db-view" id="view-browse">
+      <div class="db-view-header">
+        <div>
+          <h1 class="db-view-title">Browse Listings</h1>
+          <p class="db-view-sub">All active lost and found items across LCU campus.</p>
+        </div>
+      </div>
+
+      <!-- Search -->
+      <div class="db-search-bar">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input type="text" id="db-search-input" placeholder="Search by item name, location, keyword...">
+        <button id="db-search-btn">Search</button>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="db-filter-row">
+        <button class="db-filter-chip active" data-type="all">All Items</button>
+        <button class="db-filter-chip" data-type="found">Found</button>
+        <button class="db-filter-chip" data-type="lost">Lost</button>
+      </div>
+
+      <!-- Category Chips -->
+      <div class="db-category-row">
+        <button class="db-cat-chip active" data-category="all">All Categories</button>
+        <button class="db-cat-chip" data-category="electronics">📱 Electronics</button>
+        <button class="db-cat-chip" data-category="documents">📄 Documents</button>
+        <button class="db-cat-chip" data-category="accessories">🔑 Accessories</button>
+        <button class="db-cat-chip" data-category="books">📚 Books</button>
+        <button class="db-cat-chip" data-category="clothing">👕 Apparel</button>
+        <button class="db-cat-chip" data-category="other">🎒 Other</button>
+      </div>
+
+      <div class="db-reports-grid" id="db-browse-grid">
+        <!-- Populated by JS -->
+      </div>
+    </section>
+
+    <!-- ===== VIEW: PROFILE ===== -->
+    <section class="db-view" id="view-profile">
+      <div class="db-view-header">
+        <div>
+          <h1 class="db-view-title">My Profile</h1>
+          <p class="db-view-sub">Manage your academic profile and account information.</p>
+        </div>
+        <button class="btn db-report-cta" id="btn-edit-profile-view">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          Edit Profile
+        </button>
+      </div>
+
+      <div class="db-profile-layout">
+        <!-- Profile Card -->
+        <div class="db-profile-card">
+          <div class="db-profile-avatar-wrap">
+            <div class="db-profile-avatar" id="profile-big-avatar">U</div>
+            <div class="db-profile-avatar-glow"></div>
+          </div>
+          <h2 class="db-profile-name" id="profile-name-big">Student</h2>
+          <span class="db-profile-badge" id="profile-role-badge">Student</span>
+          <div class="db-profile-matric" id="profile-matric-display">—</div>
+
+          <div class="db-profile-stats-row">
+            <div class="db-profile-mini-stat">
+              <div class="db-profile-mini-val" id="profile-mini-reports">0</div>
+              <div class="db-profile-mini-label">Reports</div>
+            </div>
+            <div class="db-profile-mini-stat">
+              <div class="db-profile-mini-val" id="profile-mini-returned">0</div>
+              <div class="db-profile-mini-label">Returned</div>
+            </div>
+            <div class="db-profile-mini-stat">
+              <div class="db-profile-mini-val" id="profile-mini-active">0</div>
+              <div class="db-profile-mini-label">Active</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Profile Details -->
+        <div class="db-profile-details">
+          <div class="db-card">
+            <div class="db-card-header">
+              <h2 class="db-card-title">Personal Information</h2>
+            </div>
+            <div class="db-info-grid">
+              <div class="db-info-item">
+                <div class="db-info-label">Full Name</div>
+                <div class="db-info-value" id="pinfo-name">—</div>
+              </div>
+              <div class="db-info-item">
+                <div class="db-info-label">Email Address</div>
+                <div class="db-info-value" id="pinfo-email">—</div>
+              </div>
+              <div class="db-info-item">
+                <div class="db-info-label">Matric / Staff Number</div>
+                <div class="db-info-value db-info-mono" id="pinfo-matric">—</div>
+              </div>
+              <div class="db-info-item">
+                <div class="db-info-label">Phone Number</div>
+                <div class="db-info-value" id="pinfo-phone">—</div>
+              </div>
+              <div class="db-info-item">
+                <div class="db-info-label">Faculty</div>
+                <div class="db-info-value" id="pinfo-faculty">—</div>
+              </div>
+              <div class="db-info-item">
+                <div class="db-info-label">Department</div>
+                <div class="db-info-value" id="pinfo-dept">—</div>
+              </div>
+              <div class="db-info-item">
+                <div class="db-info-label">Level</div>
+                <div class="db-info-value" id="pinfo-level">—</div>
+              </div>
+              <div class="db-info-item">
+                <div class="db-info-label">Account Role</div>
+                <div class="db-info-value" id="pinfo-role">Student</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /db-main -->
+
+  <!-- ===== MODALS ===== -->
 
   <!-- MODAL: Report Item -->
   <div class="modal-backdrop" id="modal-report">
@@ -268,8 +435,8 @@
               <select class="form-control" id="report-category" required>
                 <option value="electronics">Electronics</option>
                 <option value="documents">Documents / IDs</option>
-                <option value="accessories">Accessories & Keys</option>
-                <option value="books">Books & Stationery</option>
+                <option value="accessories">Accessories &amp; Keys</option>
+                <option value="books">Books &amp; Stationery</option>
                 <option value="clothing">Apparel</option>
                 <option value="other">Other</option>
               </select>
@@ -280,46 +447,32 @@
               <button type="button" class="btn btn-secondary" id="btn-toggle-map" style="width: 100%; margin-top: 0.5rem; padding: 0.4rem; font-size: 0.8rem; justify-content: center; gap: 0.25rem;">
                 🗺️ Use Interactive Campus Map
               </button>
-              
-              <!-- Styled LCU SVG Map Container -->
+              <!-- Map Container -->
               <div id="map-container" style="display: none; margin-top: 0.75rem; border: 1px solid var(--border-color); padding: 0.5rem; border-radius: var(--radius-md); background-color: var(--bg-secondary);">
                 <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 600; text-align: center;">LCU Campus Interactive Map (Select Landmark)</div>
                 <svg id="lcu-campus-map" viewBox="0 0 500 300" style="width: 100%; height: auto; display: block;">
-                  <!-- Gridlines/Roads background -->
                   <rect x="0" y="0" width="500" height="300" rx="10" fill="#f8fafc"/>
                   <path d="M 50,150 L 450,150 M 250,50 L 250,250" stroke="#e2e8f0" stroke-width="8" stroke-linecap="round"/>
-                  
-                  <!-- Senate Building -->
                   <g class="map-building" data-name="Senate Building" style="cursor: pointer;">
                     <rect x="200" y="20" width="100" height="60" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
                     <text x="250" y="55" font-family="'Outfit'" font-size="11" font-weight="bold" fill="#1d4ed8" text-anchor="middle">Senate Building</text>
                   </g>
-                  
-                  <!-- Main Library -->
                   <g class="map-building" data-name="Main Library" style="cursor: pointer;">
                     <rect x="60" y="70" width="100" height="60" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
                     <text x="110" y="105" font-family="'Outfit'" font-size="11" font-weight="bold" fill="#1d4ed8" text-anchor="middle">Main Library</text>
                   </g>
-                  
-                  <!-- FSS Cafe -->
                   <g class="map-building" data-name="Faculty of Social Sciences Cafe" style="cursor: pointer;">
                     <rect x="340" y="70" width="100" height="60" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
                     <text x="390" y="105" font-family="'Outfit'" font-size="10" font-weight="bold" fill="#1d4ed8" text-anchor="middle">FSS Cafe</text>
                   </g>
-                  
-                  <!-- Faculty of Engineering -->
                   <g class="map-building" data-name="Faculty of Engineering" style="cursor: pointer;">
                     <rect x="60" y="180" width="100" height="60" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
                     <text x="110" y="215" font-family="'Outfit'" font-size="10" font-weight="bold" fill="#1d4ed8" text-anchor="middle">Engineering</text>
                   </g>
-                  
-                  <!-- Sports Complex -->
                   <g class="map-building" data-name="LCU Sports Complex Gym" style="cursor: pointer;">
                     <rect x="200" y="210" width="100" height="60" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
                     <text x="250" y="245" font-family="'Outfit'" font-size="10" font-weight="bold" fill="#1d4ed8" text-anchor="middle">Sports Complex</text>
                   </g>
-                  
-                  <!-- Chapel / Auditorium -->
                   <g class="map-building" data-name="University Chapel / Auditorium" style="cursor: pointer;">
                     <rect x="340" y="180" width="100" height="60" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
                     <text x="390" y="215" font-family="'Outfit'" font-size="10" font-weight="bold" fill="#1d4ed8" text-anchor="middle">LCU Chapel</text>
@@ -346,19 +499,19 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="report-description">Description & Details</label>
-            <textarea class="form-control" id="report-description" placeholder="Include unique features, colors, or how someone can identify it. Avoid posting too much confidential verification info (e.g. passwords)." required></textarea>
+            <label class="form-label" for="report-description">Description &amp; Details</label>
+            <textarea class="form-control" id="report-description" placeholder="Include unique features, colors, or how someone can identify it." required></textarea>
           </div>
 
-          <!-- Drag and Drop image upload -->
+          <!-- Image Upload -->
           <div class="form-group">
             <label class="form-label">Upload Photo (Optional)</label>
             <div class="upload-zone" id="upload-zone">
               <div class="upload-icon">
-                <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
               </div>
-              <div class="upload-text">Drag & drop photo here or click to browse</div>
-              <div class="upload-hint">Supports JPG, PNG (Max 1MB, scaled automatically)</div>
+              <div class="upload-text">Drag &amp; drop photo here or click to browse</div>
+              <div class="upload-hint">Supports JPG, PNG (Max 1MB)</div>
               <input type="file" id="file-input" accept="image/*" style="display: none;">
             </div>
             <div class="preview-container" id="preview-container">
@@ -375,7 +528,7 @@
     </div>
   </div>
 
-  <!-- MODAL: Item Detail & Claim Verification -->
+  <!-- MODAL: Item Detail & Claim -->
   <div class="modal-backdrop" id="modal-detail">
     <div class="modal-container">
       <div class="modal-header">
@@ -383,40 +536,34 @@
         <button class="modal-close" id="btn-close-detail">&times;</button>
       </div>
       <div class="modal-body" id="detail-body">
-        <!-- Rendered dynamically by dashboard.js -->
+        <!-- Populated dynamically -->
       </div>
     </div>
   </div>
 
-  <!-- MODAL: Auto-Match Suggestion -->
+  <!-- MODAL: Auto-Match -->
   <div class="modal-backdrop" id="modal-match">
     <div class="modal-container" style="max-width: 500px;">
       <div class="modal-header" style="background-color: var(--primary-light); border-bottom-color: rgba(37, 99, 235, 0.2);">
-        <h3 class="modal-title" style="color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
-          ✨ We Found a Potential Match!
-        </h3>
+        <h3 class="modal-title" style="color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">✨ We Found a Potential Match!</h3>
         <button class="modal-close" id="btn-close-match">&times;</button>
       </div>
       <div class="modal-body">
-        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.25rem;">
-          An existing record matching your description was found in the LCU directory. Please review below:
-        </p>
-        <div id="match-results-container">
-          <!-- Populated dynamically by dashboard.js -->
-        </div>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.25rem;">An existing record matching your description was found in the LCU directory. Please review below:</p>
+        <div id="match-results-container"></div>
         <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-          <button class="btn btn-secondary" id="btn-match-ignore" style="flex: 1; justify-content: center;">Ignore & Keep Mine</button>
-          <button class="btn btn-primary" id="btn-match-view" style="flex: 1; justify-content: center;">View & Verify Item</button>
+          <button class="btn btn-secondary" id="btn-match-ignore" style="flex: 1; justify-content: center;">Ignore &amp; Keep Mine</button>
+          <button class="btn btn-primary" id="btn-match-view" style="flex: 1; justify-content: center;">View &amp; Verify Item</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: QR Code Print Label -->
+  <!-- MODAL: QR Label -->
   <div class="modal-backdrop" id="modal-qr">
     <div class="modal-container" style="max-width: 420px;">
       <div class="modal-header">
-        <h3 class="modal-title">Print security Bin Label</h3>
+        <h3 class="modal-title">Print Security Bin Label</h3>
         <button class="modal-close" id="btn-close-qr">&times;</button>
       </div>
       <div class="modal-body" style="text-align: center;">
@@ -428,19 +575,15 @@
           <div style="display: flex; gap: 1.5rem; align-items: center;">
             <canvas id="qr-canvas" style="border: 1px solid #e2e8f0; width: 120px; height: 120px; border-radius: var(--radius-sm);"></canvas>
             <div style="font-size: 0.82rem; line-height: 1.6; display: flex; flex-direction: column; gap: 0.4rem; padding-left: 0.5rem;">
-              <div style="font-weight: bold; font-size: 0.95rem; margin-bottom: 0.1rem;" id="qr-label-title">Silver Casio Watch</div>
-              <div>ID: <span id="qr-label-id" style="font-family: monospace; font-weight: 700; color: #0f172a;">item-10938</span></div>
-              <div>Category: <span id="qr-label-category" style="text-transform: capitalize;">Accessories</span></div>
-              <div>Location: <span id="qr-label-location">Senate Building</span></div>
-              <div style="margin-top: 0.5rem; font-weight: bold; border: 1px dashed #0f172a; padding: 0.3rem 0.5rem; text-align: center; text-transform: uppercase; border-radius: 4px;">
-                🔒 Bin Tag Required
-              </div>
+              <div style="font-weight: bold; font-size: 0.95rem; margin-bottom: 0.1rem;" id="qr-label-title">Item</div>
+              <div>ID: <span id="qr-label-id" style="font-family: monospace; font-weight: 700; color: #0f172a;">—</span></div>
+              <div>Category: <span id="qr-label-category" style="text-transform: capitalize;">—</span></div>
+              <div>Location: <span id="qr-label-location">—</span></div>
+              <div style="margin-top: 0.5rem; font-weight: bold; border: 1px dashed #0f172a; padding: 0.3rem 0.5rem; text-align: center; text-transform: uppercase; border-radius: 4px;">🔒 Bin Tag Required</div>
             </div>
           </div>
         </div>
-        <button class="btn btn-primary" id="btn-print-qr" style="width: 100%; justify-content: center; gap: 0.5rem;">
-          🖨️ Print Label
-        </button>
+        <button class="btn btn-primary" id="btn-print-qr" style="width: 100%; justify-content: center; gap: 0.5rem;">🖨️ Print Label</button>
       </div>
     </div>
   </div>
@@ -448,7 +591,6 @@
   <!-- MODAL: Edit Profile -->
   <div class="modal-backdrop" id="modal-edit-profile">
     <div class="modal-container" style="max-width: 480px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden;">
-      <!-- Slim Header -->
       <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); flex-shrink: 0;">
         <div id="edit-avatar-preview" style="width: 40px; height: 40px; background: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: var(--primary); font-family: 'Outfit', sans-serif; flex-shrink: 0;">U</div>
         <div style="flex: 1;">
@@ -457,8 +599,6 @@
         </div>
         <button class="modal-close" id="btn-close-edit-profile">&times;</button>
       </div>
-
-      <!-- Scrollable Form Body -->
       <div class="modal-body" style="overflow-y: auto; padding: 1.5rem; flex: 1;">
         <form id="form-edit-profile">
           <div class="form-row">
@@ -485,19 +625,15 @@
               <input type="tel" class="form-control" id="edit-profile-phone" placeholder="+234 800 000 0000">
             </div>
           </div>
-
-          <!-- Sticky footer inside modal -->
           <div style="padding-top: 1rem; border-top: 1px solid var(--border-color); margin-top: 0.5rem;">
-            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.75rem; font-size: 0.95rem;">
-              Save Changes
-            </button>
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.75rem; font-size: 0.95rem;">Save Changes</button>
           </div>
         </form>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: OTP Verification -->
+  <!-- MODAL: OTP -->
   <div class="modal-backdrop" id="modal-otp">
     <div class="modal-container" style="max-width: 420px; border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-premium); border: 1px solid var(--border-color);">
       <div class="modal-header" style="background: linear-gradient(135deg, var(--primary-light), transparent); padding: 1.5rem 1.5rem 1rem; border-bottom: none;">
@@ -525,20 +661,16 @@
             </div>
             <input type="hidden" id="otp-code" required>
           </div>
-          <button type="submit" class="btn btn-primary" id="btn-verify-otp" style="width: 100%; justify-content: center; padding: 0.85rem; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);">
-            Verify Account
-          </button>
+          <button type="submit" class="btn btn-primary" id="btn-verify-otp" style="width: 100%; justify-content: center; padding: 0.85rem; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);">Verify Account</button>
           <div style="text-align: center; margin-top: 1rem;">
-            <button type="button" class="btn btn-secondary" id="btn-resend-otp" style="padding: 0.5rem 1rem; font-size: 0.82rem; border: none; background: none; color: var(--primary); font-weight: 600; cursor: pointer;">
-              Didn't receive it? Resend Code
-            </button>
+            <button type="button" class="btn btn-secondary" id="btn-resend-otp" style="padding: 0.5rem 1rem; font-size: 0.82rem; border: none; background: none; color: var(--primary); font-weight: 600; cursor: pointer;">Didn't receive it? Resend Code</button>
           </div>
         </form>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: Security Verification Slip (Scanned QR view) -->
+  <!-- MODAL: Security Verification Slip -->
   <div class="modal-backdrop" id="modal-verify-slip">
     <div class="modal-container" style="max-width: 480px; border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-premium); border: 1px solid var(--border-color); background: var(--bg-primary);">
       <div class="modal-header" style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.05), transparent); padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
@@ -565,32 +697,27 @@
             </div>
             <div style="display: flex; flex-direction: column; gap: 0.25rem; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 0.5rem;">
               <span style="color: var(--text-muted); font-weight: 500;">Item Name / Description:</span>
-              <strong id="slip-title" style="color: var(--text-dark); font-size: 0.95rem;">Casio Wristwatch</strong>
+              <strong id="slip-title" style="color: var(--text-dark); font-size: 0.95rem;">—</strong>
             </div>
             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 0.5rem;">
               <span style="color: var(--text-muted); font-weight: 500;">Category:</span>
-              <strong id="slip-category" style="color: var(--text-dark);">Electronics</strong>
+              <strong id="slip-category" style="color: var(--text-dark);">—</strong>
             </div>
             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 0.5rem;">
               <span style="color: var(--text-muted); font-weight: 500;">Location Found:</span>
-              <strong id="slip-location" style="color: var(--text-dark);">FSS Cafe</strong>
+              <strong id="slip-location" style="color: var(--text-dark);">—</strong>
             </div>
             <div style="display: flex; justify-content: space-between; border-bottom: 2px dashed var(--border-color); padding-bottom: 0.75rem; margin-bottom: 0.5rem;">
               <span style="color: var(--text-muted); font-weight: 500;">Date Logged:</span>
-              <strong id="slip-date" style="color: var(--text-dark);">June 16, 2026</strong>
+              <strong id="slip-date" style="color: var(--text-dark);">—</strong>
             </div>
-            <!-- Reporter Credentials Box -->
             <div class="credentials-box" id="modal-slip-reporter-box" style="background: var(--bg-tertiary); border-radius: var(--radius-sm); padding: 0.85rem; border: 1px solid var(--border-color); margin-bottom: 0.75rem;">
               <h5 id="modal-slip-reporter-title" style="margin: 0 0 0.5rem 0; font-family: 'Outfit', sans-serif; font-size: 0.82rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px;">Reporter Credentials</h5>
-              <div style="display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.82rem;" id="modal-slip-reporter-list">
-              </div>
+              <div style="display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.82rem;" id="modal-slip-reporter-list"></div>
             </div>
-            
-            <!-- Claimant Credentials Box -->
             <div class="credentials-box" id="modal-slip-claimant-box" style="display: none; background: var(--bg-tertiary); border-radius: var(--radius-sm); padding: 0.85rem; border: 1px solid var(--border-color); margin-bottom: 0.75rem;">
               <h5 style="margin: 0 0 0.5rem 0; font-family: 'Outfit', sans-serif; font-size: 0.82rem; font-weight: 700; color: var(--success); text-transform: uppercase; letter-spacing: 0.5px;">Claimant / Owner Credentials</h5>
-              <div style="display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.82rem;" id="modal-slip-claimant-list">
-              </div>
+              <div style="display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.82rem;" id="modal-slip-claimant-list"></div>
             </div>
           </div>
           <div style="text-align: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 2px dashed var(--border-color);">
@@ -599,18 +726,14 @@
           </div>
         </div>
         <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
-          <button class="btn btn-primary" id="btn-print-slip" style="flex: 1; justify-content: center; padding: 0.75rem; font-weight: 600;">
-            🖨️ Print Slip
-          </button>
-          <button class="btn btn-secondary" id="btn-dismiss-slip" style="flex: 1; justify-content: center; padding: 0.75rem; font-weight: 600;">
-            Close View
-          </button>
+          <button class="btn btn-primary" id="btn-print-slip" style="flex: 1; justify-content: center; padding: 0.75rem; font-weight: 600;">🖨️ Print Slip</button>
+          <button class="btn btn-secondary" id="btn-dismiss-slip" style="flex: 1; justify-content: center; padding: 0.75rem; font-weight: 600;">Close View</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- TOAST NOTIFICATION -->
+  <!-- TOAST -->
   <div class="toast toast-success" id="toast-notification">
     <div class="toast-icon">✓</div>
     <div class="toast-content" id="toast-message">Action completed successfully!</div>
