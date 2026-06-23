@@ -1304,3 +1304,37 @@
     border-bottom: none;
   }
 }
+
+/* Stacking form grids on mobile/smaller screens to prevent overflows */
+@media (max-width: 576px) {
+  .form-row {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+  .modal-container {
+    width: 95% !important;
+    padding: 0 !important;
+  }
+  .modal-body {
+    padding: 1.25rem !important;
+  }
+}
+
+/* Upgraded Toast Success Notification to fit LCU brand */
+.toast-success {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+  border: 1px solid rgba(29, 78, 216, 0.3) !important;
+  border-left: 4px solid var(--primary) !important;
+  box-shadow: 0 10px 40px rgba(29, 78, 216, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+.toast-success .toast-icon {
+  background-color: var(--primary-light) !important;
+  color: var(--primary) !important;
+  box-shadow: 0 0 12px rgba(29, 78, 216, 0.35);
+  font-weight: 800;
+}
+
+.toast-success::after {
+  background: linear-gradient(90deg, var(--primary), var(--accent)) !important;
+}

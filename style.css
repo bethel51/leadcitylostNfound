@@ -2323,3 +2323,22 @@ nav a.active-admin::after {
 .otp-digit-input::selection {
   background: transparent;
 }
+
+/* Upgraded Toast Success Notification to fit LCU brand */
+.toast-success {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+  border: 1px solid rgba(29, 78, 216, 0.3) !important;
+  border-left: 4px solid var(--primary) !important;
+  box-shadow: 0 10px 40px rgba(29, 78, 216, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+.toast-success .toast-icon {
+  background-color: var(--primary-light) !important;
+  color: var(--primary) !important;
+  box-shadow: 0 0 12px rgba(29, 78, 216, 0.35);
+  font-weight: 800;
+}
+
+.toast-success::after {
+  background: linear-gradient(90deg, var(--primary), var(--accent)) !important;
+}
