@@ -5,47 +5,30 @@ const API_URL = window.location.hostname === '127.0.0.1' || window.location.host
 // State Object
 let state = {
   items: [],
-  filters: {
-    type: 'all',        // 'all', 'lost', 'found'
-    category: 'all',    // 'all', 'electronics', 'documents', etc.
-    search: ''
-  },
-  currentView: 'dashboard', // 'dashboard', 'my-items'
-  currentUser: null, // Start unauthenticated
-  tempUploadedImage: null,
-  pendingMatchItem: null
+  currentUser: null,
+  pendingVerifEmail: null
 };
 
-// Auto-Match Engine matching logic
-function findPotentialMatches(newReport) {
-  const newTokens = newReport.title.toLowerCase()
-    .replace(/[^\w\s]/g, '')
-    .split(/\s+/)
-    .filter(token => token.length >= 3); // ignore small words (a, the, my, etc.)
-  
-  if (newTokens.length === 0) return null;
-  
-  // Look for opposite type in the same category
-  const targetType = newReport.type === 'lost' ? 'found' : 'lost';
-  
-  for (let item of state.items) {
-    if (item.status === 'active' && item.type === targetType && item.category === newReport.category) {
-      const itemTokens = item.title.toLowerCase()
-        .replace(/[^\w\s]/g, '')
-        .split(/\s+/);
-        
-      // Count matching tokens
-      const matches = newTokens.filter(tok => itemTokens.includes(tok));
-      if (matches.length > 0) {
-        return item; // return first high-probability match
-      }
+// Check if user is logged in on load
+function checkRedirect() {
+  const token = localStorage.getItem('lcu_findme_token');
+  const savedUser = localStorage.getItem('lcu_findme_user');
+  if (token && savedUser) {
+    const user = JSON.parse(savedUser);
+    if (user.role === 'admin') {
+      window.location.href = 'admin.html';
+    } else {
+      window.location.href = 'dashboard.html';
     }
+    return true;
   }
-  return null;
+  return false;
 }
 
 // Initialize Application
 document.addEventListener('DOMContentLoaded', async () => {
+  if (checkRedirect()) return;
+  
   initTheme();
   setupEventListeners();
   await initData();
@@ -62,15 +45,10 @@ function initTheme() {
   }
 }
 
-// Fetch items from the backend
+// Fetch stats and items counts from backend
 async function fetchItems() {
   try {
-    const { type, category, search } = state.filters;
-    let url = `${API_URL}/items?type=${type}&category=${category}`;
-    if (search.trim() !== '') {
-      url += `&search=${encodeURIComponent(search)}`;
-    }
-    const res = await fetch(url);
+    const res = await fetch(`${API_URL}/items?type=all&category=all`);
     const data = await res.json();
     state.items = data;
   } catch (error) {
@@ -78,93 +56,19 @@ async function fetchItems() {
   }
 }
 
-function syncLoginUI() {
-  const navProfile = document.getElementById('nav-profile');
-  if (state.currentUser) {
-    const authContainer = document.getElementById('auth-container');
-    if (authContainer) authContainer.style.display = 'none';
-    const profileMock = document.getElementById('user-profile-container');
-    if (profileMock) {
-      profileMock.style.display = 'flex';
-      const nameSpan = profileMock.querySelector('span');
-      if(nameSpan) nameSpan.textContent = state.currentUser.name;
-      
-      const avatar = profileMock.querySelector('.avatar');
-      if(avatar) avatar.textContent = state.currentUser.name.charAt(0).toUpperCase();
-    }
-    if (navProfile) navProfile.style.display = 'inline-block';
-
-    // Populate new My Profile view fields
-    const cardAvatar = document.getElementById('profile-card-avatar');
-    if (cardAvatar) cardAvatar.textContent = state.currentUser.name.charAt(0).toUpperCase();
-    
-    const cardName = document.getElementById('profile-card-name');
-    if (cardName) cardName.textContent = state.currentUser.name;
-    
-    const cardRole = document.getElementById('profile-card-role');
-    if (cardRole) {
-      cardRole.textContent = state.currentUser.role || 'Student';
-      cardRole.className = `status-badge ${state.currentUser.role === 'admin' ? 'status-returned' : 'status-active'}`;
-    }
-    
-    const cardMatric = document.getElementById('profile-card-matric');
-    if (cardMatric) cardMatric.textContent = state.currentUser.matricNumber || state.currentUser.matric || '—';
-    
-    const cardEmail = document.getElementById('profile-card-email');
-    if (cardEmail) cardEmail.textContent = state.currentUser.email || state.currentUser.contact || '—';
-    
-    const cardFaculty = document.getElementById('profile-card-faculty');
-    if (cardFaculty) cardFaculty.textContent = state.currentUser.faculty || '—';
-    
-    const cardDept = document.getElementById('profile-card-dept');
-    if (cardDept) cardDept.textContent = state.currentUser.department || state.currentUser.dept || '—';
-    
-    const cardLevel = document.getElementById('profile-card-level');
-    if (cardLevel) cardLevel.textContent = state.currentUser.level ? `${state.currentUser.level} Level` : '—';
-    
-    const cardPhone = document.getElementById('profile-card-phone');
-    if (cardPhone) cardPhone.textContent = state.currentUser.phoneNumber || state.currentUser.phone || '—';
-  } else {
-    if (navProfile) navProfile.style.display = 'none';
-  }
-}
-
-// Load seed data if none exists in LocalStorage
+// Load data on start
 async function initData() {
-  const token = localStorage.getItem('lcu_findme_token');
-  const savedUser = localStorage.getItem('lcu_findme_user');
-  if (token && savedUser) {
-    state.currentUser = JSON.parse(savedUser);
-    syncLoginUI();
-    fetchNotifications();
-  }
   await fetchItems();
   updateStats();
   renderItems();
 }
 
-// UI Rendering Controller
-async function render() {
-  await fetchItems();
-  updateStats();
-  renderItems();
-}
-
-// SVG Fallback Icons for categories
-const categoryIcons = {
-  electronics: `<svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>`,
-  documents: `<svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`,
-  accessories: `<svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="18" r="4"></circle><path d="M12 18V9.24a6 6 0 1 1 8 0V18"></path><line x1="12" y1="14" x2="20" y2="14"></line></svg>`,
-  books: `<svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z"></path></svg>`,
-  clothing: `<svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.38 3.46L16 6.14V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2.14L3.62 3.46a2 2 0 0 0-2.41.44l-1 1a2 2 0 0 0-.14 2.5L4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7l3.93-4.6a2 2 0 0 0-.14-2.5l-1-1a2 2 0 0 0-2.41-.44z"></path></svg>`,
-  other: `<svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`
-};
-
-// Update Stats counters on Dashboard
+// Update Stats counters on Landing Page
 function updateStats() {
-  const total = state.currentUser ? state.items.length : 0;
-  const lost = state.currentUser ? state.items.filter(item => item.type === 'lost' && item.status !== 'returned').length : 0;
-  const returned = state.currentUser ? state.items.filter(item => item.status === 'returned').length : 0;
+  // Stats can be calculated even if not logged in on the landing page for demonstration
+  const total = state.items.length;
+  const lost = state.items.filter(item => item.type === 'lost' && item.status !== 'returned').length;
+  const returned = state.items.filter(item => item.status === 'returned').length;
   
   animateCounter('stat-total', total);
   animateCounter('stat-lost', lost);
@@ -198,148 +102,39 @@ function animateCounter(id, targetValue) {
   }, intervalTime);
 }
 
-// Render Listings Grid based on filters and search
+// Render Listings Grid - displays login requirement card
 function renderItems() {
   const grid = document.getElementById('items-grid');
   if (!grid) return;
   
-  grid.innerHTML = '';
-  
-  if (!state.currentUser) {
-    grid.innerHTML = `
-      <div class="empty-state" style="padding: 4rem 2rem; border: 1px dashed var(--border-color); border-radius: var(--radius-lg); background: var(--bg-secondary); margin-top: 1rem;">
-        <p class="empty-desc" style="max-width: 380px; margin: 0.5rem auto 1.5rem auto; color: var(--text-muted); font-size: 0.95rem; font-weight: 500;">
-          pls login or create your account
-        </p>
-        <div style="display: flex; gap: 1rem; justify-content: center;">
-          <button class="btn btn-primary" id="btn-login-lock" style="padding: 0.6rem 1.5rem;">Log In</button>
-          <button class="btn btn-secondary" id="btn-signup-lock" style="padding: 0.6rem 1.5rem;">Create Account</button>
-        </div>
+  grid.innerHTML = `
+    <div class="empty-state" style="padding: 4rem 2rem; border: 1px dashed var(--border-color); border-radius: var(--radius-lg); background: var(--bg-secondary); margin-top: 1rem; width: 100%;">
+      <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
+      <h3 style="font-size: 1.25rem; font-family: 'Outfit', sans-serif; color: var(--secondary); margin-bottom: 0.5rem;">Access Restricted</h3>
+      <p class="empty-desc" style="max-width: 380px; margin: 0.5rem auto 1.5rem auto; color: var(--text-muted); font-size: 0.95rem; font-weight: 500;">
+        Please log in or create an account to view lost and found listings.
+      </p>
+      <div style="display: flex; gap: 1rem; justify-content: center;">
+        <button class="btn btn-primary" id="btn-login-lock" style="padding: 0.6rem 1.5rem;">Log In</button>
+        <button class="btn btn-secondary" id="btn-signup-lock" style="padding: 0.6rem 1.5rem;">Create Account</button>
       </div>
-    `;
-    const loginLockBtn = document.getElementById('btn-login-lock');
-    const signupLockBtn = document.getElementById('btn-signup-lock');
-    if (loginLockBtn) {
-      loginLockBtn.addEventListener('click', () => {
-        const headerLogin = document.getElementById('btn-header-login');
-        if (headerLogin) headerLogin.click();
-      });
-    }
-    if (signupLockBtn) {
-      signupLockBtn.addEventListener('click', () => {
-        const headerSignup = document.getElementById('btn-header-signup');
-        if (headerSignup) headerSignup.click();
-      });
-    }
-    return;
-  }
+    </div>
+  `;
   
-  // Filter logic
-  let filtered = state.items.filter(item => {
-    // 1. View filter (My Reports vs All Dashboard)
-    if (state.currentView === 'my-items') {
-      if (!state.currentUser) return false;
-      return item.reporterName === state.currentUser.name;
-    }
-    return true;
-  });
-  
-  // Sort: Active items first, then newer items first
-  filtered.sort((a, b) => {
-    if (a.status === 'returned' && b.status !== 'returned') return 1;
-    if (a.status !== 'returned' && b.status === 'returned') return -1;
-    return new Date(b.date) - new Date(a.date);
-  });
-
-  if (filtered.length === 0) {
-    grid.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">🔍</div>
-        <h3 class="empty-title">No Items Found</h3>
-        <p class="empty-desc">We couldn't find any listings matching your filters or search keywords. Try adjusting your query or report a new item.</p>
-      </div>
-    `;
-    return;
-  }
-  
-  filtered.forEach(item => {
-    const card = document.createElement('div');
-    card.className = `item-card ${item.status === 'returned' ? 'item-returned' : ''}`;
-    card.setAttribute('data-id', item._id || item.id);
-    
-    // Handle image preview or category illustration fallback
-    let imageHTML = '';
-    if (item.image && item.image.startsWith('data:image')) {
-      imageHTML = `<img src="${item.image}" alt="${item.title}">`;
-    } else {
-      const icon = categoryIcons[item.category] || categoryIcons['other'];
-      imageHTML = `
-        <div class="placeholder-illustration">
-          ${icon}
-          <div class="placeholder-text">${item.category}</div>
-        </div>
-      `;
-    }
-    
-    const badgeText = item.status === 'returned' ? 'Returned' : (item.type === 'found' ? 'Found' : 'Lost');
-    const badgeClass = item.status === 'returned' ? 'badge-found' : (item.type === 'found' ? 'badge-found' : 'badge-lost');
-    const borderStyle = item.status === 'returned' ? 'border: 2px solid var(--success); opacity: 0.85;' : '';
-    
-    // Auto-Match badge: check if a potential match exists for this item
-    let matchBadgeHTML = '';
-    if (item.status === 'active') {
-      const potentialMatch = findPotentialMatches(item);
-      if (potentialMatch) {
-        matchBadgeHTML = `<span class="card-badge badge-matched">✨ Matched</span>`;
-      }
-    }
-    
-    card.innerHTML = `
-      <div class="card-image-area" style="${item.status === 'returned' ? 'opacity: 0.65;' : ''}">
-        <span class="card-badge ${badgeClass}">${badgeText}</span>
-        ${matchBadgeHTML}
-        ${imageHTML}
-      </div>
-      <div class="card-content" style="${item.status === 'returned' ? 'opacity: 0.75;' : ''}">
-        <div class="card-meta">
-          <span>${formatDate(item.date)}</span>
-          <span class="meta-dot"></span>
-          <span style="text-transform: capitalize;">${item.category}</span>
-        </div>
-        <h3 class="card-title">${item.title}</h3>
-        <p class="card-description">${item.description}</p>
-        <div class="card-footer">
-          <div class="card-location">
-            <span class="card-location-icon">📍</span>
-            <span>${item.location}</span>
-          </div>
-          <button class="btn btn-secondary btn-detail-trigger" style="padding: 0.4rem 0.9rem; font-size: 0.8rem;">
-            ${item.status === 'returned' ? 'View Details' : 'Verify & Claim'}
-          </button>
-        </div>
-      </div>
-    `;
-    
-    // Open detail modal when card or button is clicked
-    card.querySelector('.btn-detail-trigger').addEventListener('click', (e) => {
-      e.stopPropagation();
-      openDetailModal(item._id || item.id);
+  const loginLockBtn = document.getElementById('btn-login-lock');
+  const signupLockBtn = document.getElementById('btn-signup-lock');
+  if (loginLockBtn) {
+    loginLockBtn.addEventListener('click', () => {
+      const headerLogin = document.getElementById('btn-header-login');
+      if (headerLogin) headerLogin.click();
     });
-    card.addEventListener('click', () => {
-      openDetailModal(item._id || item.id);
+  }
+  if (signupLockBtn) {
+    signupLockBtn.addEventListener('click', () => {
+      const headerSignup = document.getElementById('btn-header-signup');
+      if (headerSignup) headerSignup.click();
     });
-    
-    grid.appendChild(card);
-  });
-}
-
-// Formats date string to friendly readable format
-function formatDate(dateStr) {
-  if (!dateStr) return 'Unknown Date';
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return dateStr;
-  const options = { year: 'numeric', month: 'short', day: 'numeric' };
-  return d.toLocaleDateString(undefined, options);
+  }
 }
 
 // Modal Toggle Utility
@@ -351,7 +146,6 @@ function toggleModal(modalId, show = true) {
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
     
-    // Autofocus first input inside the modal for better UX/accessibility
     setTimeout(() => {
       const firstInput = modal.querySelector('.otp-digit-input, input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled])');
       if (firstInput) {
@@ -374,7 +168,6 @@ function showToast(message, type = 'success') {
   
   msgEl.textContent = message;
   
-  // Set premium SVG icons based on type
   if (iconEl) {
     if (type === 'success') {
       iconEl.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
@@ -387,7 +180,6 @@ function showToast(message, type = 'success') {
     }
   }
   
-  // Reset the active class and trigger reflow for progress bar animation
   toast.classList.remove('active');
   void toast.offsetWidth; // trigger reflow
   toast.className = `toast toast-${type} active`;
@@ -401,245 +193,8 @@ function showToast(message, type = 'success') {
   }, 4000);
 }
 
-// Modal Detail Window Builder
-function openDetailModal(itemId) {
-  const item = state.items.find(i => (i._id || i.id) === itemId);
-  if (!item) return;
-  
-  const detailBody = document.getElementById('detail-body');
-  if (!detailBody) return;
-  
-  // Set up details view
-  let imageHTML = '';
-  if (item.image && item.image.startsWith('data:image')) {
-    imageHTML = `<img src="${item.image}" alt="${item.title}">`;
-  } else {
-    const icon = categoryIcons[item.category] || categoryIcons['other'];
-    imageHTML = `
-      <div class="placeholder-illustration">
-        ${icon}
-        <div class="placeholder-text" style="font-size: 1rem; margin-top: 0.5rem;">${item.category}</div>
-      </div>
-    `;
-  }
-  
-  // Claim state or contact section
-  let actionSection = '';
-  
-  if (item.status === 'returned') {
-    actionSection = `
-      <div class="verification-box claimed">
-        <div class="verification-title">🎉 Item Successfully Returned</div>
-        <p>This item has been successfully claimed by its rightful owner after passing verification checks.</p>
-      </div>
-    `;
-  } else if (item.type === 'found') {
-    actionSection = `
-      <div class="verification-box" id="claim-verification-section">
-        <div class="verification-title">📍 LCU In-Person Claim Verification</div>
-        <p style="font-size: 0.88rem; margin-bottom: 0.75rem;">
-          To retrieve this found item, please visit the <strong>LCU Security Office (Senate Building)</strong> in person. 
-          A security officer will perform an in-person check (e.g., matching ID, describing details, or unlocking devices).
-        </p>
-        <div style="background-color: var(--bg-tertiary); padding: 0.75rem; border-radius: var(--radius-sm); border-left: 3px solid var(--primary); margin-bottom: 1rem; font-size: 0.8rem;">
-          <strong>Security Office Hours:</strong> 8:00 AM - 5:00 PM (Monday - Friday)
-        </div>
-        <button class="btn btn-primary" id="btn-start-claim" style="width: 100%; justify-content: center;">
-          Notify Security I'm Coming to Claim
-        </button>
-      </div>
-    `;
-  } else {
-    // Lost Item detail view: Contact owner to return
-    actionSection = `
-      <div class="verification-box" style="background-color: var(--primary-light); border-color: rgba(37, 99, 235, 0.2);">
-        <div class="verification-title">🙋 Did you find this item?</div>
-        <p>If you have found this item or have any information, please reach out to the reporter immediately.</p>
-        <div style="background-color: white; padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 0rem;">
-          <div style="font-size: 0.85rem; color: var(--text-muted);">Reporter</div>
-          <div style="font-weight: 700; color: var(--secondary); margin-bottom: 0.5rem;">${item.reporterName}</div>
-          <div style="font-size: 0.85rem; color: var(--text-muted);">Contact Details</div>
-          <div style="font-family: monospace; font-weight: 600; color: var(--primary);">${item.reporterContact}</div>
-        </div>
-      </div>
-    `;
-  }
-
-  detailBody.innerHTML = `
-    <div class="detail-layout">
-      <div class="detail-image">
-        ${imageHTML}
-      </div>
-      
-      <div>
-        <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">${item.title}</h2>
-        <div class="detail-info-row">
-          <div class="info-item">
-            <h4>Encountered Location</h4>
-            <p>📍 ${item.location}</p>
-          </div>
-          <div class="info-item">
-            <h4>Date Logged</h4>
-            <p>📅 ${formatDate(item.date)}</p>
-          </div>
-          <div class="info-item">
-            <h4>Reported By</h4>
-            <p>👤 ${item.reporterName}</p>
-          </div>
-          <div class="info-item">
-            <h4>Item Category</h4>
-            <p style="text-transform: capitalize;">📦 ${item.category}</p>
-          </div>
-        </div>
-      </div>
-      
-      <div>
-        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.25rem;">Description</h3>
-        <p class="detail-description">${item.description}</p>
-      </div>
-      
-      ${actionSection}
-      ${item.type === 'found' && item.status !== 'returned' ? `
-        <button class="btn btn-secondary" id="btn-generate-tag-qr" style="width: 100%; justify-content: center; gap: 0.5rem; margin-top: 1rem;">
-          🖨️ Create Security Tag QR Label
-        </button>
-      ` : ''}
-    </div>
-  `;
-  
-  toggleModal('modal-detail', true);
-  
-  // Attach QR Label generator trigger
-  const btnGenQR = document.getElementById('btn-generate-tag-qr');
-  if (btnGenQR) {
-    btnGenQR.addEventListener('click', () => {
-      document.getElementById('qr-label-title').textContent = item.title;
-      document.getElementById('qr-label-id').textContent = item._id || item.id;
-      document.getElementById('qr-label-category').textContent = item.category;
-      document.getElementById('qr-label-location').textContent = item.location;
-      
-      const qrCanvas = document.getElementById('qr-canvas');
-      const originUrl = window.location.origin !== "null" ? window.location.origin : 'https://lcufindme.edu.ng';
-      let path = window.location.pathname;
-      if (path.endsWith('index.html')) {
-        path = path.replace('index.html', 'slip.html');
-      } else if (path.endsWith('/')) {
-        path += 'slip.html';
-      } else {
-        path = '/slip.html';
-      }
-      const itemUrl = `${originUrl}${path}?item=${item._id || item.id}`;
-      window.QRCode.draw(itemUrl, qrCanvas, { size: 120, margin: 5, color: '#0f172a' });
-      
-      toggleModal('modal-qr', true);
-    });
-  }
-  
-  // Attach Verification flow interactive events
-  const btnStartClaim = document.getElementById('btn-start-claim');
-  if (btnStartClaim) {
-    btnStartClaim.addEventListener('click', () => {
-      if (!state.currentUser) {
-        showToast('Please log in or create an account to submit claim notices.', 'warning');
-        toggleModal('modal-detail', false);
-        const headerLogin = document.getElementById('btn-header-login');
-        if (headerLogin) headerLogin.click();
-        return;
-      }
-
-      const claimSection = document.getElementById('claim-verification-section');
-      if (claimSection) {
-        const defaultName = state.currentUser.name || '';
-        const defaultMatric = state.currentUser.matricNumber || state.currentUser.email || '';
-        
-        claimSection.innerHTML = `
-          <div class="verification-title" style="margin-bottom: 0.5rem;">📍 LCU In-Person Claim Verification</div>
-          <p style="font-size: 0.82rem; margin-bottom: 0.75rem; color: var(--text-muted);">
-            Please enter details to verify your ownership of this item before visiting the Security Office.
-          </p>
-          <form id="claim-details-form" style="display: flex; flex-direction: column; gap: 0.75rem; text-align: left;">
-            <div class="form-group">
-              <label class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem; display: block; font-weight: 600;">Claimant Name</label>
-              <input type="text" class="form-control" id="claim-claimant-name" value="${defaultName}" style="padding: 0.5rem; width: 100%; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-primary); color: var(--text-dark);" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem; display: block; font-weight: 600;">Matric Number / Email</label>
-              <input type="text" class="form-control" id="claim-claimant-matric" value="${defaultMatric}" style="padding: 0.5rem; width: 100%; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-primary); color: var(--text-dark);" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem; display: block; font-weight: 600;">Verification details (Description, passcode, contents, etc.)</label>
-              <textarea class="form-control" id="claim-claimant-details" placeholder="Describe the item's unique characteristics, passcode details, contents, or other proof of ownership..." style="padding: 0.5rem; min-height: 80px; width: 100%; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-primary); color: var(--text-dark); font-family: inherit; resize: vertical;" required></textarea>
-            </div>
-            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-              <button type="button" class="btn btn-secondary" id="btn-cancel-claim" style="flex: 1; justify-content: center; font-size: 0.85rem; padding: 0.5rem;">Cancel</button>
-              <button type="submit" class="btn btn-primary" id="btn-submit-claim-form" style="flex: 2; justify-content: center; font-size: 0.85rem; padding: 0.5rem;">Submit Claim Request</button>
-            </div>
-          </form>
-        `;
-
-        // Attach cancel button event
-        const btnCancelClaim = document.getElementById('btn-cancel-claim');
-        if (btnCancelClaim) {
-          btnCancelClaim.addEventListener('click', () => {
-            // Re-render the detail modal to reset the section
-            openDetailModal(item._id || item.id);
-          });
-        }
-
-        // Attach form submit event
-        const claimForm = document.getElementById('claim-details-form');
-        if (claimForm) {
-          claimForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btnSubmit = document.getElementById('btn-submit-claim-form');
-            if (btnSubmit) {
-              btnSubmit.disabled = true;
-              btnSubmit.textContent = 'Submitting...';
-            }
-
-            const claimantName = document.getElementById('claim-claimant-name').value.trim();
-            const claimantMatric = document.getElementById('claim-claimant-matric').value.trim();
-            const claimDetails = document.getElementById('claim-claimant-details').value.trim();
-
-            try {
-              const token = localStorage.getItem('lcu_findme_token');
-              const res = await fetch(`${API_URL}/items/${item._id}/claim`, {
-                method: 'POST',
-                headers: { 
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ claimantName, claimantMatric, claimDetails })
-              });
-              if (res.ok) {
-                toggleModal('modal-detail', false);
-                render();
-                showToast(`Verification claim notice submitted to Security successfully.`);
-              } else {
-                const data = await res.json().catch(() => ({}));
-                showToast(data.message || 'Failed to submit claim verification request.', 'error');
-                if (btnSubmit) {
-                  btnSubmit.disabled = false;
-                  btnSubmit.textContent = 'Submit Claim Request';
-                }
-              }
-            } catch (err) {
-              showToast('Connection error connecting to backend.', 'error');
-              if (btnSubmit) {
-                btnSubmit.disabled = false;
-                btnSubmit.textContent = 'Submit Claim Request';
-              }
-            }
-          });
-        }
-      }
-    });
-  }
-}
-
 // Event Listeners Binding
 function setupEventListeners() {
-  // Theme Toggle Event Listener
   const themeToggle = document.getElementById('theme-toggle');
   if (themeToggle) {
     themeToggle.addEventListener('click', () => {
@@ -649,512 +204,38 @@ function setupEventListeners() {
     });
   }
 
-  // Modal toggle events
+  // Header and Hero elements triggers login
   const btnReportHeader = document.getElementById('btn-report-header');
   const btnReportHero = document.getElementById('btn-report-hero');
-  const btnCloseReport = document.getElementById('btn-close-report');
+  const btnScrollDashboard = document.getElementById('btn-scroll-dashboard');
   
-  const openReportForm = () => {
-    // Check if user is authenticated first
-    if (!state.currentUser) {
-      showToast('Please log in or create an account to report items.', 'warning');
-      openAuthModal('login');
-      return;
-    }
-
-    // Reset form states
-    document.getElementById('form-report').reset();
-    state.tempUploadedImage = null;
-    document.getElementById('preview-container').style.display = 'none';
-    document.getElementById('upload-zone').style.display = 'block';
-    
-    // Set default date to today
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('report-date').value = today;
-    
-    // Set Reporter to current active user
-    document.getElementById('report-reporter').value = state.currentUser.name;
-    document.getElementById('report-contact').value = state.currentUser.phoneNumber || state.currentUser.phone || '';
-    
-    toggleModal('modal-report', true);
+  const triggerLoginPrompt = () => {
+    showToast('Please log in or create an account to proceed.', 'warning');
+    openAuthModal('login');
   };
   
-  if (btnReportHeader) btnReportHeader.addEventListener('click', openReportForm);
-  if (btnReportHero) btnReportHero.addEventListener('click', openReportForm);
-  if (btnCloseReport) btnCloseReport.addEventListener('click', () => toggleModal('modal-report', false));
-  
-  const btnCloseDetail = document.getElementById('btn-close-detail');
-  if (btnCloseDetail) btnCloseDetail.addEventListener('click', () => toggleModal('modal-detail', false));
-  
-  // Stop click propagation on all modal containers so button clicks don't leak to backdrop
+  if (btnReportHeader) btnReportHeader.addEventListener('click', triggerLoginPrompt);
+  if (btnReportHero) btnReportHero.addEventListener('click', triggerLoginPrompt);
+  if (btnScrollDashboard) {
+    btnScrollDashboard.addEventListener('click', () => {
+      document.getElementById('listings-section').scrollIntoView({ behavior: 'smooth' });
+    });
+  }
+
+  // Backdrop click modal close
   document.querySelectorAll('.modal-container').forEach(container => {
     container.addEventListener('click', (e) => {
       e.stopPropagation();
     });
   });
 
-  // Close modals ONLY when clicking the backdrop itself (not any child element)
   document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
     backdrop.addEventListener('click', (e) => {
-      // Only close if the click target is the backdrop itself, not anything inside
       if (e.target === backdrop) {
         toggleModal(backdrop.id, false);
       }
     });
   });
-
-  // Report Type selections (I Found / I Lost toggles)
-  const typeFoundBtn = document.getElementById('type-select-found');
-  const typeLostBtn = document.getElementById('type-select-lost');
-  let selectedReportType = 'found'; // default
-  
-  if (typeFoundBtn && typeLostBtn) {
-    typeFoundBtn.addEventListener('click', () => {
-      selectedReportType = 'found';
-      typeFoundBtn.classList.add('active');
-      typeLostBtn.classList.remove('active');
-      document.getElementById('report-modal-title').textContent = "Report Found Item";
-    });
-    
-    typeLostBtn.addEventListener('click', () => {
-      selectedReportType = 'lost';
-      typeLostBtn.classList.add('active');
-      typeFoundBtn.classList.remove('active');
-      document.getElementById('report-modal-title').textContent = "Report Lost Item";
-    });
-  }
-
-  // File Upload Logic (Drag and Drop + Fallback)
-  const uploadZone = document.getElementById('upload-zone');
-  const fileInput = document.getElementById('file-input');
-  const previewContainer = document.getElementById('preview-container');
-  const previewImage = document.getElementById('preview-image');
-  const btnRemovePreview = document.getElementById('btn-remove-preview');
-  
-  if (uploadZone && fileInput) {
-    uploadZone.addEventListener('click', () => fileInput.click());
-    
-    uploadZone.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      uploadZone.classList.add('dragover');
-    });
-    
-    uploadZone.addEventListener('dragleave', () => {
-      uploadZone.classList.remove('dragover');
-    });
-    
-    uploadZone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      uploadZone.classList.remove('dragover');
-      if (e.dataTransfer.files.length > 0) {
-        handleImageFile(e.dataTransfer.files[0]);
-      }
-    });
-    
-    fileInput.addEventListener('change', (e) => {
-      if (e.target.files.length > 0) {
-        handleImageFile(e.target.files[0]);
-      }
-    });
-  }
-  
-  if (btnRemovePreview) {
-    btnRemovePreview.addEventListener('click', () => {
-      state.tempUploadedImage = null;
-      previewContainer.style.display = 'none';
-      uploadZone.style.display = 'block';
-      fileInput.value = '';
-    });
-  }
-
-  function handleImageFile(file) {
-    if (!file.type.startsWith('image/')) {
-      showToast('Please upload an image file.', 'error');
-      return;
-    }
-    
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      // Compress/resize image using a lightweight canvas mechanism to prevent localStorage overflows
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 400;
-        const scaleSize = MAX_WIDTH / img.width;
-        canvas.width = MAX_WIDTH;
-        canvas.height = img.height * scaleSize;
-        
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        
-        // Convert to scaled down jpeg
-        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
-        state.tempUploadedImage = compressedBase64;
-        
-        previewImage.src = compressedBase64;
-        uploadZone.style.display = 'none';
-        previewContainer.style.display = 'block';
-
-        // Check if category is documents to run AI OCR Simulation
-        const categoryVal = document.getElementById('report-category').value;
-        if (categoryVal === 'documents') {
-          showToast('🤖 AI OCR: Scanning document/ID card details...', 'info');
-          
-          setTimeout(() => {
-            // Generate some realistic student details
-            const mockStudents = [
-              { name: "Adebayo Johnson", matric: "LCU/UG/24/09322", dept: "Computer Science", faculty: "Computing & Applied Sciences" },
-              { name: "Chinedu Okafor", matric: "LCU/UG/23/11245", dept: "Software Engineering", faculty: "Computing & Applied Sciences" },
-              { name: "Amina Yusuf", matric: "LCU/UG/22/08331", dept: "Law", faculty: "Law" },
-              { name: "Olumide Alao", matric: "LCU/UG/24/10492", dept: "Nursing Science", faculty: "Medical Sciences" }
-            ];
-            const chosen = mockStudents[Math.floor(Math.random() * mockStudents.length)];
-            
-            // Auto-populate form fields
-            const titleField = document.getElementById('report-title');
-            const descField = document.getElementById('report-description');
-            
-            if (titleField) {
-              titleField.value = `Found ID Card - ${chosen.name}`;
-            }
-            if (descField) {
-              descField.value = `[AI OCR Scan details]\nName: ${chosen.name}\nMatric No: ${chosen.matric}\nFaculty: ${chosen.faculty}\nDepartment: ${chosen.dept}\n\nPlease verify details before claiming.`;
-            }
-            showToast(`✨ OCR Match: Extracted ID of ${chosen.name} (${chosen.matric})`, 'success');
-          }, 1500);
-        }
-      };
-      img.src = event.target.result;
-    };
-    reader.readAsDataURL(file);
-  }
-
-  // Handle Form Submission
-  const reportForm = document.getElementById('form-report');
-  if (reportForm) {
-    reportForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const btnSubmit = document.getElementById('btn-submit-report');
-      if (btnSubmit) {
-        btnSubmit.disabled = true;
-        btnSubmit.innerHTML = `<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.6s linear infinite;margin-right:8px;vertical-align:middle;"></span> Submitting...`;
-      }
-      
-      const payload = {
-        title: document.getElementById('report-title').value.trim(),
-        type: selectedReportType,
-        category: document.getElementById('report-category').value,
-        location: document.getElementById('report-location').value.trim(),
-        date: document.getElementById('report-date').value,
-        description: document.getElementById('report-description').value.trim(),
-        reporterName: document.getElementById('report-reporter').value.trim(),
-        reporterContact: document.getElementById('report-contact').value.trim(),
-        image: state.tempUploadedImage || null
-      };
-
-      try {
-        const token = localStorage.getItem('lcu_findme_token');
-        const res = await fetch(`${API_URL}/items`, {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        
-        if (res.ok) {
-          const match = data.match;
-          if (match) {
-            state.tempPendingReport = data.item;
-            state.pendingMatchItem = match;
-            
-            // Populate match modal preview card
-            const resultsContainer = document.getElementById('match-results-container');
-            let imageHTML = '';
-            if (match.image && match.image.startsWith('data:image')) {
-              imageHTML = `<img src="${match.image}" class="match-card-img" alt="${match.title}">`;
-            } else {
-              imageHTML = `<div class="match-card-img" style="color: var(--primary); font-size: 1.5rem;">📦</div>`;
-            }
-            
-            resultsContainer.innerHTML = `
-              <div class="match-card-item">
-                ${imageHTML}
-                <div class="match-card-details">
-                  <div class="match-card-title">${match.title}</div>
-                  <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">
-                    📍 ${match.location} &nbsp;|&nbsp; 📅 ${formatDate(match.date)}
-                  </div>
-                  <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.3;">
-                    ${match.description}
-                  </p>
-                </div>
-              </div>
-            `;
-            
-            toggleModal('modal-report', false);
-            toggleModal('modal-match', true);
-          } else {
-            toggleModal('modal-report', false);
-            render();
-            showToast(`Successfully reported: "${data.item.title}"`);
-            if (typeof addNotification === 'function') {
-              addNotification(`📋 You reported a ${data.item.type} item: "${data.item.title}". Security has been notified.`);
-            }
-          }
-        } else {
-          showToast(data.message || 'Failed to submit report', 'error');
-        }
-      } catch (err) {
-        showToast('Connection error connecting to backend.', 'error');
-      } finally {
-        if (btnSubmit) {
-          btnSubmit.disabled = false;
-          btnSubmit.innerHTML = `Submit Report`;
-        }
-      }
-    });
-  }
-
-  // Auto-Match Modal Button Handlers
-  const btnMatchIgnore = document.getElementById('btn-match-ignore');
-  if (btnMatchIgnore) {
-    btnMatchIgnore.addEventListener('click', () => {
-      toggleModal('modal-match', false);
-      render();
-      if (state.tempPendingReport) {
-        showToast(`Successfully reported: "${state.tempPendingReport.title}"`);
-        if (typeof addNotification === 'function') {
-          addNotification(`📋 You reported a ${state.tempPendingReport.type} item: "${state.tempPendingReport.title}". Security has been notified.`);
-        }
-        state.tempPendingReport = null;
-        state.pendingMatchItem = null;
-      }
-    });
-  }
-
-  const btnMatchView = document.getElementById('btn-match-view');
-  if (btnMatchView) {
-    btnMatchView.addEventListener('click', () => {
-      if (state.pendingMatchItem) {
-        const targetId = state.pendingMatchItem._id || state.pendingMatchItem.id;
-        toggleModal('modal-match', false);
-        openDetailModal(targetId);
-        state.tempPendingReport = null;
-        state.pendingMatchItem = null;
-      }
-    });
-  }
-
-  // Interactive SVG Map Toggling & Clicks
-  const btnToggleMap = document.getElementById('btn-toggle-map');
-  const mapContainer = document.getElementById('map-container');
-  if (btnToggleMap && mapContainer) {
-    btnToggleMap.addEventListener('click', () => {
-      if (mapContainer.style.display === 'none') {
-        mapContainer.style.display = 'block';
-        btnToggleMap.textContent = "🙈 Hide Interactive Map";
-      } else {
-        mapContainer.style.display = 'none';
-        btnToggleMap.textContent = "🗺️ Use Interactive Campus Map";
-      }
-    });
-  }
-
-  const mapBuildings = document.querySelectorAll('.map-building');
-  mapBuildings.forEach(building => {
-    building.addEventListener('click', () => {
-      // Highlight selection
-      mapBuildings.forEach(b => b.classList.remove('active'));
-      building.classList.add('active');
-      
-      // Update form text value
-      const locationName = building.getAttribute('data-name');
-      const inputLoc = document.getElementById('report-location');
-      if (inputLoc) {
-        inputLoc.value = locationName;
-        // Trigger style glow animation
-        inputLoc.classList.add('glow');
-        setTimeout(() => inputLoc.classList.remove('glow'), 800);
-      }
-    });
-  });
-
-  // Modal Closures for Phase 2 Modals
-  const btnCloseMatch = document.getElementById('btn-close-match');
-  if (btnCloseMatch) {
-    btnCloseMatch.addEventListener('click', (e) => {
-      e.stopPropagation();
-      toggleModal('modal-match', false);
-    });
-  }
-
-  const btnCloseQr = document.getElementById('btn-close-qr');
-  if (btnCloseQr) {
-    btnCloseQr.addEventListener('click', (e) => {
-      e.stopPropagation();
-      toggleModal('modal-qr', false);
-    });
-  }
-
-  // QR Print Trigger
-  const btnPrintQr = document.getElementById('btn-print-qr');
-  if (btnPrintQr) {
-    btnPrintQr.addEventListener('click', () => {
-      window.print();
-    });
-  }
-
-  // Tab Filtering (All vs Found vs Lost)
-  const filterTabs = document.querySelectorAll('.filter-tab[data-type]');
-  filterTabs.forEach(tab => {
-    tab.addEventListener('click', (e) => {
-      if (!state.currentUser) {
-        showToast('Please log in or create an account to filter listings.', 'warning');
-        openAuthModal('login');
-        return;
-      }
-      filterTabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      state.filters.type = tab.getAttribute('data-type');
-      render();
-    });
-  });
-
-  // Category Filtering (Chips)
-  const categoryChips = document.querySelectorAll('.category-chip');
-  categoryChips.forEach(chip => {
-    chip.addEventListener('click', () => {
-      if (!state.currentUser) {
-        showToast('Please log in or create an account to view categories.', 'warning');
-        openAuthModal('login');
-        return;
-      }
-      categoryChips.forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      state.filters.category = chip.getAttribute('data-category');
-      render();
-    });
-  });
-
-  // Search Engine
-  const searchInput = document.getElementById('search-input');
-  const searchButton = document.getElementById('search-button');
-  
-  const executeSearch = () => {
-    if (!state.currentUser) {
-      showToast('Please log in or create an account to search listings.', 'warning');
-      openAuthModal('login');
-      return;
-    }
-    state.filters.search = searchInput.value;
-    render();
-    document.getElementById('listings-section').scrollIntoView({ behavior: 'smooth' });
-  };
-  
-  if (searchButton) {
-    searchButton.addEventListener('click', executeSearch);
-  }
-  if (searchInput) {
-    searchInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        executeSearch();
-      }
-    });
-  }
-
-  // Navigation Links
-  const navHome = document.getElementById('nav-home');
-  const navMyItems = document.getElementById('nav-my-items');
-  const navProfile = document.getElementById('nav-profile');
-  const sectionTitle = document.getElementById('section-title');
-
-  const switchSectionVisibility = (view) => {
-    const listingsSection = document.getElementById('listings-section');
-    const profileSection = document.getElementById('profile-section');
-    const heroSection = document.querySelector('.hero-section');
-    const statsContainer = document.querySelector('.stats-container');
-
-    if (view === 'profile') {
-      if (listingsSection) listingsSection.style.display = 'none';
-      if (profileSection) profileSection.style.display = 'block';
-      if (heroSection) heroSection.style.display = 'none';
-      if (statsContainer) statsContainer.style.display = 'none';
-    } else {
-      if (listingsSection) listingsSection.style.display = 'block';
-      if (profileSection) profileSection.style.display = 'none';
-      if (heroSection) heroSection.style.display = 'block';
-      if (statsContainer) statsContainer.style.display = 'grid';
-    }
-  };
-  
-  if (navHome) {
-    navHome.addEventListener('click', (e) => {
-      e.preventDefault();
-      navHome.classList.add('active');
-      if (navMyItems) navMyItems.classList.remove('active');
-      if (navProfile) navProfile.classList.remove('active');
-      state.currentView = 'dashboard';
-      if (sectionTitle) sectionTitle.textContent = "Recent Listings";
-      switchSectionVisibility('dashboard');
-      render();
-    });
-  }
-  
-  if (navMyItems) {
-    navMyItems.addEventListener('click', (e) => {
-      e.preventDefault();
-      if (!state.currentUser) {
-        showToast('Please log in to view your reports.', 'warning');
-        openAuthModal('login');
-        return;
-      }
-      navMyItems.classList.add('active');
-      if (navHome) navHome.classList.remove('active');
-      if (navProfile) navProfile.classList.remove('active');
-      state.currentView = 'my-items';
-      if (sectionTitle) sectionTitle.textContent = "My Reported Listings";
-      switchSectionVisibility('my-items');
-      render();
-    });
-  }
-
-  if (navProfile) {
-    navProfile.addEventListener('click', (e) => {
-      e.preventDefault();
-      if (!state.currentUser) {
-        showToast('Please log in to view your profile.', 'warning');
-        openAuthModal('login');
-        return;
-      }
-      navProfile.classList.add('active');
-      if (navHome) navHome.classList.remove('active');
-      if (navMyItems) navMyItems.classList.remove('active');
-      state.currentView = 'profile';
-      switchSectionVisibility('profile');
-      syncLoginUI();
-    });
-  }
-
-  // Edit Profile Settings trigger inside card
-  const btnProfileCardEdit = document.getElementById('btn-profile-card-edit');
-  if (btnProfileCardEdit) {
-    btnProfileCardEdit.addEventListener('click', () => {
-      const editBtn = document.getElementById('btn-edit-profile');
-      if (editBtn) editBtn.click();
-    });
-  }
-
-  // Hero Scroll Button
-  const btnScroll = document.getElementById('btn-scroll-dashboard');
-  if (btnScroll) {
-    btnScroll.addEventListener('click', () => {
-      document.getElementById('listings-section').scrollIntoView({ behavior: 'smooth' });
-    });
-  }
 
   // --- Auth Modal Logic ---
   const btnHeaderLogin = document.getElementById('btn-header-login');
@@ -1203,13 +284,12 @@ function setupEventListeners() {
       setTimeout(() => {
         window.location.href = 'admin.html';
       }, 1000);
-      return;
+    } else {
+      showToast('Successfully logged in. Opening your dashboard...');
+      setTimeout(() => {
+        window.location.href = 'dashboard.html';
+      }, 1000);
     }
-    
-    syncLoginUI();
-    toggleModal('modal-auth', false);
-    render();
-    fetchNotifications();
   };
 
   if (formLogin) {
@@ -1228,9 +308,7 @@ function setupEventListeners() {
         
         if (res.ok) {
           loginUser(data.user, data.token);
-          showToast('Successfully logged in.');
         } else if (res.status === 403 && data.requiresVerification) {
-          // Account not verified — show OTP modal
           state.pendingVerifEmail = data.email;
           toggleModal('modal-auth', false);
           const otpDisplay = document.getElementById('otp-email-display');
@@ -1249,40 +327,31 @@ function setupEventListeners() {
   // Signup Role toggle field logic
   const signupRole = document.getElementById('signup-role');
   const studentFields = document.getElementById('student-fields-container');
-  const signupEmail = document.getElementById('signup-email');
-  const signupEmailLabel = document.getElementById('signup-email-label');
-  const btnSubmitSignup = document.getElementById('btn-submit-signup');
-
-  if (signupRole && studentFields) {
+  const emailLabel = document.getElementById('signup-email-label');
+  const matricInput = document.getElementById('signup-matric');
+  const levelSelect = document.getElementById('signup-level');
+  const facultySelect = document.getElementById('signup-faculty');
+  const deptInput = document.getElementById('signup-dept');
+  
+  if (signupRole) {
     signupRole.addEventListener('change', () => {
-      const selectedRole = signupRole.value;
-      if (selectedRole === 'student') {
-        studentFields.style.display = 'block';
-        document.getElementById('signup-matric').required = true;
-        document.getElementById('signup-level').required = true;
-        document.getElementById('signup-faculty').required = true;
-        document.getElementById('signup-dept').required = true;
-        if (signupEmail) {
-          signupEmail.required = true;
-          signupEmailLabel.textContent = "University Email *";
-        }
-        if (btnSubmitSignup) btnSubmitSignup.textContent = "Create Student Account";
+      const isStudent = signupRole.value === 'student';
+      if (isStudent) {
+        if (studentFields) studentFields.style.display = 'block';
+        if (emailLabel) emailLabel.textContent = "University Email *";
+        if (matricInput) matricInput.required = true;
+        if (levelSelect) levelSelect.required = true;
+        if (facultySelect) facultySelect.required = true;
+        if (deptInput) deptInput.required = true;
+        document.getElementById('btn-submit-signup').textContent = "Create Student Account";
       } else {
-        studentFields.style.display = 'none';
-        document.getElementById('signup-matric').required = false;
-        document.getElementById('signup-level').required = false;
-        document.getElementById('signup-faculty').required = false;
-        document.getElementById('signup-dept').required = false;
-        if (signupEmail) {
-          signupEmail.required = true;
-          signupEmailLabel.textContent = "Official Email *";
-        }
-        
-        if (selectedRole === 'staff') {
-          if (btnSubmitSignup) btnSubmitSignup.textContent = "Create Staff Account";
-        } else if (selectedRole === 'admin') {
-          if (btnSubmitSignup) btnSubmitSignup.textContent = "Create Security Account";
-        }
+        if (studentFields) studentFields.style.display = 'none';
+        if (emailLabel) emailLabel.textContent = "Staff Email Address *";
+        if (matricInput) matricInput.required = false;
+        if (levelSelect) levelSelect.required = false;
+        if (facultySelect) facultySelect.required = false;
+        if (deptInput) deptInput.required = false;
+        document.getElementById('btn-submit-signup').textContent = "Create Staff Account";
       }
     });
   }
@@ -1290,33 +359,41 @@ function setupEventListeners() {
   if (formSignup) {
     formSignup.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const role = document.getElementById('signup-role').value;
-      const name = document.getElementById('signup-name').value;
-      const email = document.getElementById('signup-email').value;
-      const phoneNumber = document.getElementById('signup-phone').value;
-      const pass = document.getElementById('signup-password').value;
+      
+      const password = document.getElementById('signup-password').value;
       const confirm = document.getElementById('signup-confirm').value;
-
-      if (pass !== confirm) {
-        alert("Passwords do not match!");
+      
+      if (password !== confirm) {
+        showToast('Passwords do not match.', 'error');
         return;
       }
-
+      
+      const roleVal = signupRole ? signupRole.value : 'student';
+      const nameVal = document.getElementById('signup-name').value.trim();
+      const emailVal = document.getElementById('signup-email').value.trim();
+      const phoneVal = document.getElementById('signup-phone').value.trim();
+      
       let payload = {
-        role,
-        name,
-        email,
-        phoneNumber,
-        password: pass
+        role: roleVal,
+        name: nameVal,
+        email: emailVal,
+        phoneNumber: phoneVal,
+        password: password
       };
-
-      if (role === 'student') {
-        payload.matricNumber = document.getElementById('signup-matric').value.toLowerCase();
+      
+      if (roleVal === 'student') {
+        payload.matricNumber = document.getElementById('signup-matric').value.toUpperCase().trim();
         payload.level = document.getElementById('signup-level').value;
         payload.faculty = document.getElementById('signup-faculty').value;
-        payload.department = document.getElementById('signup-dept').value;
+        payload.department = document.getElementById('signup-dept').value.trim();
       }
-      
+
+      const signupBtn = document.getElementById('btn-submit-signup');
+      if (signupBtn) {
+        signupBtn.disabled = true;
+        signupBtn.textContent = 'Creating Account...';
+      }
+
       try {
         const res = await fetch(`${API_URL}/auth/register`, {
           method: 'POST',
@@ -1325,126 +402,110 @@ function setupEventListeners() {
         });
         const data = await res.json();
         
-        if (res.ok && data.requiresVerification) {
-          // Show OTP verification modal
-          state.pendingVerifEmail = data.email;
+        if (res.ok) {
+          state.pendingVerifEmail = emailVal;
           toggleModal('modal-auth', false);
+          
           const otpDisplay = document.getElementById('otp-email-display');
-          if (otpDisplay) otpDisplay.textContent = data.email;
+          if (otpDisplay) otpDisplay.textContent = emailVal;
           toggleModal('modal-otp', true);
-          showToast('Registration successful! Check your email for the verification code.');
-        } else if (res.ok) {
-          loginUser(data.user, data.token);
-          showToast(`Account created successfully. Welcome to LCU FindMe!`);
+          showToast('Account verification required. Check your email for OTP!');
         } else {
-          showToast(data.message || 'Registration failed', 'error');
+          showToast(data.message || 'Account registration failed.', 'error');
         }
       } catch (err) {
         showToast('Connection error connecting to backend.', 'error');
+      } finally {
+        if (signupBtn) {
+          signupBtn.disabled = false;
+          signupBtn.textContent = roleVal === 'student' ? 'Create Student Account' : 'Create Staff Account';
+        }
       }
     });
   }
 
-  // Logout Logic
-  const btnLogout = document.getElementById('btn-logout');
-  if (btnLogout) {
-    btnLogout.addEventListener('click', () => {
-      state.currentUser = null;
-      localStorage.removeItem('lcu_findme_token');
-      localStorage.removeItem('lcu_findme_user');
-      const profileMock = document.getElementById('user-profile-container');
-      const authContainer = document.getElementById('auth-container');
-      
-      if (profileMock) profileMock.style.display = 'none';
-      if (authContainer) authContainer.style.display = 'flex';
-      
-      showToast('You have securely logged out.');
-      
-      // Redirect to dashboard if on protected route
-      if (state.currentView === 'my-items' || state.currentView === 'profile') {
-        const navHome = document.getElementById('nav-home');
-        if (navHome) navHome.click();
-      } else {
-        render();
-      }
-    });
-  }
-
-  // Edit Profile Logic
-  const btnEditProfile = document.getElementById('btn-edit-profile');
-  const btnCloseEditProfile = document.getElementById('btn-close-edit-profile');
-  const formEditProfile = document.getElementById('form-edit-profile');
-
-  if (btnEditProfile) {
-    btnEditProfile.addEventListener('click', () => {
-      if (state.currentUser) {
-        document.getElementById('edit-profile-name').value = state.currentUser.name || '';
-        document.getElementById('edit-profile-contact').value = state.currentUser.email || state.currentUser.contact || '';
-        document.getElementById('edit-profile-matric').value = state.currentUser.matricNumber || state.currentUser.matric || '';
-        document.getElementById('edit-profile-dept').value = state.currentUser.department || state.currentUser.dept || '';
-        document.getElementById('edit-profile-phone').value = state.currentUser.phoneNumber || state.currentUser.phone || '';
-        
-        // Live avatar preview
-        const avatarPreview = document.getElementById('edit-avatar-preview');
-        if (avatarPreview) avatarPreview.textContent = (state.currentUser.name || 'U').charAt(0).toUpperCase();
-        
-        // Wire live update
-        const nameInput = document.getElementById('edit-profile-name');
-        nameInput.oninput = () => {
-          if (avatarPreview) avatarPreview.textContent = (nameInput.value || 'U').charAt(0).toUpperCase();
-        };
-        
-        toggleModal('modal-edit-profile', true);
-      }
-    });
-  }
-
-  if (btnCloseEditProfile) {
-    btnCloseEditProfile.addEventListener('click', () => {
-      toggleModal('modal-edit-profile', false);
-    });
-  }
-
-  if (formEditProfile) {
-    formEditProfile.addEventListener('submit', (e) => {
+  // OTP Verification Submit
+  const formVerifyOtp = document.getElementById('form-verify-otp');
+  if (formVerifyOtp) {
+    formVerifyOtp.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const newName = document.getElementById('edit-profile-name').value.trim();
-      const newContact = document.getElementById('edit-profile-contact').value.trim();
-      
-      if (newName) {
-        // Update user object fields
-        state.currentUser.name = newName;
-        state.currentUser.email = newContact;
-        state.currentUser.contact = newContact;
-        
-        const matricVal = document.getElementById('edit-profile-matric').value.trim();
-        state.currentUser.matricNumber = matricVal;
-        state.currentUser.matric = matricVal;
-        
-        const deptVal = document.getElementById('edit-profile-dept').value.trim();
-        state.currentUser.department = deptVal;
-        state.currentUser.dept = deptVal;
-        
-        const phoneVal = document.getElementById('edit-profile-phone').value.trim();
-        state.currentUser.phoneNumber = phoneVal;
-        state.currentUser.phone = phoneVal;
-        
-        // Persist to localStorage
-        localStorage.setItem('lcu_findme_user', JSON.stringify(state.currentUser));
+      const otp = document.getElementById('otp-code').value.trim();
+      const email = state.pendingVerifEmail;
+      const errorMsg = document.getElementById('otp-error-msg');
+      const verifyBtn = document.getElementById('btn-verify-otp');
 
-        // Sync UI
-        syncLoginUI();
-        toggleModal('modal-edit-profile', false);
-        showToast('Profile updated successfully.');
+      if (!email) {
+        if (errorMsg) { errorMsg.textContent = 'Session expired. Please register again.'; errorMsg.style.display = 'block'; }
+        return;
+      }
+
+      if (verifyBtn) {
+        verifyBtn.disabled = true;
+        verifyBtn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.6s linear infinite;"></span> Verifying...';
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/auth/verify-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, otp })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          toggleModal('modal-otp', false);
+          loginUser(data.user, data.token);
+          showToast('Email verified successfully! Welcome to LCU FindMe!');
+          state.pendingVerifEmail = null;
+        } else {
+          if (errorMsg) { errorMsg.textContent = data.message || 'Invalid verification code.'; errorMsg.style.display = 'block'; }
+        }
+      } catch (err) {
+        if (errorMsg) { errorMsg.textContent = 'Connection error. Please try again.'; errorMsg.style.display = 'block'; }
+      } finally {
+        if (verifyBtn) {
+          verifyBtn.disabled = false;
+          verifyBtn.innerHTML = 'Verify Account';
+        }
       }
     });
   }
 
-  // ============================================================
-  // OTP VERIFICATION MODAL LOGIC
-  // ============================================================
-  const btnCloseOtp = document.getElementById('btn-close-otp');
-  if (btnCloseOtp) btnCloseOtp.addEventListener('click', () => toggleModal('modal-otp', false));
+  // Resend OTP
+  const btnResendOtp = document.getElementById('btn-resend-otp');
+  if (btnResendOtp) {
+    btnResendOtp.addEventListener('click', async () => {
+      const email = state.pendingVerifEmail;
+      if (!email) {
+        showToast('Session expired. Please register again.', 'error');
+        return;
+      }
+
+      btnResendOtp.disabled = true;
+      let cooldown = 60;
+      btnResendOtp.textContent = `Resend in ${cooldown}s`;
+      const cooldownTimer = setInterval(() => {
+        cooldown--;
+        btnResendOtp.textContent = `Resend in ${cooldown}s`;
+        if (cooldown <= 0) {
+          clearInterval(cooldownTimer);
+          btnResendOtp.disabled = false;
+          btnResendOtp.textContent = "Didn't receive it? Resend Code";
+        }
+      }, 1000);
+
+      try {
+        await fetch(`${API_URL}/auth/resend-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        showToast('A new verification code has been sent to your email.');
+      } catch (err) {
+        showToast('Failed to resend code. Please try again.', 'error');
+      }
+    });
+  }
 
   // OTP Digits Auto-focus & Paste handling logic
   const otpInputs = document.querySelectorAll('.otp-digit-input');
@@ -1463,7 +524,6 @@ function setupEventListeners() {
       });
 
       input.addEventListener('input', (e) => {
-        // Strip non-digits to prevent invalid character entry
         const cleanVal = e.target.value.replace(/\D/g, '');
         e.target.value = cleanVal;
 
@@ -1511,111 +571,21 @@ function setupEventListeners() {
     });
   }
 
-  const formVerifyOtp = document.getElementById('form-verify-otp');
-  if (formVerifyOtp) {
-    formVerifyOtp.addEventListener('submit', async (e) => {
+  // Forgot Password Trigger Links
+  const linkForgot = document.getElementById('link-forgot-password');
+  if (linkForgot) {
+    linkForgot.addEventListener('click', (e) => {
       e.preventDefault();
-      const otp = document.getElementById('otp-code').value.trim();
-      const email = state.pendingVerifEmail;
-      const errorMsg = document.getElementById('otp-error-msg');
-      const verifyBtn = document.getElementById('btn-verify-otp');
-
-      if (!email) {
-        if (errorMsg) { errorMsg.textContent = 'Session expired. Please register again.'; errorMsg.style.display = 'block'; }
-        return;
-      }
-
-      // Disable button and show loading state
-      if (verifyBtn) {
-        verifyBtn.disabled = true;
-        verifyBtn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.6s linear infinite;"></span> Verifying...';
-      }
-
-      try {
-        const res = await fetch(`${API_URL}/auth/verify-otp`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, otp })
-        });
-        const data = await res.json();
-
-        if (res.ok) {
-          toggleModal('modal-otp', false);
-          loginUser(data.user, data.token);
-          showToast('Email verified successfully! Welcome to LCU FindMe!');
-          state.pendingVerifEmail = null;
-        } else {
-          if (errorMsg) { errorMsg.textContent = data.message || 'Invalid verification code.'; errorMsg.style.display = 'block'; }
-        }
-      } catch (err) {
-        if (errorMsg) { errorMsg.textContent = 'Connection error. Please try again.'; errorMsg.style.display = 'block'; }
-      } finally {
-        // Re-enable button
-        if (verifyBtn) {
-          verifyBtn.disabled = false;
-          verifyBtn.innerHTML = 'Verify Account';
-        }
-      }
+      toggleModal('modal-auth', false);
+      toggleModal('modal-forgot-password', true);
     });
   }
 
-  // Resend OTP button logic with cooldown
-  const btnResendOtp = document.getElementById('btn-resend-otp');
-  if (btnResendOtp) {
-    btnResendOtp.addEventListener('click', async () => {
-      const email = state.pendingVerifEmail;
-      if (!email) {
-        showToast('Session expired. Please register again.', 'error');
-        return;
-      }
-
-      // Start cooldown
-      btnResendOtp.disabled = true;
-      let cooldown = 60;
-      btnResendOtp.textContent = `Resend in ${cooldown}s`;
-      const cooldownTimer = setInterval(() => {
-        cooldown--;
-        btnResendOtp.textContent = `Resend in ${cooldown}s`;
-        if (cooldown <= 0) {
-          clearInterval(cooldownTimer);
-          btnResendOtp.disabled = false;
-          btnResendOtp.textContent = "Didn't receive it? Resend Code";
-        }
-      }, 1000);
-
-      try {
-        await fetch(`${API_URL}/auth/resend-otp`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email })
-        });
-        showToast('A new verification code has been sent to your email.');
-      } catch (err) {
-        showToast('Failed to resend code. Please try again.', 'error');
-      }
-    });
-  }
-
-  // ============================================================
-  // FORGOT PASSWORD MODAL LOGIC
-  // ============================================================
   const btnCloseForgot = document.getElementById('btn-close-forgot');
   if (btnCloseForgot) btnCloseForgot.addEventListener('click', () => toggleModal('modal-forgot-password', false));
 
   const btnCloseReset = document.getElementById('btn-close-reset');
   if (btnCloseReset) btnCloseReset.addEventListener('click', () => toggleModal('modal-reset-password', false));
-
-  // Wire "Forgot Password?" link in login form
-  const forgotPasswordLink = document.querySelector('a[href="#"]');
-  document.querySelectorAll('a[href="#"]').forEach(link => {
-    if (link.textContent.trim() === 'Forgot Password?') {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        toggleModal('modal-auth', false);
-        toggleModal('modal-forgot-password', true);
-      });
-    }
-  });
 
   const formForgotPassword = document.getElementById('form-forgot-password');
   if (formForgotPassword) {
@@ -1683,685 +653,20 @@ function setupEventListeners() {
   }
 }
 
-// ============================================================
-// NOTIFICATION SYSTEM
-// ============================================================
-const notifications = JSON.parse(localStorage.getItem('lcu_findme_notifs') || '[]');
-
-async function fetchNotifications() {
-  if (!state.currentUser) return;
-  try {
-    const token = localStorage.getItem('lcu_findme_token');
-    const res = await fetch(`${API_URL}/items/notifications`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    if (res.ok) {
-      const dbNotifs = await res.json();
-      let hasNew = false;
-      dbNotifs.forEach(dbN => {
-        const exists = notifications.some(n => n.message === dbN.message);
-        if (!exists) {
-          notifications.unshift({
-            message: dbN.message,
-            time: dbN.time || new Date().toISOString(),
-            read: false
-          });
-          hasNew = true;
-        }
-      });
-      if (notifications.length > 20) notifications.length = 20;
-      if (hasNew) {
-        saveNotifs();
-        renderNotifications();
-      }
-    }
-  } catch (error) {
-    console.error('Error fetching notifications:', error);
-  }
-}
-
-// Poll for notifications every 15 seconds
-setInterval(fetchNotifications, 15000);
-
-function saveNotifs() {
-  localStorage.setItem('lcu_findme_notifs', JSON.stringify(notifications));
-}
-
-function addNotification(message) {
-  notifications.unshift({ message, time: new Date().toISOString(), read: false });
-  if (notifications.length > 20) notifications.pop();
-  saveNotifs();
-  renderNotifications();
-}
-
-function renderNotifications() {
-  const list = document.getElementById('notif-list');
-  const badge = document.getElementById('notif-badge');
-  if (!list) return;
-
-  const unread = notifications.filter(n => !n.read).length;
-  if (badge) {
-    badge.textContent = unread;
-    badge.style.display = unread > 0 ? 'flex' : 'none';
-  }
-
-  if (notifications.length === 0) {
-    list.innerHTML = '<div class="notif-empty">No notifications yet.</div>';
-    return;
-  }
-
-  list.innerHTML = notifications.map((n, i) => {
-    let icon = '🔔';
-    const msgLower = n.message.toLowerCase();
-    if (msgLower.includes('approved') || msgLower.includes('success') || msgLower.includes('marked')) {
-      icon = '✅';
-    } else if (msgLower.includes('reject') || msgLower.includes('fail') || msgLower.includes('expired')) {
-      icon = '❌';
-    } else if (msgLower.includes('verify') || msgLower.includes('claim')) {
-      icon = '🔒';
-    } else if (msgLower.includes('match') || msgLower.includes('found')) {
-      icon = '✨';
-    }
-
-    return `
-      <div class="notif-item ${n.read ? '' : 'unread'}" data-index="${i}">
-        <div class="notif-icon-badge">${icon}</div>
-        <div class="notif-content-wrapper">
-          <div class="notif-message-text" style="font-weight: 500;">${n.message}</div>
-          <span class="notif-time">${timeAgo(n.time)}</span>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  list.querySelectorAll('.notif-item').forEach(el => {
-    el.addEventListener('click', () => {
-      const idx = parseInt(el.dataset.index);
-      notifications[idx].read = true;
-      saveNotifs();
-      renderNotifications();
-    });
-  });
-}
-
-function timeAgo(isoStr) {
-  const diff = Math.floor((Date.now() - new Date(isoStr)) / 1000);
-  if (diff < 60) return 'Just now';
-  if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
-  return `${Math.floor(diff/86400)}d ago`;
-}
-
-// Bell toggle
-const notifBell = document.getElementById('notif-bell');
-const notifDropdown = document.getElementById('notif-dropdown');
-const btnClearNotifs = document.getElementById('btn-clear-notifs');
-
-if (notifBell && notifDropdown) {
-  notifBell.addEventListener('click', (e) => {
-    e.stopPropagation();
-    notifDropdown.classList.toggle('open');
-    // Mark all read when opened
-    notifications.forEach(n => n.read = true);
-    saveNotifs();
-    renderNotifications();
-  });
-}
-
-if (btnClearNotifs) {
-  btnClearNotifs.addEventListener('click', () => {
-    notifications.length = 0;
-    saveNotifs();
-    renderNotifications();
-    notifDropdown.classList.remove('open');
-  });
-}
-
 // Close dropdown on outside click
 document.addEventListener('click', (e) => {
-  if (notifDropdown && !notifDropdown.contains(e.target) && e.target !== notifBell) {
-    notifDropdown.classList.remove('open');
-  }
-});
-
-// ============================================================
-// HAMBURGER MENU
-// ============================================================
-const hamburgerBtn = document.getElementById('hamburger-btn');
-const mainNav = document.getElementById('main-nav');
-if (hamburgerBtn && mainNav) {
-  hamburgerBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    mainNav.classList.toggle('open');
-    hamburgerBtn.classList.toggle('open');
-  });
-
-  // Auto-dismiss mobile menu when a nav link is clicked
-  mainNav.querySelectorAll('a, button').forEach(el => {
-    el.addEventListener('click', () => {
-      mainNav.classList.remove('open');
-      hamburgerBtn.classList.remove('open');
-    });
-  });
-
-  document.addEventListener('click', (e) => {
-    if (!mainNav.contains(e.target) && e.target !== hamburgerBtn) {
-      mainNav.classList.remove('open');
-      hamburgerBtn.classList.remove('open');
-    }
-  });
-}
-
-// Database-Backed Live Polling for Notifications
-setInterval(async () => {
-  if (!state.currentUser) return;
-  try {
-    const token = localStorage.getItem('lcu_findme_token');
-    const res = await fetch(`${API_URL}/items/notifications`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    if (res.ok) {
-      const dbNotifs = await res.json();
-      
-      // Inject any brand new notifications we haven't shown yet
-      let newAdded = false;
-      dbNotifs.forEach(notif => {
-        const alreadyExists = notifications.some(existing => existing.message === notif.message);
-        if (!alreadyExists) {
-          notifications.unshift({
-            message: notif.message,
-            time: notif.time || new Date().toISOString(),
-            read: false
-          });
-          newAdded = true;
-          showToast(notif.message, 'info');
-        }
-      });
-      
-      if (newAdded) {
-        saveNotifs();
-        renderNotifications();
-      }
-    }
-  } catch (err) {
-    console.error('Error fetching live notifications:', err);
-  }
-}, 5000);
-
-// Initial render
-renderNotifications();
-render();
-
-// ============================================================
-// INTERACTIVE ONBOARDING TOUR ENGINE
-// ============================================================
-
-const TOUR_STORAGE_KEY = 'lcu_findme_tour_done';
-const TOUR_VERSION = 'v2'; // bump when steps change to force re-show
-
-const tourSteps = [
-  {
-    targetId: 'btn-report-header',
-    title: '📋 Report Lost or Found Items',
-    body: 'Tap the <strong>"Report Item"</strong> button in the header to log anything you\'ve found on campus — or report an item you\'ve lost. It takes under a minute!',
-    tooltipPos: 'below'
-  },
-  {
-    targetId: 'btn-toggle-map',
-    title: '🗺️ Interactive Campus Map',
-    body: 'Inside the report form, click <strong>"Use Interactive Campus Map"</strong> to pin the exact location — like the Senate Building, FSS Cafe, or Library — instead of typing it.',
-    tooltipPos: 'below',
-    scrollToForm: true
-  },
-  {
-    targetId: 'items-grid',
-    title: '🔍 Browse Active Listings',
-    body: 'All lost and found reports appear here on the dashboard. Use the <strong>filters and search bar</strong> above to quickly find an item. Click any card to verify a claim.',
-    tooltipPos: 'above'
-  },
-  {
-    targetId: 'nav-home',
-    title: '🔒 Security QR Bin Tags',
-    body: 'When you open a <strong>Found item\'s</strong> detail view, you can generate a <strong>Security Bin Tag QR Label</strong> to physically attach to the item at the Security Office.',
-    tooltipPos: 'below',
-    isLastStep: true
-  }
-];
-
-let tourCurrentStep = 0;
-let tourActive = false;
-
-function initTour() {
-  const done = localStorage.getItem(TOUR_STORAGE_KEY);
-  if (done === TOUR_VERSION) return; // already completed this version
-  
-  // Delay so page renders first
-  setTimeout(() => startTour(), 1200);
-  
-  // Replay button always visible
-  const replayBtn = document.getElementById('btn-replay-tour');
-  if (replayBtn) {
-    replayBtn.addEventListener('click', () => {
-      if (!tourActive) {
-        tourCurrentStep = 0;
-        startTour();
-      }
-    });
-  }
-}
-
-function startTour() {
-  tourActive = true;
-  tourCurrentStep = 0;
-  const overlay = document.getElementById('tour-overlay');
-  if (overlay) overlay.classList.add('active');
-  
-  // Register tracking event listeners
-  window.addEventListener('scroll', repositionTourElement, { passive: true });
-  window.addEventListener('resize', repositionTourElement, { passive: true });
-  
-  showTourStep(tourCurrentStep);
-  
-  // Wire Next button
-  const btnNext = document.getElementById('btn-tour-next');
-  if (btnNext) {
-    // Remove old listener by replacing element
-    const newBtn = btnNext.cloneNode(true);
-    btnNext.parentNode.replaceChild(newBtn, btnNext);
-    newBtn.addEventListener('click', () => {
-      tourCurrentStep++;
-      if (tourCurrentStep >= tourSteps.length) {
-        endTour();
-      } else {
-        showTourStep(tourCurrentStep);
-      }
-    });
-  }
-  
-  // Wire Skip button
-  const btnSkip = document.getElementById('btn-tour-skip');
-  if (btnSkip) {
-    const newSkip = btnSkip.cloneNode(true);
-    btnSkip.parentNode.replaceChild(newSkip, btnSkip);
-    newSkip.addEventListener('click', () => endTour());
-  }
-}
-
-function repositionTourElement() {
-  if (!tourActive) return;
-  const step = tourSteps[tourCurrentStep];
-  if (!step) return;
-  const targetEl = document.getElementById(step.targetId);
-  const tooltip = document.getElementById('tour-tooltip');
-  const ring = document.getElementById('tour-spotlight-ring');
-  if (!targetEl) return;
-
-  const rect = targetEl.getBoundingClientRect();
-  const PAD = 10;
-  
-  if (ring) {
-    ring.style.top    = `${rect.top - PAD}px`;
-    ring.style.left   = `${rect.left - PAD}px`;
-    ring.style.width  = `${rect.width + PAD * 2}px`;
-    ring.style.height = `${rect.height + PAD * 2}px`;
-  }
-  
-  if (tooltip) {
-    const TIP_W = 320;
-    const TIP_H = 190;
-    const viewH = window.innerHeight;
-    const viewW = window.innerWidth;
-    
-    let top, left;
-    const MARGIN = 16;
-    
-    if (step.tooltipPos === 'below' && rect.bottom + TIP_H + MARGIN < viewH) {
-      top  = rect.bottom + MARGIN;
-      left = Math.max(MARGIN, Math.min(viewW - TIP_W - MARGIN, rect.left + rect.width / 2 - TIP_W / 2));
-    } else if (step.tooltipPos === 'above' && rect.top - TIP_H - MARGIN > 0) {
-      top  = rect.top - TIP_H - MARGIN;
-      left = Math.max(MARGIN, Math.min(viewW - TIP_W - MARGIN, rect.left + rect.width / 2 - TIP_W / 2));
-    } else {
-      top  = Math.max(MARGIN, viewH / 2 - TIP_H / 2);
-      left = Math.max(MARGIN, viewW / 2 - TIP_W / 2);
-    }
-    
-    tooltip.style.top  = `${top}px`;
-    tooltip.style.left = `${left}px`;
-  }
-}
-
-function showTourStep(stepIndex) {
-  const step = tourSteps[stepIndex];
-  if (!step) { endTour(); return; }
-
-  // Auto-toggle modals to ensure targets are fully visible
-  if (step.targetId === 'btn-toggle-map') {
-    const reportModal = document.getElementById('modal-report');
-    if (reportModal && !reportModal.classList.contains('active')) {
-      toggleModal('modal-report', true);
-    }
-  } else {
-    const reportModal = document.getElementById('modal-report');
-    if (reportModal && reportModal.classList.contains('active')) {
-      toggleModal('modal-report', false);
-    }
-  }
-  
-  // Update tooltip content
-  const pill = document.getElementById('tour-step-pill');
-  const title = document.getElementById('tour-tooltip-title');
-  const body = document.getElementById('tour-tooltip-body');
-  const nextBtn = document.getElementById('btn-tour-next');
-  
-  if (pill) pill.textContent = `Step ${stepIndex + 1} of ${tourSteps.length}`;
-  if (title) title.textContent = step.title;
-  if (body) body.innerHTML = step.body;
-  if (nextBtn) {
-    if (step.isLastStep) {
-      nextBtn.innerHTML = 'Done! 🎉';
-    } else {
-      nextBtn.innerHTML = 'Next <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6"/></svg>';
-    }
-  }
-  
-  // Update progress dots
-  const dots = document.querySelectorAll('.tour-dot');
-  dots.forEach((dot, i) => {
-    dot.classList.toggle('active', i === stepIndex);
-  });
-  
-  // Find and highlight target
-  const targetEl = document.getElementById(step.targetId);
-  const tooltip = document.getElementById('tour-tooltip');
-  const ring = document.getElementById('tour-spotlight-ring');
-  
-  if (!targetEl) {
-    // If target not visible, skip this step
-    tourCurrentStep++;
-    if (tourCurrentStep < tourSteps.length) showTourStep(tourCurrentStep);
-    else endTour();
-    return;
-  }
-  
-  // Add transitioning class for smooth move animation between steps
-  if (ring) ring.classList.add('transitioning');
-  if (tooltip) tooltip.classList.add('transitioning');
-  
-  // Scroll target into view
-  targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  
-  // Continuously reposition during smooth scrolling (approx 500ms duration)
-  let scrollTime = 0;
-  const scrollInterval = setInterval(() => {
-    repositionTourElement();
-    scrollTime += 30;
-    if (scrollTime >= 600 || !tourActive) {
-      clearInterval(scrollInterval);
-    }
-  }, 30);
-  
-  setTimeout(() => {
-    repositionTourElement();
-    if (ring) ring.classList.add('visible');
-    if (tooltip) tooltip.classList.add('visible');
-    
-    // Remove transitioning after movement completes
-    setTimeout(() => {
-      if (ring) ring.classList.remove('transitioning');
-      if (tooltip) tooltip.classList.remove('transitioning');
-    }, 350);
-  }, 100);
-}
-
-function endTour() {
-  tourActive = false;
-  
-  window.removeEventListener('scroll', repositionTourElement);
-  window.removeEventListener('resize', repositionTourElement);
-  
-  const overlay = document.getElementById('tour-overlay');
-  const tooltip = document.getElementById('tour-tooltip');
-  const ring    = document.getElementById('tour-spotlight-ring');
-  
-  if (overlay) overlay.classList.remove('active');
-  if (tooltip) {
-    tooltip.classList.remove('visible');
-    tooltip.classList.remove('transitioning');
-  }
-  if (ring) {
-    ring.classList.remove('visible');
-    ring.classList.remove('transitioning');
-  }
-  
-  // Mark tour as done
-  localStorage.setItem(TOUR_STORAGE_KEY, TOUR_VERSION);
-  
-  // Bounce the replay button to indicate it's available
-  const replayBtn = document.getElementById('btn-replay-tour');
-  if (replayBtn) {
-    replayBtn.classList.add('tour-finish-pulse');
-    setTimeout(() => replayBtn.classList.remove('tour-finish-pulse'), 600);
-  }
-  
-  // Scroll back to top
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// Boot the tour after DOM is ready and initData has resolved
-document.addEventListener('DOMContentLoaded', () => {
-  // Give initData a moment to run first (it's already called in the other listener)
-  setTimeout(initTour, 500);
-  
-  // Always wire replay button
-  const replayBtn = document.getElementById('btn-replay-tour');
-  if (replayBtn) {
-    replayBtn.addEventListener('click', () => {
-      if (!tourActive) {
-        tourCurrentStep = 0;
-        startTour();
-      }
-    });
+  const mainNav = document.getElementById('main-nav');
+  const hamburgerBtn = document.getElementById('hamburger-btn');
+  if (mainNav && mainNav.classList.contains('open') && !mainNav.contains(e.target) && e.target !== hamburgerBtn) {
+    mainNav.classList.remove('open');
+    hamburgerBtn.classList.remove('open');
   }
 });
 
 async function checkUrlParams() {
   const urlParams = new URLSearchParams(window.location.search);
-  const itemId = urlParams.get('item');
-  if (!itemId) return;
-
-  // Wire slip close buttons
-  const btnCloseSlip = document.getElementById('btn-close-slip');
-  const btnDismissSlip = document.getElementById('btn-dismiss-slip');
-  if (btnCloseSlip) btnCloseSlip.addEventListener('click', () => toggleModal('modal-verify-slip', false));
-  if (btnDismissSlip) btnDismissSlip.addEventListener('click', () => toggleModal('modal-verify-slip', false));
-  
-  // Wire slip print button
-  const btnPrintSlip = document.getElementById('btn-print-slip');
-  if (btnPrintSlip) {
-    btnPrintSlip.addEventListener('click', () => {
-      const slipContent = document.querySelector('.security-slip').outerHTML;
-      const printWindow = window.open('', '_blank');
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>LCU FindMe Security Slip</title>
-            <style>
-              body { font-family: 'Inter', sans-serif; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #fff; }
-              .security-slip { border: 2px dashed #64748b; border-radius: 12px; padding: 24px; background: #f8fafc; width: 400px; }
-              strong { color: #0f172a; }
-              span { color: #64748b; }
-              .status-badge { display: inline-flex; padding: 0.25rem 0.65rem; border-radius: 50px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
-              .status-active { background-color: #fffbeb; color: #f59e0b; }
-              .status-returned { background-color: #ecfdf5; color: #10b981; }
-            </style>
-          </head>
-          <body>
-            ${slipContent}
-            <script>
-              window.onload = function() {
-                window.print();
-                setTimeout(() => window.close(), 500);
-              };
-            </script>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-    });
-  }
-
-  try {
-    showToast('Loading verified security slip details...', 'info');
-    
-    const res = await fetch(`${API_URL}/items/${itemId}`);
-    if (!res.ok) {
-      showToast('Could not retrieve item verification details.', 'error');
-      return;
-    }
-    const item = await res.json();
-    
-    // Populate slip modal fields
-    document.getElementById('slip-ref').textContent = `REF-${item._id ? item._id.substring(item._id.length - 8).toUpperCase() : 'UNKNOWN'}`;
-    
-    const statusEl = document.getElementById('slip-status');
-    if (statusEl) {
-      statusEl.textContent = (item.status || 'FOUND').toUpperCase();
-      statusEl.className = `status-badge ${item.status === 'returned' ? 'status-returned' : 'status-active'}`;
-    }
-    
-    document.getElementById('slip-title').textContent = item.title;
-    document.getElementById('slip-category').textContent = item.category;
-    document.getElementById('slip-location').textContent = item.location;
-    document.getElementById('slip-date').textContent = formatDate(item.date);
-    
-    // STRICTLY DISPLAY REPORTER CREDENTIALS
-    const isFound = item.type === 'found';
-    const repTitleEl = document.getElementById('modal-slip-reporter-title');
-    if (repTitleEl) repTitleEl.textContent = isFound ? 'Founder Credentials' : 'Reporter Credentials';
-    
-    let reporterHtml = `
-      <div style="display: flex; justify-content: space-between;">
-        <span style="color: var(--text-muted);">Name:</span>
-        <strong style="color: var(--text-dark);">${item.reporterName || 'Anonymous'}</strong>
-      </div>
-      <div style="display: flex; justify-content: space-between;">
-        <span style="color: var(--text-muted);">Contact Details:</span>
-        <strong style="color: var(--text-dark);">${item.reporterContact || 'Not Provided'}</strong>
-      </div>
-    `;
-    if (item.reporterEmail) {
-      reporterHtml += `
-        <div style="display: flex; justify-content: space-between;">
-          <span style="color: var(--text-muted);">Email:</span>
-          <strong style="color: var(--text-dark);">${item.reporterEmail}</strong>
-        </div>
-      `;
-    }
-    if (item.reporterMatric) {
-      reporterHtml += `
-        <div style="display: flex; justify-content: space-between;">
-          <span style="color: var(--text-muted);">Matric / Staff ID:</span>
-          <strong style="color: var(--text-dark); font-family: monospace;">${item.reporterMatric}</strong>
-        </div>
-      `;
-    }
-    if (item.reporterFaculty) {
-      reporterHtml += `
-        <div style="display: flex; justify-content: space-between;">
-          <span style="color: var(--text-muted);">Faculty:</span>
-          <strong style="color: var(--text-dark);">${item.reporterFaculty}</strong>
-        </div>
-      `;
-    }
-    if (item.reporterDept) {
-      reporterHtml += `
-        <div style="display: flex; justify-content: space-between;">
-          <span style="color: var(--text-muted);">Department:</span>
-          <strong style="color: var(--text-dark);">${item.reporterDept}</strong>
-        </div>
-      `;
-    }
-    if (item.reporterLevel) {
-      reporterHtml += `
-        <div style="display: flex; justify-content: space-between;">
-          <span style="color: var(--text-muted);">Level:</span>
-          <strong style="color: var(--text-dark);">${item.reporterLevel} Level</strong>
-        </div>
-      `;
-    }
-    const repListEl = document.getElementById('modal-slip-reporter-list');
-    if (repListEl) repListEl.innerHTML = reporterHtml;
-
-    // Check if there are accepted claims
-    const acceptedClaim = item.verificationClaims && item.verificationClaims.find(c => c.status === 'accepted' || c.resolved);
-    const claimBoxEl = document.getElementById('modal-slip-claimant-box');
-    const claimListEl = document.getElementById('modal-slip-claimant-list');
-    
-    if (acceptedClaim) {
-      let claimantHtml = `
-        <div style="display: flex; justify-content: space-between;">
-          <span style="color: var(--text-muted);">Claimer Name:</span>
-          <strong style="color: var(--text-dark);">${acceptedClaim.claimantName}</strong>
-        </div>
-        <div style="display: flex; justify-content: space-between;">
-          <span style="color: var(--text-muted);">Matric / Staff ID:</span>
-          <strong style="color: var(--text-dark); font-family: monospace;">${acceptedClaim.claimantMatric}</strong>
-        </div>
-      `;
-      if (acceptedClaim.claimantPhone) {
-        claimantHtml += `
-          <div style="display: flex; justify-content: space-between;">
-            <span style="color: var(--text-muted);">Phone:</span>
-            <strong style="color: var(--text-dark);">${acceptedClaim.claimantPhone}</strong>
-          </div>
-        `;
-      }
-      if (acceptedClaim.claimantEmail) {
-        claimantHtml += `
-          <div style="display: flex; justify-content: space-between;">
-            <span style="color: var(--text-muted);">Email:</span>
-            <strong style="color: var(--text-dark);">${acceptedClaim.claimantEmail}</strong>
-          </div>
-        `;
-      }
-      if (acceptedClaim.claimantFaculty) {
-        claimantHtml += `
-          <div style="display: flex; justify-content: space-between;">
-            <span style="color: var(--text-muted);">Faculty:</span>
-            <strong style="color: var(--text-dark);">${acceptedClaim.claimantFaculty}</strong>
-          </div>
-        `;
-      }
-      if (acceptedClaim.claimantDept) {
-        claimantHtml += `
-          <div style="display: flex; justify-content: space-between;">
-            <span style="color: var(--text-muted);">Department:</span>
-            <strong style="color: var(--text-dark);">${acceptedClaim.claimantDept}</strong>
-          </div>
-        `;
-      }
-      if (acceptedClaim.claimantLevel) {
-        claimantHtml += `
-          <div style="display: flex; justify-content: space-between;">
-            <span style="color: var(--text-muted);">Level:</span>
-            <strong style="color: var(--text-dark);">${acceptedClaim.claimantLevel} Level</strong>
-          </div>
-        `;
-      }
-      if (claimListEl) claimListEl.innerHTML = claimantHtml;
-      if (claimBoxEl) claimBoxEl.style.display = 'block';
-    } else {
-      if (claimBoxEl) claimBoxEl.style.display = 'none';
-    }
-    
-    // Open Slip Modal
-    toggleModal('modal-verify-slip', true);
-  } catch (err) {
-    showToast('Connection error loading security slip.', 'error');
+  if (urlParams.get('login') === 'required') {
+    showToast('Please log in to access your dashboard.', 'warning');
+    openAuthModal('login');
   }
 }

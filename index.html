@@ -12,6 +12,18 @@
 </head>
 <body>
 
+  <!-- Guard Redirect if already logged in -->
+  <script>
+    if (localStorage.getItem('lcu_findme_token') && localStorage.getItem('lcu_findme_user')) {
+      const user = JSON.parse(localStorage.getItem('lcu_findme_user'));
+      if (user.role === 'admin') {
+        window.location.href = 'admin.html';
+      } else {
+        window.location.href = 'dashboard.html';
+      }
+    }
+  </script>
+
   <div class="app-container">
     <!-- Header -->
     <header>
@@ -29,9 +41,7 @@
       </button>
 
       <nav id="main-nav">
-        <a href="#" class="active" id="nav-home">Dashboard</a>
-        <a href="#" id="nav-my-items">My Reports</a>
-        <a href="#" id="nav-profile" style="display: none;">My Profile</a>
+        <a href="#" class="active" id="nav-home">Home</a>
         <button class="btn btn-primary" id="btn-report-header" style="padding: 0.5rem 1.25rem; font-size: 0.9rem;">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 4px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
           Report Item
@@ -41,23 +51,6 @@
           <button class="btn btn-secondary" id="btn-header-login" style="padding: 0.4rem 1.2rem; font-size: 0.85rem;">Log In</button>
           <button class="btn btn-primary" id="btn-header-signup" style="padding: 0.4rem 1.2rem; font-size: 0.85rem;">Sign Up</button>
         </div>
-
-        <!-- Hidden User Profile (For post-login state) -->
-        <div class="user-profile-mock" id="user-profile-container" style="display: none; gap: 1rem; align-items: center;">
-          <!-- Notification Bell -->
-          <div class="notif-bell" id="notif-bell" title="Notifications">
-            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-            <span class="notif-badge" id="notif-badge" style="display:none;">0</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 0.75rem;">
-            <div class="avatar" id="header-avatar">U</div>
-            <span id="header-username">LCU Student</span>
-          </div>
-          <div style="display: flex; gap: 0.5rem;">
-            <button class="btn btn-secondary" id="btn-edit-profile" style="padding: 0.35rem 0.85rem; font-size: 0.75rem;">Edit</button>
-            <button class="btn btn-secondary" id="btn-logout" style="padding: 0.35rem 0.85rem; font-size: 0.75rem; border-color: transparent; color: var(--danger); background-color: var(--danger-bg);">Logout</button>
-          </div>
-        </div>
       </nav>
 
       <!-- Theme Toggle Button -->
@@ -66,17 +59,6 @@
         <svg class="moon-icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
       </button>
     </header>
-
-    <!-- Notification Dropdown -->
-    <div class="notif-dropdown" id="notif-dropdown">
-      <div class="notif-header">
-        <span>Notifications</span>
-        <button id="btn-clear-notifs" style="font-size:0.75rem; color:var(--text-muted); background:none; border:none; cursor:pointer;">Clear all</button>
-      </div>
-      <div id="notif-list">
-        <div class="notif-empty">No notifications yet.</div>
-      </div>
-    </div>
 
     <!-- Main Content -->
     <main>
@@ -131,79 +113,11 @@
             <h2 id="section-title">Recent Listings</h2>
             <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Browse active lost and found items on campus.</p>
           </div>
-          
-          <div class="filter-tabs">
-            <button class="filter-tab active" data-type="all">All Items</button>
-            <button class="filter-tab" data-type="found">Found Items</button>
-            <button class="filter-tab" data-type="lost">Lost Items</button>
-          </div>
         </div>
 
-        <!-- Category Chips -->
-        <div class="category-scroller">
-          <button class="category-chip active" data-category="all">All Categories</button>
-          <button class="category-chip" data-category="electronics">📱 Electronics</button>
-          <button class="category-chip" data-category="documents">📄 Documents / IDs</button>
-          <button class="category-chip" data-category="accessories">🔑 Accessories & Keys</button>
-          <button class="category-chip" data-category="books">📚 Books & Stationery</button>
-          <button class="category-chip" data-category="clothing">👕 Apparel</button>
-          <button class="category-chip" data-category="other">🎒 Other Items</button>
-        </div>
-
-        <!-- Items Grid -->
+        <!-- Items Grid (Shows lock/login card if logged out) -->
         <div class="items-grid" id="items-grid">
           <!-- Rendered dynamically by app.js -->
-        </div>
-      </section>
-
-      <!-- Profile Details Section -->
-      <section class="dashboard-section" id="profile-section" style="display: none; padding-top: 1rem;">
-        <div class="section-header">
-          <div>
-            <h2>My Profile</h2>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">View and manage your academic profile and contact details.</p>
-          </div>
-        </div>
-        
-        <div class="profile-card-container" style="background: var(--modal-bg); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-premium); display: flex; flex-direction: column; gap: 1.5rem; max-width: 600px; margin: 1.5rem auto 0 auto;">
-          <div style="display: flex; gap: 1.5rem; align-items: center;">
-            <div id="profile-card-avatar" style="width: 70px; height: 70px; background: var(--primary-light); color: var(--primary); font-size: 2rem; font-weight: 800; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Outfit', sans-serif;">U</div>
-            <div>
-              <h3 id="profile-card-name" style="font-size: 1.4rem; font-family: 'Outfit', sans-serif; color: var(--secondary); margin-bottom: 0.25rem; margin-top: 0;">John Doe</h3>
-              <span id="profile-card-role" class="status-badge status-active" style="text-transform: uppercase; font-size: 0.75rem;">Student</span>
-            </div>
-          </div>
-          
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; border-top: 1px dashed var(--border-color); padding-top: 1.5rem;">
-            <div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Matriculation / Staff Number</div>
-              <strong id="profile-card-matric" style="font-family: monospace; font-size: 0.95rem; color: var(--text-dark);">—</strong>
-            </div>
-            <div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Email Address</div>
-              <strong id="profile-card-email" style="font-size: 0.95rem; color: var(--text-dark);">—</strong>
-            </div>
-            <div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Faculty</div>
-              <strong id="profile-card-faculty" style="font-size: 0.95rem; color: var(--text-dark);">—</strong>
-            </div>
-            <div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Department</div>
-              <strong id="profile-card-dept" style="font-size: 0.95rem; color: var(--text-dark);">—</strong>
-            </div>
-            <div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Level</div>
-              <strong id="profile-card-level" style="font-size: 0.95rem; color: var(--text-dark);">—</strong>
-            </div>
-            <div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Phone Number</div>
-              <strong id="profile-card-phone" style="font-size: 0.95rem; color: var(--text-dark);">—</strong>
-            </div>
-          </div>
-          
-          <div style="margin-top: 1rem; display: flex; gap: 1rem;">
-            <button class="btn btn-primary" id="btn-profile-card-edit" style="width: 100%; justify-content: center;">Edit Profile Settings</button>
-          </div>
         </div>
       </section>
     </main>
@@ -236,211 +150,6 @@
         <p>&copy; 2026 Lead City University. Senior Software Project by LCU Dev. All rights reserved.</p>
       </div>
     </footer>
-  </div>
-
-  <!-- MODAL: Report Item -->
-  <div class="modal-backdrop" id="modal-report">
-    <div class="modal-container">
-      <div class="modal-header">
-        <h3 class="modal-title" id="report-modal-title">Report Misplaced / Found Item</h3>
-        <button class="modal-close" id="btn-close-report">&times;</button>
-      </div>
-      <div class="modal-body">
-        <form id="form-report">
-          <div class="form-group">
-            <label class="form-label">Report Type</label>
-            <div class="filter-tabs" style="width: 100%; display: grid; grid-template-columns: 1fr 1fr;">
-              <button type="button" class="filter-tab active" id="type-select-found" style="text-align: center;">I Found Something</button>
-              <button type="button" class="filter-tab" id="type-select-lost" style="text-align: center;">I Lost Something</button>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="report-title">Item Name / Title</label>
-            <input type="text" class="form-control" id="report-title" placeholder="e.g. Silver Casio Watch, HP Laptop, Keys" required>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="report-category">Category</label>
-              <select class="form-control" id="report-category" required>
-                <option value="electronics">Electronics</option>
-                <option value="documents">Documents / IDs</option>
-                <option value="accessories">Accessories & Keys</option>
-                <option value="books">Books & Stationery</option>
-                <option value="clothing">Apparel</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="report-location">Location (on Campus)</label>
-              <input type="text" class="form-control" id="report-location" placeholder="e.g. Senate Building, Cafe" required>
-              <button type="button" class="btn btn-secondary" id="btn-toggle-map" style="width: 100%; margin-top: 0.5rem; padding: 0.4rem; font-size: 0.8rem; justify-content: center; gap: 0.25rem;">
-                🗺️ Use Interactive Campus Map
-              </button>
-              
-              <!-- Styled LCU SVG Map Container -->
-              <div id="map-container" style="display: none; margin-top: 0.75rem; border: 1px solid var(--border-color); padding: 0.5rem; border-radius: var(--radius-md); background-color: var(--bg-secondary);">
-                <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 600; text-align: center;">LCU Campus Interactive Map (Select Landmark)</div>
-                <svg id="lcu-campus-map" viewBox="0 0 500 300" style="width: 100%; height: auto; display: block;">
-                  <!-- Gridlines/Roads background -->
-                  <rect x="0" y="0" width="500" height="300" rx="10" fill="#f8fafc"/>
-                  <path d="M 50,150 L 450,150 M 250,50 L 250,250" stroke="#e2e8f0" stroke-width="8" stroke-linecap="round"/>
-                  
-                  <!-- Senate Building -->
-                  <g class="map-building" data-name="Senate Building" style="cursor: pointer;">
-                    <rect x="200" y="20" width="100" height="60" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
-                    <text x="250" y="55" font-family="'Outfit'" font-size="11" font-weight="bold" fill="#1d4ed8" text-anchor="middle">Senate Building</text>
-                  </g>
-                  
-                  <!-- Main Library -->
-                  <g class="map-building" data-name="Main Library" style="cursor: pointer;">
-                    <rect x="60" y="70" width="100" height="60" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
-                    <text x="110" y="105" font-family="'Outfit'" font-size="11" font-weight="bold" fill="#1d4ed8" text-anchor="middle">Main Library</text>
-                  </g>
-                  
-                  <!-- FSS Cafe -->
-                  <g class="map-building" data-name="Faculty of Social Sciences Cafe" style="cursor: pointer;">
-                    <rect x="340" y="70" width="100" height="60" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
-                    <text x="390" y="105" font-family="'Outfit'" font-size="10" font-weight="bold" fill="#1d4ed8" text-anchor="middle">FSS Cafe</text>
-                  </g>
-                  
-                  <!-- Faculty of Engineering -->
-                  <g class="map-building" data-name="Faculty of Engineering" style="cursor: pointer;">
-                    <rect x="60" y="180" width="100" height="60" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
-                    <text x="110" y="215" font-family="'Outfit'" font-size="10" font-weight="bold" fill="#1d4ed8" text-anchor="middle">Engineering</text>
-                  </g>
-                  
-                  <!-- Sports Complex -->
-                  <g class="map-building" data-name="LCU Sports Complex Gym" style="cursor: pointer;">
-                    <rect x="200" y="210" width="100" height="60" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
-                    <text x="250" y="245" font-family="'Outfit'" font-size="10" font-weight="bold" fill="#1d4ed8" text-anchor="middle">Sports Complex</text>
-                  </g>
-                  
-                  <!-- Chapel / Auditorium -->
-                  <g class="map-building" data-name="University Chapel / Auditorium" style="cursor: pointer;">
-                    <rect x="340" y="180" width="100" height="60" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
-                    <text x="390" y="215" font-family="'Outfit'" font-size="10" font-weight="bold" fill="#1d4ed8" text-anchor="middle">LCU Chapel</text>
-                  </g>
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="report-date">Date Encountered</label>
-              <input type="date" class="form-control" id="report-date" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="report-reporter">Your Name</label>
-              <input type="text" class="form-control" id="report-reporter" placeholder="Full Name" required>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="report-contact">Contact Email / Phone</label>
-            <input type="text" class="form-control" id="report-contact" placeholder="Email or Phone Number" required>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="report-description">Description & Details</label>
-            <textarea class="form-control" id="report-description" placeholder="Include unique features, colors, or how someone can identify it. Avoid posting too much confidential verification info (e.g. passwords)." required></textarea>
-          </div>
-
-          <!-- Drag and Drop image upload -->
-          <div class="form-group">
-            <label class="form-label">Upload Photo (Optional)</label>
-            <div class="upload-zone" id="upload-zone">
-              <div class="upload-icon">
-                <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-              </div>
-              <div class="upload-text">Drag & drop photo here or click to browse</div>
-              <div class="upload-hint">Supports JPG, PNG (Max 1MB, scaled automatically)</div>
-              <input type="file" id="file-input" accept="image/*" style="display: none;">
-            </div>
-            <div class="preview-container" id="preview-container">
-              <img src="" class="preview-image" id="preview-image" alt="Uploaded Preview">
-              <button type="button" class="remove-preview" id="btn-remove-preview">&times;</button>
-            </div>
-          </div>
-
-          <button type="submit" class="btn btn-primary" id="btn-submit-report" style="width: 100%; justify-content: center; margin-top: 1rem;">
-            Submit Report
-          </button>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: Item Detail & Claim Verification -->
-  <div class="modal-backdrop" id="modal-detail">
-    <div class="modal-container">
-      <div class="modal-header">
-        <h3 class="modal-title" id="detail-title">Item Details</h3>
-        <button class="modal-close" id="btn-close-detail">&times;</button>
-      </div>
-      <div class="modal-body" id="detail-body">
-        <!-- Rendered dynamically by app.js -->
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: Auto-Match Suggestion -->
-  <div class="modal-backdrop" id="modal-match">
-    <div class="modal-container" style="max-width: 500px;">
-      <div class="modal-header" style="background-color: var(--primary-light); border-bottom-color: rgba(37, 99, 235, 0.2);">
-        <h3 class="modal-title" style="color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
-          ✨ We Found a Potential Match!
-        </h3>
-        <button class="modal-close" id="btn-close-match">&times;</button>
-      </div>
-      <div class="modal-body">
-        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.25rem;">
-          An existing record matching your description was found in the LCU directory. Please review below:
-        </p>
-        <div id="match-results-container">
-          <!-- Populated dynamically by app.js -->
-        </div>
-        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-          <button class="btn btn-secondary" id="btn-match-ignore" style="flex: 1; justify-content: center;">Ignore & Keep Mine</button>
-          <button class="btn btn-primary" id="btn-match-view" style="flex: 1; justify-content: center;">View & Verify Item</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: QR Code Print Label -->
-  <div class="modal-backdrop" id="modal-qr">
-    <div class="modal-container" style="max-width: 420px;">
-      <div class="modal-header">
-        <h3 class="modal-title">Print security Bin Label</h3>
-        <button class="modal-close" id="btn-close-qr">&times;</button>
-      </div>
-      <div class="modal-body" style="text-align: center;">
-        <div id="print-label-area" style="background-color: white; border: 2px solid #0f172a; padding: 1.5rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; color: #0f172a; text-align: left;">
-          <h2 style="font-size: 1.25rem; font-family: 'Outfit'; color: #0f172a; border-bottom: 2px solid #0f172a; padding-bottom: 0.5rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between;">
-            <span>LCU FindMe</span>
-            <span style="font-size: 0.85rem; font-weight: normal; align-self: center;">SECURE LABEL</span>
-          </h2>
-          <div style="display: flex; gap: 1.5rem; align-items: center;">
-            <canvas id="qr-canvas" style="border: 1px solid #e2e8f0; width: 120px; height: 120px; border-radius: var(--radius-sm);"></canvas>
-            <div style="font-size: 0.82rem; line-height: 1.6; display: flex; flex-direction: column; gap: 0.4rem; padding-left: 0.5rem;">
-              <div style="font-weight: bold; font-size: 0.95rem; margin-bottom: 0.1rem;" id="qr-label-title">Silver Casio Watch</div>
-              <div>ID: <span id="qr-label-id" style="font-family: monospace; font-weight: 700; color: #0f172a;">item-10938</span></div>
-              <div>Category: <span id="qr-label-category" style="text-transform: capitalize;">Accessories</span></div>
-              <div>Location: <span id="qr-label-location">Senate Building</span></div>
-              <div style="margin-top: 0.5rem; font-weight: bold; border: 1px dashed #0f172a; padding: 0.3rem 0.5rem; text-align: center; text-transform: uppercase; border-radius: 4px;">
-                🔒 Bin Tag Required
-              </div>
-            </div>
-          </div>
-        </div>
-        <button class="btn btn-primary" id="btn-print-qr" style="width: 100%; justify-content: center; gap: 0.5rem;">
-          🖨️ Print Label
-        </button>
-      </div>
-    </div>
   </div>
 
   <!-- MODAL: Auth (Login/Signup) -->
@@ -484,7 +193,7 @@
             <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); cursor: pointer;">
               <input type="checkbox" style="accent-color: var(--primary);"> Remember me
             </label>
-            <a href="#" style="color: var(--primary); text-decoration: none; font-weight: 600;">Forgot Password?</a>
+            <a href="#" id="link-forgot-password" style="color: var(--primary); text-decoration: none; font-weight: 600;">Forgot Password?</a>
           </div>
           <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.85rem; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);">
             Log In Securely
@@ -526,7 +235,7 @@
                   <span style="position: absolute; left: 1rem; color: var(--text-muted); pointer-events: none; display: flex; align-items: center;">
                     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0"/></svg>
                   </span>
-                  <input type="text" class="form-control" id="signup-matric" placeholder="LCU/UG/23/12345" pattern="^[Ll][Cc][Uu]/[Uu][Gg]/\d{2}/\d{5}$" title="Format: LCU/UG/YY/NNNNN (any case accepted)" style="padding-left: 2.75rem;" required>
+                  <input type="text" class="form-control" id="signup-matric" placeholder="LCU/UG/23/12345" pattern="^[Ll][Cc][Uu]/[Uu][Gg]/\d{2}/\d{5}$" title="Format: LCU/UG/YY/NNNNN (any case accepted)" style="padding-left: 2.75rem;">
                 </div>
               </div>
               <div class="form-group">
@@ -535,7 +244,7 @@
                   <span style="position: absolute; left: 1rem; color: var(--text-muted); pointer-events: none; display: flex; align-items: center;">
                     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
                   </span>
-                  <select class="form-control" id="signup-level" style="padding-left: 2.75rem;" required>
+                  <select class="form-control" id="signup-level" style="padding-left: 2.75rem;">
                     <option value="" disabled selected>Select Level</option>
                     <option value="100">100 Level</option>
                     <option value="200">200 Level</option>
@@ -553,7 +262,7 @@
                   <span style="position: absolute; left: 1rem; color: var(--text-muted); pointer-events: none; display: flex; align-items: center;">
                     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                   </span>
-                  <select class="form-control" id="signup-faculty" style="padding-left: 2.75rem;" required>
+                  <select class="form-control" id="signup-faculty" style="padding-left: 2.75rem;">
                     <option value="" disabled selected>Select Faculty</option>
                     <option value="computing">Computing & Applied Sciences</option>
                     <option value="engineering">Engineering</option>
@@ -570,7 +279,7 @@
                   <span style="position: absolute; left: 1rem; color: var(--text-muted); pointer-events: none; display: flex; align-items: center;">
                     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
                   </span>
-                  <input type="text" class="form-control" id="signup-dept" placeholder="e.g. Software Engineering" style="padding-left: 2.75rem;" required>
+                  <input type="text" class="form-control" id="signup-dept" placeholder="e.g. Software Engineering" style="padding-left: 2.75rem;">
                 </div>
               </div>
             </div>
@@ -615,66 +324,13 @@
             </div>
           </div>
           <button type="submit" class="btn btn-primary" id="btn-submit-signup" style="width: 100%; justify-content: center; margin-top: 1rem; padding: 0.85rem; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);">
-            Create Student Account
+            Create Account
           </button>
           <div style="text-align: center; margin-top: 1.25rem; font-size: 0.82rem; color: var(--text-muted);">
             By creating an account, you agree to LCU's <a href="#" style="color: var(--primary); font-weight: 500;">Terms of Service</a> & <a href="#" style="color: var(--primary); font-weight: 500;">Privacy Policy</a>.
           </div>
         </form>
 
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: Edit Profile -->
-  <div class="modal-backdrop" id="modal-edit-profile">
-    <div class="modal-container" style="max-width: 480px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden;">
-
-      <!-- Slim Header -->
-      <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); flex-shrink: 0;">
-        <div id="edit-avatar-preview" style="width: 40px; height: 40px; background: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: var(--primary); font-family: 'Outfit', sans-serif; flex-shrink: 0;">U</div>
-        <div style="flex: 1;">
-          <h3 style="margin: 0; font-size: 1rem; font-family: 'Outfit', sans-serif; color: var(--secondary);">Edit Profile</h3>
-          <p style="margin: 0; font-size: 0.75rem; color: var(--text-muted);">LCU Student Account</p>
-        </div>
-        <button class="modal-close" id="btn-close-edit-profile">&times;</button>
-      </div>
-
-      <!-- Scrollable Form Body -->
-      <div class="modal-body" style="overflow-y: auto; padding: 1.5rem; flex: 1;">
-        <form id="form-edit-profile">
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="edit-profile-name">Full Name</label>
-              <input type="text" class="form-control" id="edit-profile-name" placeholder="e.g. Adewale Okonkwo" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="edit-profile-matric">Matric Number</label>
-              <input type="text" class="form-control" id="edit-profile-matric" placeholder="LCU/UG/00/00000">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="edit-profile-contact">University Email</label>
-            <input type="email" class="form-control" id="edit-profile-contact" placeholder="user@lcu.edu.ng">
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="edit-profile-dept">Department</label>
-              <input type="text" class="form-control" id="edit-profile-dept" placeholder="e.g. Software Eng.">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="edit-profile-phone">Phone (Optional)</label>
-              <input type="tel" class="form-control" id="edit-profile-phone" placeholder="+234 800 000 0000">
-            </div>
-          </div>
-
-          <!-- Sticky footer inside modal -->
-          <div style="padding-top: 1rem; border-top: 1px solid var(--border-color); margin-top: 0.5rem;">
-            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.75rem; font-size: 0.95rem;">
-              Save Changes
-            </button>
-          </div>
-        </form>
       </div>
     </div>
   </div>
@@ -799,121 +455,12 @@
     </div>
   </div>
 
-  <!-- MODAL: Security Verification Slip (Scanned QR view) -->
-  <div class="modal-backdrop" id="modal-verify-slip">
-    <div class="modal-container" style="max-width: 480px; border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-premium); border: 1px solid var(--border-color); background: var(--bg-primary);">
-      <div class="modal-header" style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.05), transparent); padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <span style="font-size: 1.35rem;">🛡️</span>
-          <h3 class="modal-title" style="font-size: 1.15rem; font-family: 'Outfit', sans-serif; font-weight: 700; color: var(--secondary);">Security Verification Slip</h3>
-        </div>
-        <button class="modal-close" id="btn-close-slip">&times;</button>
-      </div>
-      <div class="modal-body" style="padding: 1.5rem; max-height: 80vh; overflow-y: auto;">
-        <div class="security-slip" style="border: 2px dashed var(--border-color); border-radius: var(--radius-md); padding: 1.5rem; background: var(--bg-secondary); position: relative; font-family: 'Inter', sans-serif;">
-          <div style="text-align: center; margin-bottom: 1.25rem; border-bottom: 2px dashed var(--border-color); padding-bottom: 1rem;">
-            <h4 style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.3rem; color: var(--primary); margin: 0;">LCU FINDME</h4>
-            <p style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin: 0.25rem 0 0;">Official Security Tag Receipt</p>
-          </div>
-          <div style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.88rem;">
-            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 0.5rem;">
-              <span style="color: var(--text-muted); font-weight: 500;">Slip Reference:</span>
-              <strong id="slip-ref" style="font-family: monospace; color: var(--text-dark);">REF-XXXXXXXX</strong>
-            </div>
-            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 0.5rem;">
-              <span style="color: var(--text-muted); font-weight: 500;">Status:</span>
-              <span class="status-badge status-active" id="slip-status" style="font-weight: 700;">FOUND</span>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 0.25rem; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 0.5rem;">
-              <span style="color: var(--text-muted); font-weight: 500;">Item Name / Description:</span>
-              <strong id="slip-title" style="color: var(--text-dark); font-size: 0.95rem;">Casio Wristwatch</strong>
-            </div>
-            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 0.5rem;">
-              <span style="color: var(--text-muted); font-weight: 500;">Category:</span>
-              <strong id="slip-category" style="color: var(--text-dark);">Electronics</strong>
-            </div>
-            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 0.5rem;">
-              <span style="color: var(--text-muted); font-weight: 500;">Location Found:</span>
-              <strong id="slip-location" style="color: var(--text-dark);">FSS Cafe</strong>
-            </div>
-            <div style="display: flex; justify-content: space-between; border-bottom: 2px dashed var(--border-color); padding-bottom: 0.75rem; margin-bottom: 0.5rem;">
-              <span style="color: var(--text-muted); font-weight: 500;">Date Logged:</span>
-              <strong id="slip-date" style="color: var(--text-dark);">June 16, 2026</strong>
-            </div>
-            <!-- Reporter Credentials Box -->
-            <div class="credentials-box" id="modal-slip-reporter-box" style="background: var(--bg-tertiary); border-radius: var(--radius-sm); padding: 0.85rem; border: 1px solid var(--border-color); margin-bottom: 0.75rem;">
-              <h5 id="modal-slip-reporter-title" style="margin: 0 0 0.5rem 0; font-family: 'Outfit', sans-serif; font-size: 0.82rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px;">Reporter Credentials</h5>
-              <div style="display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.82rem;" id="modal-slip-reporter-list">
-              </div>
-            </div>
-            
-            <!-- Claimant Credentials Box -->
-            <div class="credentials-box" id="modal-slip-claimant-box" style="display: none; background: var(--bg-tertiary); border-radius: var(--radius-sm); padding: 0.85rem; border: 1px solid var(--border-color); margin-bottom: 0.75rem;">
-              <h5 style="margin: 0 0 0.5rem 0; font-family: 'Outfit', sans-serif; font-size: 0.82rem; font-weight: 700; color: var(--success); text-transform: uppercase; letter-spacing: 0.5px;">Claimant / Owner Credentials</h5>
-              <div style="display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.82rem;" id="modal-slip-claimant-list">
-              </div>
-            </div>
-          </div>
-          <div style="text-align: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 2px dashed var(--border-color);">
-            <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.25rem;">Lead City University</div>
-            <div style="font-size: 0.7rem; color: var(--text-muted);">Campus Security Division • Verification Record</div>
-          </div>
-        </div>
-        <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
-          <button class="btn btn-primary" id="btn-print-slip" style="flex: 1; justify-content: center; padding: 0.75rem; font-weight: 600;">
-            🖨️ Print Slip
-          </button>
-          <button class="btn btn-secondary" id="btn-dismiss-slip" style="flex: 1; justify-content: center; padding: 0.75rem; font-weight: 600;">
-            Close View
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- TOAST NOTIFICATION -->
   <div class="toast toast-success" id="toast-notification">
     <div class="toast-icon">✓</div>
     <div class="toast-content" id="toast-message">Action completed successfully!</div>
   </div>
 
-  <!-- TOUR: Overlay backdrop -->
-  <div id="tour-overlay" role="dialog" aria-modal="true" aria-label="Onboarding Tour">
-    <div class="tour-bg"></div>
-  </div>
-
-  <!-- TOUR: Spotlight ring (highlights target element) -->
-  <div class="tour-spotlight-ring" id="tour-spotlight-ring"></div>
-
-  <!-- TOUR: Tooltip card -->
-  <div id="tour-tooltip" role="tooltip">
-    <div class="tour-tooltip-header">
-      <span class="tour-step-pill" id="tour-step-pill">Step 1 of 4</span>
-    </div>
-    <h4 class="tour-tooltip-title" id="tour-tooltip-title">Welcome to LCU FindMe!</h4>
-    <p class="tour-tooltip-body" id="tour-tooltip-body">Let's show you how to use the portal in 4 quick steps.</p>
-    <div class="tour-tooltip-footer">
-      <div class="tour-progress-dots" id="tour-progress-dots">
-        <div class="tour-dot active"></div>
-        <div class="tour-dot"></div>
-        <div class="tour-dot"></div>
-        <div class="tour-dot"></div>
-      </div>
-      <div class="tour-actions">
-        <button class="btn-tour-skip" id="btn-tour-skip">Skip Tour</button>
-        <button class="btn-tour-next" id="btn-tour-next">
-          Next
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6"/></svg>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- TOUR: Floating replay "?" button -->
-  <button id="btn-replay-tour" title="Replay Tutorial Tour" aria-label="Replay Tutorial Tour">?</button>
-
-  <script src="qrGenerator.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
-
