@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const { sendVerificationEmail, sendResetEmail } = require('../config/email');
+const { sendVerificationEmail, sendResetEmail, sendWelcomeEmail } = require('../config/email');
 
 // Helper to generate Token
 const generateToken = (id) => {
@@ -165,6 +165,11 @@ router.post('/verify-otp', async (req, res) => {
     user.isVerified = true;
     user.emailVerificationOTP = undefined;
     await user.save();
+
+    // Send welcome email in background
+    sendWelcomeEmail(user.email, user.name).catch(welcomeErr => {
+      console.error('Welcome email sending failed:', welcomeErr);
+    });
 
     res.json({
       message: 'Account successfully verified!',

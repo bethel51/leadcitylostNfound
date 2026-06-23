@@ -101,4 +101,30 @@ const sendResetEmail = async (email, otp) => {
   await sendEmail({ to: email, subject: 'Reset your LCU FindMe Password', html, text });
 };
 
-module.exports = { sendVerificationEmail, sendResetEmail };
+const sendWelcomeEmail = async (email, name) => {
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 30px 20px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">
+      <h2 style="color: #1d4ed8; text-align: center; margin-bottom: 20px;">Welcome to LCU FindMe! 🎉</h2>
+      <p style="font-size: 1rem; color: #0f172a; line-height: 1.6;">Hello <strong>${name}</strong>,</p>
+      <p style="font-size: 1rem; color: #334155; line-height: 1.6;">Your account has been successfully created and verified on the <strong>LCU Lost & Found Portal</strong>.</p>
+      <p style="font-size: 1rem; color: #334155; line-height: 1.6;">Here is what you can do on your new dashboard portal:</p>
+      <ul style="font-size: 1rem; color: #334155; line-height: 1.6; padding-left: 20px;">
+        <li>Report misplaced items securely.</li>
+        <li>Browse all campus lost/found listings.</li>
+        <li>Track status of claim items.</li>
+        <li>Update and manage your academic profile credentials.</li>
+      </ul>
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="https://leadcitylostnfound.onrender.com" style="display: inline-block; padding: 12px 30px; font-weight: 600; font-size: 0.95rem; color: #ffffff; background-color: #1d4ed8; text-decoration: none; border-radius: 8px;">Access Your Dashboard</a>
+      </div>
+      <p style="font-size: 0.9rem; color: #64748b; line-height: 1.6;">If you have any questions or require security clearance support, please reach out to the campus Security Office or Student Affairs Division.</p>
+      <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 30px 0;">
+      <p style="text-align: center; font-size: 0.8rem; color: #94a3b8; margin: 0;">&copy; 2026 Lead City University Security Unit</p>
+    </div>
+  `;
+  const text = `Welcome to LCU FindMe!\n\nHello ${name},\n\nYour account has been successfully created and verified on the LCU Lost & Found Student Portal.\n\nYou can now report items, browse campus listings, and verify your credentials on the portal.\n\nAccess Your Portal: https://leadcitylostnfound.onrender.com\n\n© 2026 Lead City University Security Unit`;
+
+  await sendEmail({ to: email, subject: 'Welcome to LCU FindMe!', html, text });
+};
+
+module.exports = { sendVerificationEmail, sendResetEmail, sendWelcomeEmail };
