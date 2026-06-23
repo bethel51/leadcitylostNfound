@@ -622,6 +622,7 @@ function setupSidebar() {
 
   if (hamburger && navTop) {
     hamburger.addEventListener('click', () => {
+      hamburger.classList.toggle('open');
       navTop.classList.toggle('open');
       if (overlay) overlay.classList.toggle('visible');
     });
@@ -633,8 +634,10 @@ function setupSidebar() {
 }
 
 function closeSidebar() {
+  const hamburger = document.getElementById('db-hamburger');
   const navTop = document.getElementById('db-nav-top');
   const overlay = document.getElementById('db-overlay');
+  if (hamburger) hamburger.classList.remove('open');
   if (navTop) navTop.classList.remove('open');
   if (overlay) overlay.classList.remove('visible');
 }

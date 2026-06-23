@@ -59,6 +59,18 @@
   transition: var(--transition-smooth);
 }
 
+.db-hamburger.open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.db-hamburger.open span:nth-child(2) {
+  opacity: 0;
+}
+
+.db-hamburger.open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
 /* Top Navigation Links */
 .db-nav-top {
   display: flex;
