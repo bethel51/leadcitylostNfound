@@ -206,9 +206,9 @@
         <button class="btn btn-primary" id="btn-print" style="flex: 1; justify-content: center; padding: 0.75rem; font-weight: 600;">
           🖨️ Print Slip
         </button>
-        <a href="index.html" class="btn btn-secondary" style="flex: 1; justify-content: center; align-items: center; padding: 0.75rem; font-weight: 600; text-decoration: none; display: flex;">
-          Public Site
-        </a>
+        <button class="btn btn-secondary" id="btn-back" style="flex: 1; justify-content: center; align-items: center; padding: 0.75rem; font-weight: 600; display: flex; cursor: pointer;">
+          ↩ Back to Portal
+        </button>
       </div>
     </div>
   </div>
@@ -375,6 +375,24 @@
         document.getElementById('btn-print').addEventListener('click', () => {
           window.print();
         });
+
+        // Dynamic Back Button Navigation
+        const backBtn = document.getElementById('btn-back');
+        if (backBtn) {
+          backBtn.addEventListener('click', () => {
+            if (document.referrer && (document.referrer.includes('dashboard.html') || document.referrer.includes('admin.html'))) {
+              window.location.href = document.referrer;
+            } else {
+              const savedUser = localStorage.getItem('lcu_findme_user');
+              if (savedUser) {
+                const user = JSON.parse(savedUser);
+                window.location.href = user.role === 'admin' ? 'admin.html' : 'dashboard.html';
+              } else {
+                window.location.href = 'index.html';
+              }
+            }
+          });
+        }
 
       } catch (err) {
         showError('Connection error. Failed to reach the security backend server.');
