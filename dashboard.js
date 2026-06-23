@@ -111,7 +111,15 @@ function populateUserUI() {
   if (sidebarUsername) sidebarUsername.textContent = name;
   if (sidebarRole) sidebarRole.textContent = role;
 
-  // Topbar
+  // Dropdown / Topbar
+  const dropdownAvatar = document.getElementById('dropdown-avatar');
+  const dropdownUsername = document.getElementById('dropdown-username');
+  const dropdownRole = document.getElementById('dropdown-role');
+  if (dropdownAvatar) dropdownAvatar.textContent = initial;
+  if (dropdownUsername) dropdownUsername.textContent = name;
+  if (dropdownRole) dropdownRole.textContent = role;
+
+  // Topbar Avatar
   const topbarAvatar = document.getElementById('topbar-avatar');
   if (topbarAvatar) topbarAvatar.textContent = initial;
 
@@ -617,13 +625,13 @@ function switchView(viewName) {
 // =====================================================
 function setupSidebar() {
   const hamburger = document.getElementById('db-hamburger');
-  const navTop    = document.getElementById('db-nav-top');
+  const sidebar   = document.getElementById('db-sidebar');
   const overlay   = document.getElementById('db-overlay');
 
-  if (hamburger && navTop) {
+  if (hamburger && sidebar) {
     hamburger.addEventListener('click', () => {
       hamburger.classList.toggle('open');
-      navTop.classList.toggle('open');
+      sidebar.classList.toggle('open');
       if (overlay) overlay.classList.toggle('visible');
     });
   }
@@ -635,10 +643,10 @@ function setupSidebar() {
 
 function closeSidebar() {
   const hamburger = document.getElementById('db-hamburger');
-  const navTop = document.getElementById('db-nav-top');
+  const sidebar = document.getElementById('db-sidebar');
   const overlay = document.getElementById('db-overlay');
   if (hamburger) hamburger.classList.remove('open');
-  if (navTop) navTop.classList.remove('open');
+  if (sidebar) sidebar.classList.remove('open');
   if (overlay) overlay.classList.remove('visible');
 }
 
