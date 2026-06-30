@@ -546,7 +546,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (readerEl) {
       readerEl.innerHTML = `
-        <div style="padding:3rem 0;text-align:center;font-size:3rem;opacity:0.2;">📷</div>`;
+        <div style="padding:3rem 0;text-align:center;font-size:3rem;opacity:0.2;">📷</div>
+        <div class="scan-laser" id="scan-laser-line" style="display:none;"></div>`;
     }
     if (startBtn) {
       startBtn.disabled = false;
@@ -649,6 +650,22 @@ document.addEventListener('DOMContentLoaded', () => {
           () => {} // silent frame errors
         );
         scannerRunning = true;
+        
+        // Show scan laser line overlay
+        const laser = document.getElementById('scan-laser-line');
+        if (laser) {
+          laser.style.display = 'block';
+        } else {
+          // If deleted/missing, append a new laser scan line dynamically
+          const readerEl = document.getElementById('reader');
+          if (readerEl) {
+            const newLaser = document.createElement('div');
+            newLaser.className = 'scan-laser';
+            newLaser.id = 'scan-laser-line';
+            readerEl.appendChild(newLaser);
+          }
+        }
+
         btnStartScan.textContent = '⏹ Stop Scan';
         btnStartScan.disabled = false;
         // Toggle behaviour: second click stops

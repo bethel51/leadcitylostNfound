@@ -178,8 +178,55 @@ function populateProfileView() {
 // =====================================================
 // LOAD DATA
 // =====================================================
+function showSkeletons() {
+  const browseGrid = document.getElementById('db-browse-grid');
+  const myReportsGrid = document.getElementById('db-my-reports-grid');
+  const recentList = document.getElementById('db-recent-reports-list');
+  
+  const skeletonCardHTML = `
+    <div class="item-card skeleton-card" style="pointer-events: none;">
+      <div class="card-image-area skeleton" style="height: 160px; border-radius: var(--radius-lg) var(--radius-lg) 0 0;"></div>
+      <div class="card-content">
+        <div class="card-meta" style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+          <div class="skeleton" style="height: 12px; width: 60px;"></div>
+          <div class="skeleton" style="height: 12px; width: 80px;"></div>
+        </div>
+        <div class="skeleton" style="height: 20px; width: 80%; margin-bottom: 0.75rem;"></div>
+        <div class="skeleton" style="height: 14px; width: 95%; margin-bottom: 0.5rem;"></div>
+        <div class="skeleton" style="height: 14px; width: 60%; margin-bottom: 1.25rem;"></div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div class="skeleton" style="height: 14px; width: 40%;"></div>
+          <div class="skeleton" style="height: 28px; width: 80px; border-radius: var(--radius-md);"></div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  const skeletonRowHTML = `
+    <div class="db-report-row skeleton-row" style="pointer-events: none; display: flex; align-items: center; gap: 1rem; padding: 0.75rem;">
+      <div class="db-report-icon skeleton" style="width: 36px; height: 36px; border-radius: var(--radius-md); flex-shrink: 0; background: none;"></div>
+      <div class="db-report-info" style="flex: 1;">
+        <div class="skeleton" style="height: 14px; width: 60%; margin-bottom: 0.4rem;"></div>
+        <div class="skeleton" style="height: 10px; width: 40%;"></div>
+      </div>
+      <div class="skeleton" style="height: 20px; width: 60px; border-radius: 20px;"></div>
+    </div>
+  `;
+  
+  if (browseGrid) {
+    browseGrid.innerHTML = skeletonCardHTML.repeat(3);
+  }
+  if (myReportsGrid) {
+    myReportsGrid.innerHTML = skeletonCardHTML.repeat(3);
+  }
+  if (recentList) {
+    recentList.innerHTML = skeletonRowHTML.repeat(3);
+  }
+}
+
 async function loadData() {
   try {
+    showSkeletons();
     await fetchItems();
     computeMyItems();
     renderOverview();
@@ -421,8 +468,8 @@ function buildItemCard(item) {
       <p class="card-description">${item.description}</p>
       <div class="card-footer">
         <div class="card-location">
-          <span class="card-location-icon">📍</span>
-          <span>${item.location}</span>
+          <span class="card-location-icon" style="flex-shrink: 0;">📍</span>
+          <span style="flex: 1; min-width: 0; word-break: break-word; overflow-wrap: break-word;">${item.location}</span>
         </div>
         <button class="btn btn-secondary btn-detail-trigger" style="padding:0.4rem 0.9rem;font-size:0.8rem;">
           ${item.status === 'returned' ? 'View Details' : 'Verify & Claim'}
@@ -654,6 +701,7 @@ function closeSidebar() {
 // AUTO MATCH ENGINE
 // =====================================================
 function findPotentialMatches(newReport) {
+  if (!newReport || !newReport.title) return null;
   const tokens = newReport.title.toLowerCase()
     .replace(/[^\w\s]/g, '').split(/\s+/).filter(t => t.length >= 3);
   if (!tokens.length) return null;
@@ -720,12 +768,12 @@ function setupDetailModal() {
         h2{font-size:1.25rem;border-bottom:2px solid #0f172a;padding-bottom:.5rem;margin:0 0 .75rem;display:flex;justify-content:space-between;}</style></head>
         <body><div id="lbl"><h2><span>LCU FindMe</span><span style="font-size:.85rem;font-weight:normal;align-self:center">SECURE LABEL</span></h2>
         <div style="display:flex;gap:1.5rem;align-items:center;">
-        <img src="${qrImg}" style="width:120px;height:120px;border:1px solid #e2e8f0;border-radius:4px">
-        <div style="font-size:.82rem;line-height:1.6;display:flex;flex-direction:column;gap:.4rem;padding-left:.5rem">
-        <div style="font-weight:bold">${document.getElementById('qr-label-title').textContent}</div>
-        <div>ID: <span style="font-family:monospace;font-weight:700">${document.getElementById('qr-label-id').textContent}</span></div>
-        <div>Category: ${document.getElementById('qr-label-category').textContent}</div>
-        <div>Location: ${document.getElementById('qr-label-location').textContent}</div>
+        <img src="${qrImg}" style="width:120px;height:120px;border:1px solid #e2e8f0;border-radius:4px;flex-shrink:0;">
+        <div style="font-size:.82rem;line-height:1.6;display:flex;flex-direction:column;gap:.4rem;padding-left:.5rem;flex:1;min-width:0;word-break:break-word;">
+        <div style="font-weight:bold;word-break:break-word;">${document.getElementById('qr-label-title').textContent}</div>
+        <div style="word-break:break-all;">ID: <span style="font-family:monospace;font-weight:700">${document.getElementById('qr-label-id').textContent}</span></div>
+        <div style="word-break:break-word;">Category: ${document.getElementById('qr-label-category').textContent}</div>
+        <div style="word-break:break-word;">Location: ${document.getElementById('qr-label-location').textContent}</div>
         <div style="margin-top:.5rem;font-weight:bold;border:1px dashed #0f172a;padding:.3rem .5rem;text-align:center;border-radius:4px">🔒 Bin Tag Required</div>
         </div></div></div>
         <script>window.onload=function(){window.print();setTimeout(()=>window.close(),500)}<\/script>
@@ -778,8 +826,85 @@ function openDetailModal(itemId) {
     </div>`;
   }
 
+  let timelineHTML = '';
+  if (item.type === 'found') {
+    const isReturned = item.status === 'returned';
+    const hasClaims = item.verificationClaims && item.verificationClaims.length > 0;
+    
+    let step1Class = 'completed';
+    let step2Class = isReturned ? 'completed' : 'active';
+    let step3Class = isReturned ? 'completed' : (hasClaims ? 'active' : '');
+    let step4Class = isReturned ? 'completed' : '';
+    
+    let progressWidth = '33%';
+    if (isReturned) {
+      step2Class = 'completed';
+      step3Class = 'completed';
+      step4Class = 'completed';
+      progressWidth = '100%';
+    } else if (hasClaims) {
+      step2Class = 'completed';
+      step3Class = 'active';
+      progressWidth = '66%';
+    }
+    
+    timelineHTML = `
+      <div class="status-timeline" style="grid-column: 1 / -1;">
+        <div class="timeline-progress-bar" style="width: ${progressWidth}"></div>
+        <div class="timeline-step ${step1Class}">
+          <div class="timeline-node">1</div>
+          <div class="timeline-label">Reported</div>
+        </div>
+        <div class="timeline-step ${step2Class}">
+          <div class="timeline-node">2</div>
+          <div class="timeline-label">Handover</div>
+        </div>
+        <div class="timeline-step ${step3Class}">
+          <div class="timeline-node">3</div>
+          <div class="timeline-label">Verification</div>
+        </div>
+        <div class="timeline-step ${step4Class}">
+          <div class="timeline-node">4</div>
+          <div class="timeline-label">Returned</div>
+        </div>
+      </div>
+    `;
+  } else {
+    const isReturned = item.status === 'returned';
+    
+    let step1Class = 'completed';
+    let step2Class = isReturned ? 'completed' : 'active';
+    let step3Class = isReturned ? 'completed' : '';
+    
+    let progressWidth = '50%';
+    if (isReturned) {
+      step2Class = 'completed';
+      step3Class = 'completed';
+      progressWidth = '100%';
+    }
+    
+    timelineHTML = `
+      <div class="status-timeline" style="grid-column: 1 / -1;">
+        <div class="timeline-progress-bar" style="width: ${progressWidth}"></div>
+        <div class="timeline-step ${step1Class}">
+          <div class="timeline-node">1</div>
+          <div class="timeline-label">Reported</div>
+        </div>
+        <div class="timeline-step ${step2Class}">
+          <div class="timeline-node">2</div>
+          <div class="timeline-label">Matching</div>
+        </div>
+        <div class="timeline-step ${step3Class}">
+          <div class="timeline-node">3</div>
+          <div class="timeline-label">Returned</div>
+        </div>
+      </div>
+    `;
+  }
+
   detailBody.innerHTML = `
     <div class="detail-layout">
+      ${timelineHTML}
       <div class="detail-image">${imageHTML}</div>
       <div>
         <h2 style="font-size:1.5rem;margin-bottom:.5rem">${item.title}</h2>
@@ -1041,7 +1166,7 @@ function setupReportModal() {
           toggleModal('modal-report', false);
           showToast(`Report logged successfully as ${selectedReportType.toUpperCase()}.`);
           await loadData();
-          const match = findPotentialMatches(respData);
+          const match = respData.match || findPotentialMatches(respData.item || respData);
           if (match) {
             state.pendingMatchItem = match;
             document.getElementById('match-results-container').innerHTML = `
@@ -1054,7 +1179,7 @@ function setupReportModal() {
                   </div>
                   <h3 class="card-title">${match.title}</h3>
                   <p class="card-description">${match.description}</p>
-                  <div style="font-size:.8rem;margin-top:.5rem;color:var(--primary);font-weight:600">📍 ${match.location}</div>
+                  <div style="font-size:.8rem;margin-top:.5rem;color:var(--primary);font-weight:600;display:flex;align-items:center;gap:0.25rem;"><span style="flex-shrink:0;">📍</span><span style="flex:1;min-width:0;word-break:break-word;overflow-wrap:break-word;">${match.location}</span></div>
                 </div>
               </div>`;
             setTimeout(() => toggleModal('modal-match', true), 800);
@@ -1063,6 +1188,7 @@ function setupReportModal() {
           showToast(respData.message || 'Failed to submit report.', 'error');
         }
       } catch (err) {
+        console.error('Report submit error:', err);
         showToast('Connection error. Please try again.', 'error');
       } finally {
         if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit Report'; }

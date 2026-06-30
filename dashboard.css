@@ -22,17 +22,20 @@
   flex-direction: column;
   z-index: 210;
   transform: translateX(-100%);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+  box-shadow: none;
 }
 
 .db-sidebar.open {
   transform: translateX(0);
+  box-shadow: 4px 0 24px rgba(15, 23, 42, 0.12);
 }
 
 @media (min-width: 992px) {
   .db-sidebar {
     transform: none;
     position: fixed;
+    box-shadow: 1px 0 0 var(--border-color);
   }
 }
 
@@ -163,6 +166,8 @@
 .db-sidebar-nav .db-nav-item.active {
   color: var(--primary);
   background-color: var(--primary-light);
+  font-weight: 600;
+  padding-left: 1.25rem;
 }
 
 .db-sidebar-nav .db-nav-item:hover svg,
@@ -212,6 +217,8 @@
     margin-left: 260px;
     width: calc(100% - 260px);
     padding: 0.75rem 3rem;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
   }
 }
 
@@ -270,7 +277,7 @@
 
 .db-icon-btn {
   background: none;
-  border: 1px solid var(--border-color);
+  border: 1.5px solid var(--border-color);
   width: 38px;
   height: 38px;
   border-radius: var(--radius-md);
@@ -284,9 +291,9 @@
 }
 
 .db-icon-btn:hover {
-  background-color: var(--bg-secondary);
-  color: var(--text-dark);
-  border-color: var(--border-hover);
+  background-color: var(--primary-light);
+  color: var(--primary);
+  border-color: var(--primary);
 }
 
 .db-notif-wrapper {
@@ -577,34 +584,35 @@
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  background: linear-gradient(135deg, var(--primary), var(--accent));
+  background: linear-gradient(135deg, #1e40af 0%, #2563eb 40%, #3b82f6 100%);
   border-radius: var(--radius-lg);
-  padding: 1.75rem 2rem;
-  margin-bottom: 1.5rem;
+  padding: 2rem 2.25rem;
+  margin-bottom: 1.75rem;
   position: relative;
   overflow: hidden;
   flex-wrap: wrap;
+  box-shadow: 0 12px 32px rgba(37, 99, 235, 0.28), inset 0 1px 0 rgba(255,255,255,0.12);
 }
 
 .db-welcome-banner::before {
   content: '';
   position: absolute;
-  top: -40px;
-  right: -40px;
-  width: 200px;
-  height: 200px;
+  top: -60px;
+  right: -60px;
+  width: 240px;
+  height: 240px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.07);
   pointer-events: none;
 }
 
 .db-welcome-banner::after {
   content: '';
   position: absolute;
-  bottom: -60px;
-  left: 30%;
-  width: 150px;
-  height: 150px;
+  bottom: -70px;
+  left: 28%;
+  width: 200px;
+  height: 200px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.04);
   pointer-events: none;
@@ -669,18 +677,42 @@
   background-color: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 1.25rem 1.5rem;
+  padding: 1.35rem 1.5rem;
   display: flex;
   align-items: center;
   gap: 1rem;
-  transition: var(--transition-smooth);
+  transition: var(--transition-bounce);
   box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
 }
 
-.db-stat-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
+.db-stat-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
+
+.db-stat-blue::after   { background: linear-gradient(90deg, var(--accent), #93c5fd); }
+.db-stat-orange::after { background: linear-gradient(90deg, var(--warning), #fcd34d); }
+.db-stat-green::after  { background: linear-gradient(90deg, var(--success), #6ee7b7); }
+.db-stat-purple::after { background: linear-gradient(90deg, var(--primary), var(--accent)); }
+
+.db-stat-card:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-hover);
+}
+
+.db-stat-card:hover::after { opacity: 1; }
+
+.db-stat-blue:hover   { border-color: var(--accent); }
+.db-stat-orange:hover { border-color: var(--warning); }
+.db-stat-green:hover  { border-color: var(--success); }
+.db-stat-purple:hover { border-color: var(--primary); }
 
 .db-stat-icon {
   width: 48px;
@@ -900,20 +932,21 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.6rem;
-  padding: 1rem 0.75rem;
-  border: 1px solid var(--border-color);
+  gap: 0.65rem;
+  padding: 1.1rem 0.75rem;
+  border: 1.5px solid var(--border-color);
   border-radius: var(--radius-md);
   background-color: var(--card-bg);
   cursor: pointer;
-  transition: var(--transition-smooth);
+  transition: var(--transition-bounce);
   text-align: center;
 }
 
 .db-action-tile:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--border-hover);
+  transform: translateY(-5px) scale(1.03);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary);
+  background-color: var(--primary-light);
 }
 
 .db-action-icon {
@@ -1060,11 +1093,17 @@
   align-items: center;
   gap: 0.75rem;
   background-color: var(--card-bg);
-  border: 1px solid var(--border-color);
+  border: 1.5px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 0.6rem 1rem;
+  padding: 0.6rem 0.6rem 0.6rem 1.1rem;
   margin-bottom: 1.25rem;
   box-shadow: var(--shadow-sm);
+  transition: var(--transition-smooth);
+}
+
+.db-search-bar:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--primary-light), var(--shadow-sm);
 }
 
 .db-search-bar svg {
@@ -1102,11 +1141,10 @@
   background-color: var(--primary-hover);
 }
 
-/* Reports Grid (for Browse & My Reports) */
 .db-reports-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(295px, 1fr));
+  gap: 1.35rem;
 }
 
 /* Full Empty State */
@@ -1159,7 +1197,13 @@
   text-align: center;
   position: relative;
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-premium);
+  transition: var(--transition-smooth);
+}
+
+.db-profile-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
 }
 
 .db-profile-card::before {
@@ -1447,18 +1491,41 @@
 /* Upgraded Toast Success Notification to fit LCU brand */
 .toast-success {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
-  border: 1px solid rgba(29, 78, 216, 0.3) !important;
+  border: 1px solid rgba(37, 99, 235, 0.3) !important;
   border-left: 4px solid var(--primary) !important;
-  box-shadow: 0 10px 40px rgba(29, 78, 216, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 0 12px 40px rgba(37, 99, 235, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
 }
 
 .toast-success .toast-icon {
   background-color: var(--primary-light) !important;
   color: var(--primary) !important;
-  box-shadow: 0 0 12px rgba(29, 78, 216, 0.35);
+  box-shadow: 0 0 12px rgba(37, 99, 235, 0.35);
   font-weight: 800;
 }
 
 .toast-success::after {
   background: linear-gradient(90deg, var(--primary), var(--accent)) !important;
+}
+
+/* Action tile label hover upgrade */
+.db-action-tile:hover .db-action-label {
+  color: var(--primary);
+}
+
+/* Nav badge upgrade */
+.db-sidebar-nav .db-nav-badge {
+  margin-left: auto;
+  background-color: var(--primary);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 20px;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+}
+
+/* Card link arrow hover */
+.db-card-link:hover {
+  color: var(--primary-hover);
+  transform: translateX(2px);
 }
