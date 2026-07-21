@@ -301,8 +301,8 @@ router.put('/:id/claims/:claimId/respond', protect, adminOnly, async (req, res) 
 
 // @route   DELETE api/items/:id
 // @desc    Delete item record
-// @access  Protected (Admin only)
-router.delete('/:id', protect, adminOnly, async (req, res) => {
+// @access  Protected (Admin OR the original reporter)
+router.delete('/:id', protect, async (req, res) => {
   try {
     const item = await Item.findById(req.params.id);
 
@@ -310,8 +310,24 @@ router.delete('/:id', protect, adminOnly, async (req, res) => {
       return res.status(404).json({ message: 'Item not found' });
     }
 
+    // Allow if admin
+    const isAdmin = req.user && req.user.role === 'admin';
+
+    // Allow if the logged-in user is the original reporter (match by email or matric)
+    const userEmail  = (req.user.email || '').trim().toLowerCase();
+    const userMatric = (req.user.matricNumber || '').trim().toLowerCase();
+    const itemEmail  = (item.reporterEmail || '').trim().toLowerCase();
+    const itemMatric = (item.reporterMatric || '').trim().toLowerCase();
+
+    const isOwner = (userEmail && itemEmail && userEmail === itemEmail) ||
+                    (userMatric && itemMatric && userMatric === itemMatric);
+
+    if (!isAdmin && !isOwner) {
+      return res.status(403).json({ message: 'Not authorized. Only the reporter or an admin can delete this report.' });
+    }
+
     await Item.deleteOne({ _id: req.params.id });
-    res.json({ message: 'Record deleted successfully' });
+    res.json({ message: 'Report deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server Error', error: error.message });
   }

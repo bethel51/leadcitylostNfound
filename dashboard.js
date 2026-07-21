@@ -921,6 +921,19 @@ function openDetailModal(itemId) {
     `;
   }
 
+  // Check if the logged-in user is the owner of this report
+  const isOwner = (() => {
+    if (!state.currentUser) return false;
+    const uEmail  = (state.currentUser.email || '').trim().toLowerCase();
+    const uMatric = (state.currentUser.matricNumber || state.currentUser.matric || '').trim().toLowerCase();
+    const rEmail  = (item.reporterEmail || '').trim().toLowerCase();
+    const rMatric = (item.reporterMatric || '').trim().toLowerCase();
+    if (uEmail && rEmail && uEmail === rEmail) return true;
+    if (uMatric && rMatric && uMatric === rMatric) return true;
+    if ((state.currentUser.name || '').trim().toLowerCase() === (item.reporterName || '').trim().toLowerCase()) return true;
+    return false;
+  })();
+
   detailBody.innerHTML = `
     <div class="detail-layout">
       ${timelineHTML}
@@ -943,9 +956,49 @@ function openDetailModal(itemId) {
         <button class="btn btn-secondary" id="btn-generate-tag-qr" style="width:100%;justify-content:center;gap:.5rem;margin-top:1rem">
           🖨️ Create Security Tag QR Label
         </button>` : ''}
+      ${isOwner ? `
+        <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border-color);">
+          <button class="btn" id="btn-delete-report" style="width:100%;justify-content:center;gap:.5rem;background:var(--danger-bg,#fef2f2);color:var(--danger,#dc2626);border:1px solid rgba(220,38,38,.25);font-weight:600;padding:.6rem 1rem;border-radius:var(--radius-md);">
+            🗑️ Delete This Report
+          </button>
+        </div>` : ''}
     </div>`;
 
   toggleModal('modal-detail', true);
+
+  // Delete Report (owner only)
+  const btnDeleteReport = document.getElementById('btn-delete-report');
+  if (btnDeleteReport) {
+    btnDeleteReport.addEventListener('click', async () => {
+      const confirmed = confirm(`Are you sure you want to delete the report for "${item.title}"?\n\nThis action cannot be undone.`);
+      if (!confirmed) return;
+
+      btnDeleteReport.disabled = true;
+      btnDeleteReport.textContent = '⏳ Deleting...';
+
+      try {
+        const token = localStorage.getItem('lcu_findme_token');
+        const res = await fetch(`${API_URL}/items/${item._id || item.id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+          toggleModal('modal-detail', false);
+          await loadData();
+          showToast('Report deleted successfully.', 'success');
+        } else {
+          showToast(data.message || 'Failed to delete report.', 'error');
+          btnDeleteReport.disabled = false;
+          btnDeleteReport.textContent = '🗑️ Delete This Report';
+        }
+      } catch (err) {
+        showToast('Connection error. Please try again.', 'error');
+        btnDeleteReport.disabled = false;
+        btnDeleteReport.textContent = '🗑️ Delete This Report';
+      }
+    });
+  }
 
   // QR Generation
   const btnQR = document.getElementById('btn-generate-tag-qr');
