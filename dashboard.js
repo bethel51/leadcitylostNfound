@@ -241,10 +241,7 @@ async function loadData() {
 
 async function fetchItems() {
   try {
-    const { type, category, search } = state.filters;
-    let url = `${API_URL}/items?type=${type}&category=${category}`;
-    if (search.trim()) url += `&search=${encodeURIComponent(search)}`;
-    const res = await fetch(url);
+    const res = await fetch(`${API_URL}/items`);
     if (res.ok) {
       state.items = await res.json();
     }
@@ -255,7 +252,20 @@ async function fetchItems() {
 
 function computeMyItems() {
   if (!state.currentUser) { state.myItems = []; return; }
-  state.myItems = state.items.filter(i => i.reporterName === state.currentUser.name);
+  const uName = (state.currentUser.name || '').trim().toLowerCase();
+  const uEmail = (state.currentUser.email || '').trim().toLowerCase();
+  const uMatric = (state.currentUser.matricNumber || state.currentUser.matric || '').trim().toLowerCase();
+
+  state.myItems = state.items.filter(i => {
+    const rName = (i.reporterName || '').trim().toLowerCase();
+    const rEmail = (i.reporterEmail || '').trim().toLowerCase();
+    const rMatric = (i.reporterMatric || '').trim().toLowerCase();
+
+    if (uEmail && rEmail && uEmail === rEmail) return true;
+    if (uMatric && rMatric && uMatric === rMatric) return true;
+    if (uName && rName && uName === rName) return true;
+    return false;
+  });
 }
 
 // =====================================================
@@ -407,6 +417,15 @@ function renderBrowseGrid() {
   if (state.filters.category !== 'all') {
     filtered = filtered.filter(i => i.category === state.filters.category);
   }
+  if (state.filters.search && state.filters.search.trim()) {
+    const q = state.filters.search.trim().toLowerCase();
+    filtered = filtered.filter(i => 
+      (i.title && i.title.toLowerCase().includes(q)) ||
+      (i.description && i.description.toLowerCase().includes(q)) ||
+      (i.location && i.location.toLowerCase().includes(q)) ||
+      (i.category && i.category.toLowerCase().includes(q))
+    );
+  }
 
   filtered.sort((a, b) => {
     if (a.status === 'returned' && b.status !== 'returned') return 1;
@@ -419,7 +438,7 @@ function renderBrowseGrid() {
       <div class="db-full-empty">
         <div class="db-full-empty-icon">🔍</div>
         <h3>No Items Found</h3>
-        <p>No listings match your current filters. Try adjusting your search.</p>
+        <p>No listings match your current search/filters. Try adjusting your search.</p>
       </div>`;
     return;
   }
@@ -588,7 +607,7 @@ function setupNavigation() {
   if (searchBtn) {
     searchBtn.addEventListener('click', () => {
       state.filters.search = searchInput ? searchInput.value : '';
-      fetchItems().then(() => { computeMyItems(); renderBrowseGrid(); });
+      renderBrowseGrid();
     });
   }
   if (searchInput) {
@@ -1151,7 +1170,9 @@ function setupReportModal() {
         reporterContact: document.getElementById('report-contact').value.trim(),
         description:     document.getElementById('report-description').value.trim(),
         type:            selectedReportType,
-        image:           state.tempUploadedImage
+        image:           state.tempUploadedImage,
+        reporterEmail:   state.currentUser ? (state.currentUser.email || '') : '',
+        reporterMatric:  state.currentUser ? (state.currentUser.matricNumber || state.currentUser.matric || '') : ''
       };
 
       try {

@@ -137,7 +137,7 @@ router.get('/:id', async (req, res) => {
 // @access  Protected
 router.post('/', protect, async (req, res) => {
   try {
-    const { title, type, category, location, date, description, reporterName, reporterContact, image } = req.body;
+    const { title, type, category, location, date, description, reporterName, reporterContact, image, reporterEmail, reporterMatric } = req.body;
 
     const newItem = new Item({
       title,
@@ -149,11 +149,11 @@ router.post('/', protect, async (req, res) => {
       reporterName,
       reporterContact,
       image,
-      reporterEmail: req.user.email || '',
-      reporterMatric: req.user.matricNumber || '',
-      reporterFaculty: req.user.faculty || '',
-      reporterDept: req.user.department || '',
-      reporterLevel: req.user.level || ''
+      reporterEmail: reporterEmail || (req.user ? req.user.email : '') || '',
+      reporterMatric: reporterMatric || (req.user ? req.user.matricNumber : '') || '',
+      reporterFaculty: req.user ? (req.user.faculty || '') : '',
+      reporterDept: req.user ? (req.user.department || '') : '',
+      reporterLevel: req.user ? (req.user.level || '') : ''
     });
 
     // Fuzzy token match check
