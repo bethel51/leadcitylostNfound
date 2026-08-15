@@ -142,36 +142,100 @@ header {
   flex-shrink: 0;
 }
 
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+}
+
 .logo-badge {
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  background: #ffffff;
-  border: 2.5px solid rgba(212, 175, 55, 0.7);
-  box-shadow: 0 4px 14px rgba(26, 86, 219, 0.12), 0 0 0 4px rgba(212, 175, 55, 0.08);
+  width: 52px;
+  height: 52px;
+  border-radius: 14px; /* iOS Squircle App Icon Tile */
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  border: 1.5px solid rgba(212, 175, 55, 0.6);
+  box-shadow: 
+    0 4px 14px rgba(26, 86, 219, 0.2),
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 5px;
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  padding: 4px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+
+/* Glassmorphic App Icon Gloss Specular Reflection */
+.logo-badge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 48%;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0));
+  border-radius: 12px 12px 0 0;
+  pointer-events: none;
 }
 
 .logo-badge:hover {
-  box-shadow: 0 6px 20px rgba(26, 86, 219, 0.18), 0 0 0 6px rgba(212, 175, 55, 0.14);
-  transform: scale(1.04);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 
+    0 8px 24px rgba(26, 86, 219, 0.3),
+    0 0 0 3px rgba(212, 175, 55, 0.25);
+  border-color: var(--primary);
+}
+
+.logo-badge:active {
+  transform: translateY(0) scale(0.96);
 }
 
 .logo-image {
-  width: 46px;
-  height: 46px;
+  width: 40px;
+  height: 40px;
   object-fit: contain;
   display: block;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.12));
+  position: relative;
+  z-index: 1;
 }
 
 body.dark-theme .logo-badge {
-  background: #111827;
+  background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
   border-color: rgba(212, 175, 55, 0.5);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), 0 0 0 4px rgba(212, 175, 55, 0.1);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* App Branding Text next to Logo Badge */
+.logo-text-brand {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-text-brand .app-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--primary, #1a56db);
+  line-height: 1.15;
+  letter-spacing: -0.3px;
+}
+
+.logo-text-brand .app-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #d4af37;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-top: 1px;
 }
 
 .logo-icon {
