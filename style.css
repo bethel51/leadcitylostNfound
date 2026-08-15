@@ -3231,4 +3231,50 @@ body.dark-theme .native-card-icon.login-bg {
   .native-card-icon { width: 44px; height: 44px; }
 }
 
+/* Upgraded Logout Button Component */
+.btn-logout-action {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1rem;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+  border: 1.5px solid rgba(239, 68, 68, 0.3);
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.08);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.btn-logout-action:hover, 
+.btn-logout-action:focus {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  border-color: #ef4444 !important;
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.35);
+  transform: translateY(-2px);
+}
+
+.btn-logout-action:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
+.btn-logout-action svg {
+  transition: transform 0.25s ease, stroke 0.25s ease;
+}
+
+.btn-logout-action:hover svg {
+  transform: translateX(3px);
+  stroke: #ffffff;
+}
+
 
