@@ -543,25 +543,27 @@
   color: var(--text-dark);
 }
 
-/* Upgraded Logout Button Component */
+/* Upgraded Compact Box Logout Button Component */
 .btn-logout-action {
-  width: 100%;
-  display: flex;
+  width: auto;
+  max-width: 160px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 0.65rem 1rem;
-  border-radius: 12px;
+  gap: 0.45rem;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
   background: var(--danger-bg, rgba(239, 68, 68, 0.08));
   color: var(--danger, #ef4444);
   border: 1.5px solid rgba(239, 68, 68, 0.3);
   font-family: 'Outfit', 'Inter', sans-serif;
   font-weight: 700;
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   cursor: pointer;
   outline: none;
+  margin: 0 auto;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.08);
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.08);
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
@@ -571,22 +573,33 @@
   background: #ef4444 !important;
   color: #ffffff !important;
   border-color: #ef4444 !important;
-  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.35);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3);
   transform: translateY(-2px);
 }
 
 .btn-logout-action:active {
-  transform: translateY(0) scale(0.98);
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.2);
 }
 
 .btn-logout-action svg {
   transition: transform 0.25s ease, stroke 0.25s ease;
+  flex-shrink: 0;
 }
 
 .btn-logout-action:hover svg {
-  transform: translateX(3px);
+  transform: translateX(2px);
   stroke: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .btn-logout-action {
+    width: auto !important;
+    max-width: 140px !important;
+    padding: 0.45rem 0.85rem !important;
+    font-size: 0.8rem !important;
+    margin: 0 auto !important;
+  }
 }
 
 /* ---- Notification Panel ---- */
