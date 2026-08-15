@@ -617,6 +617,54 @@
         <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
           <button class="btn btn-secondary" id="btn-match-ignore" style="flex: 1; justify-content: center;">Ignore &amp; Keep Mine</button>
           <button class="btn btn-primary" id="btn-match-view" style="flex: 1; justify-content: center;">View &amp; Verify Item</button>
+  <!-- MODAL: Student Ambassador Unit Verification & Collection Instructions -->
+  <div class="modal-backdrop" id="modal-ambassador-instructions">
+    <div class="modal-container" style="max-width: 540px;">
+      <div class="modal-header" style="background: linear-gradient(135deg, rgba(26, 86, 219, 0.08) 0%, rgba(212, 175, 55, 0.1) 100%); border-bottom: 2px solid rgba(212, 175, 55, 0.3);">
+        <h3 class="modal-title" style="color: var(--primary); display: flex; align-items: center; gap: 0.5rem; font-size: 1.15rem;">
+          🏛️ Student Ambassador Unit Verification
+        </h3>
+        <button class="modal-close" id="btn-close-ambassador">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 1.5rem;">
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+          <div style="width: 70px; height: 70px; border-radius: 50%; background: rgba(26, 86, 219, 0.1); border: 2.5px solid #d4af37; color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 0.75rem auto; box-shadow: 0 8px 20px rgba(0, 33, 71, 0.1);">
+            🏛️
+          </div>
+          <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.35rem; color: var(--secondary); margin-bottom: 0.35rem;">
+            Verification Request Logged!
+          </h2>
+          <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; margin: 0 auto; max-width: 420px;" id="ambassador-item-name">
+            Your verification request has been forwarded to Security Admin.
+          </p>
+        </div>
+
+        <!-- Official Instruction Card -->
+        <div style="background: var(--bg-secondary); border: 1.5px solid rgba(212, 175, 55, 0.4); border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);">
+          <div style="display: flex; align-items: center; gap: 0.6rem; color: #b48a1d; font-weight: 800; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 0.75rem;">
+            <span>📍 NEXT STEP FOR VERIFICATION &amp; COLLECTION</span>
+          </div>
+          <p style="font-size: 0.93rem; color: var(--text-dark); line-height: 1.6; margin-bottom: 1rem;">
+            Please proceed to the <strong>Student Ambassador Unit</strong> on campus for official physical verification and collection of your item.
+          </p>
+          
+          <div style="border-top: 1px dashed var(--border-color); padding-top: 0.85rem;">
+            <div style="font-weight: 700; font-size: 0.82rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;">What to bring with you:</div>
+            <ul style="margin: 0; padding-left: 1.2rem; font-size: 0.88rem; color: var(--text-dark); line-height: 1.7;">
+              <li><strong>Official LCU Student / Staff ID Card</strong></li>
+              <li>Verification Reference Code: <strong id="ambassador-ref-code" style="font-family: monospace; color: var(--primary);">#LCU-VERIF</strong></li>
+              <li>Physical description / proof of ownership (e.g. unlock code, serial #, receipts)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+          <button class="btn btn-secondary" id="btn-ambassador-print" style="flex: 1; justify-content: center; min-height: 48px; gap: 0.5rem;">
+            🖨️ Print Verification Pass
+          </button>
+          <button class="btn btn-primary" id="btn-ambassador-done" style="flex: 1.2; justify-content: center; min-height: 48px;">
+            Understood - Back to Dashboard
+          </button>
         </div>
       </div>
     </div>
