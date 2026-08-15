@@ -1567,25 +1567,6 @@
   }
 }
 
-/* Upgraded Toast Success Notification to fit LCU brand */
-.toast-success {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
-  border: 1px solid rgba(37, 99, 235, 0.3) !important;
-  border-left: 4px solid var(--primary) !important;
-  box-shadow: 0 12px 40px rgba(37, 99, 235, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
-}
-
-.toast-success .toast-icon {
-  background-color: var(--primary-light) !important;
-  color: var(--primary) !important;
-  box-shadow: 0 0 12px rgba(37, 99, 235, 0.35);
-  font-weight: 800;
-}
-
-.toast-success::after {
-  background: linear-gradient(90deg, var(--primary), var(--accent)) !important;
-}
-
 /* Action tile label hover upgrade */
 .db-action-tile:hover .db-action-label {
   color: var(--primary);
