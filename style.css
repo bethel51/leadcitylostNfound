@@ -1436,7 +1436,6 @@ footer {
     padding: 1rem 5%;
     gap: 0.75rem;
     box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-    z-content: 200;
     z-index: 200;
   }
 
