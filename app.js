@@ -195,6 +195,50 @@ function showToast(message, type = 'success') {
 
 // Event Listeners Binding
 function setupEventListeners() {
+  // Horizontal Split Intro Overlay Click Handler
+  const splitOverlay = document.getElementById('intro-split-overlay');
+  const splitLogoTrigger = document.getElementById('split-logo-trigger');
+  
+  if (splitLogoTrigger && splitOverlay) {
+    splitLogoTrigger.addEventListener('click', () => {
+      splitOverlay.classList.add('split-open');
+      setTimeout(() => {
+        splitOverlay.classList.add('hidden');
+      }, 950);
+    });
+  }
+
+  // Hamburger mobile nav toggle
+  const hamburgerBtn = document.getElementById('hamburger-btn');
+  const mainNav = document.getElementById('main-nav');
+
+  if (hamburgerBtn && mainNav) {
+    hamburgerBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = mainNav.classList.toggle('mobile-open');
+      hamburgerBtn.classList.toggle('open', isOpen);
+      hamburgerBtn.setAttribute('aria-expanded', isOpen);
+    });
+
+    // Close nav when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!mainNav.contains(e.target) && !hamburgerBtn.contains(e.target)) {
+        mainNav.classList.remove('mobile-open');
+        hamburgerBtn.classList.remove('open');
+        hamburgerBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    // Close nav when a link inside it is clicked
+    mainNav.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        mainNav.classList.remove('mobile-open');
+        hamburgerBtn.classList.remove('open');
+        hamburgerBtn.setAttribute('aria-expanded', 'false');
+      });
+    });
+  }
+
   const themeToggle = document.getElementById('theme-toggle');
   if (themeToggle) {
     themeToggle.addEventListener('click', () => {
@@ -204,23 +248,14 @@ function setupEventListeners() {
     });
   }
 
-  // Header and Hero elements triggers login
+  // Header buttons
   const btnReportHeader = document.getElementById('btn-report-header');
-  const btnReportHero = document.getElementById('btn-report-hero');
-  const btnScrollDashboard = document.getElementById('btn-scroll-dashboard');
-  
   const triggerLoginPrompt = () => {
     showToast('Please log in or create an account to proceed.', 'warning');
     openAuthModal('login');
   };
   
   if (btnReportHeader) btnReportHeader.addEventListener('click', triggerLoginPrompt);
-  if (btnReportHero) btnReportHero.addEventListener('click', triggerLoginPrompt);
-  if (btnScrollDashboard) {
-    btnScrollDashboard.addEventListener('click', () => {
-      document.getElementById('listings-section').scrollIntoView({ behavior: 'smooth' });
-    });
-  }
 
   // Backdrop click modal close
   document.querySelectorAll('.modal-container').forEach(container => {
@@ -247,6 +282,10 @@ function setupEventListeners() {
   const formSignup = document.getElementById('form-signup');
   const authModalTitle = document.getElementById('auth-modal-title');
 
+  // Welcome Native App Buttons
+  const btnWelcomeRegister = document.getElementById('btn-welcome-register');
+  const btnWelcomeLogin = document.getElementById('btn-welcome-login');
+
   const openAuthModal = (view) => {
     if (formLogin) formLogin.reset();
     if (formSignup) formSignup.reset();
@@ -269,10 +308,13 @@ function setupEventListeners() {
 
   if (btnHeaderLogin) btnHeaderLogin.addEventListener('click', () => openAuthModal('login'));
   if (btnHeaderSignup) btnHeaderSignup.addEventListener('click', () => openAuthModal('signup'));
+  if (btnWelcomeRegister) btnWelcomeRegister.addEventListener('click', () => openAuthModal('signup'));
+  if (btnWelcomeLogin) btnWelcomeLogin.addEventListener('click', () => openAuthModal('login'));
   if (btnCloseAuth) btnCloseAuth.addEventListener('click', () => toggleModal('modal-auth', false));
   
   if (tabLogin) tabLogin.addEventListener('click', () => openAuthModal('login'));
   if (tabSignup) tabSignup.addEventListener('click', () => openAuthModal('signup'));
+
 
   const loginUser = (user, token) => {
     state.currentUser = user;

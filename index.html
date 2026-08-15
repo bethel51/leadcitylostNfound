@@ -8,9 +8,36 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+  <!-- Horizontal Split Sliding Intro Overlay (White Theme) -->
+  <div id="intro-split-overlay">
+    <div class="split-panel-top">
+      <div class="split-top-content">
+        <span class="split-badge">Lead City University</span>
+        <h1 class="split-title">LCU Lost &amp; Found</h1>
+        <p class="split-subtext">Official Campus Item Recovery &amp; Owner Verification System</p>
+      </div>
+    </div>
+
+    <div class="split-divider-center">
+      <div class="split-glow-line"></div>
+      <button class="split-logo-trigger" id="split-logo-trigger" aria-label="Enter LCU Lost and Found Portal">
+        <img src="logo.png" alt="LCU Lost &amp; Found Badge Logo" class="split-logo-img">
+      </button>
+    </div>
+
+    <div class="split-panel-bottom">
+      <div class="split-bottom-content">
+        <p class="split-subtext-bottom">LOST TODAY, FOUND TOGETHER</p>
+      </div>
+    </div>
+  </div>
 
   <!-- Guard Redirect if already logged in -->
   <script>
@@ -28,12 +55,13 @@
     <!-- Header -->
     <header>
       <div class="logo-container">
-        <img src="logo.png" alt="LCU Logo" class="logo-image" style="width: 52px; height: 52px; object-fit: contain; border-radius: 50%;">
-        <div class="logo-text">
-          <h1 style="color: var(--primary);">LCU FindMe</h1>
-          <p>Lost &amp; Found Portal</p>
+        <div class="logo-badge">
+          <img src="logo.png" alt="LCU Logo" class="logo-image">
         </div>
       </div>
+
+      <!-- Spacer pushes nav to the right -->
+      <div style="flex: 1;"></div>
 
       <!-- Mobile hamburger -->
       <button class="hamburger" id="hamburger-btn" aria-label="Open menu">
@@ -42,11 +70,6 @@
 
       <nav id="main-nav">
         <a href="#" class="active" id="nav-home">Home</a>
-        <button class="btn btn-primary" id="btn-report-header" style="padding: 0.5rem 1.25rem; font-size: 0.9rem;">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 4px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
-          Report Item
-        </button>
-
         <div class="auth-buttons-container" id="auth-container">
           <button class="btn btn-secondary" id="btn-header-login" style="padding: 0.4rem 1.2rem; font-size: 0.85rem;">Log In</button>
           <button class="btn btn-primary" id="btn-header-signup" style="padding: 0.4rem 1.2rem; font-size: 0.85rem;">Sign Up</button>
@@ -54,7 +77,7 @@
       </nav>
 
       <!-- Theme Toggle Button -->
-      <button class="theme-toggle-btn" id="theme-toggle" title="Toggle Dark/Light Mode" aria-label="Toggle Dark/Light Mode" style="margin-left: auto; margin-right: 1rem;">
+      <button class="theme-toggle-btn" id="theme-toggle" title="Toggle Dark/Light Mode" aria-label="Toggle Dark/Light Mode" style="margin-left: 0.75rem;">
         <svg class="sun-icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"></path></svg>
         <svg class="moon-icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
       </button>
@@ -62,62 +85,54 @@
 
     <!-- Main Content -->
     <main>
-      <!-- Hero Section -->
-      <section class="hero-section">
-        <span class="hero-tag">Lead City University</span>
-        <h2>Misplaced Something? <br><span>Let's help you find it.</span></h2>
-        <p>A secure, rapid verification system matching lost items with their rightful owners across LCU Campus.</p>
-        
-        <div class="action-buttons">
-          <button class="btn btn-primary" id="btn-report-hero">
-            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
-            Report an Item
-          </button>
-          <button class="btn btn-secondary" id="btn-scroll-dashboard">
-            Browse Listings
-          </button>
-        </div>
-
-        <!-- Search Bar -->
-        <div class="search-container">
-          <div class="search-wrapper">
-            <span class="search-icon">
-              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            </span>
-            <input type="text" class="search-input" id="search-input" placeholder="Search by item name, location, or keyword (e.g. key, cafe, iPhone)...">
-            <button class="search-btn" id="search-button">Search</button>
+      <!-- Welcome Entrance Hub Section (Native Mobile App Layout) -->
+      <section class="welcome-screen-container" id="welcome-screen">
+        <div class="mobile-app-shell">
+          <!-- Mobile App Bar Header -->
+          <div class="app-status-bar">
+            <span class="app-online-dot"></span>
+            <span>LCU Campus Portal • Official Mobile App</span>
           </div>
-        </div>
-      </section>
 
-      <!-- Stats Area -->
-      <section class="stats-container">
-        <div class="stat-card">
-          <h3 id="stat-total">0</h3>
-          <p>Total Items Reported</p>
-        </div>
-        <div class="stat-card">
-          <h3 id="stat-lost">0</h3>
-          <p>Lost Requests</p>
-        </div>
-        <div class="stat-card">
-          <h3 id="stat-returned">0</h3>
-          <p>Returned to Owners</p>
-        </div>
-      </section>
-
-      <!-- Dashboard Items -->
-      <section class="dashboard-section" id="listings-section">
-        <div class="section-header">
-          <div>
-            <h2 id="section-title">Recent Listings</h2>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Browse active lost and found items on campus.</p>
+          <div class="welcome-header-badge">
+            <img src="logo.png" alt="LCU Lost and Found Logo">
           </div>
-        </div>
+          
+          <h1 class="welcome-title">Welcome to LCU Lost and Found</h1>
+          <div class="welcome-tagline">Lost Today, Found Together</div>
+          <p class="welcome-desc">
+            Lead City University's official portal for recovering misplaced items and returning found belongings across campus.
+          </p>
 
-        <!-- Items Grid (Shows lock/login card if logged out) -->
-        <div class="items-grid" id="items-grid">
-          <!-- Rendered dynamically by app.js -->
+          <div class="native-app-options">
+            <!-- Option 1: Register New Account -->
+            <button class="native-app-card signup-card" id="btn-welcome-register">
+              <div class="native-card-icon signup-bg">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+              </div>
+              <div class="native-card-text">
+                <h3>Register New Account</h3>
+                <p>New Student or Staff Registration</p>
+              </div>
+              <div class="native-card-chevron">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+              </div>
+            </button>
+
+            <!-- Option 2: Already Registered? Log In -->
+            <button class="native-app-card login-card" id="btn-welcome-login">
+              <div class="native-card-icon login-bg">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+              </div>
+              <div class="native-card-text">
+                <h3>Already Registered? Log In</h3>
+                <p>Sign in to access your student dashboard</p>
+              </div>
+              <div class="native-card-chevron">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+              </div>
+            </button>
+          </div>
         </div>
       </section>
     </main>

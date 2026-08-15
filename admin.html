@@ -7,6 +7,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,7 +17,9 @@
     <!-- Header -->
     <header>
       <div class="logo-container">
-        <img src="logo.png" alt="LCU Logo" class="logo-image" style="width: 48px; height: 48px; object-fit: contain; border-radius: 50%;">
+        <div class="logo-badge">
+          <img src="logo.png" alt="LCU Logo" class="logo-image">
+        </div>
         <div class="logo-text">
           <h1 style="color: var(--primary);">LCU Security</h1>
           <p>Admin Portal</p>
