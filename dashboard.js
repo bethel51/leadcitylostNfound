@@ -127,7 +127,7 @@ function populateUserUI() {
   const greetingEl = document.getElementById('welcome-greeting');
   const nameEl = document.getElementById('welcome-name');
   if (greetingEl) greetingEl.textContent = getGreeting() + ',';
-  if (nameEl) nameEl.textContent = name.split(' ')[0] + ' 👋';
+  if (nameEl) nameEl.textContent = name.split(' ')[0];
 
   // Profile view
   populateProfileView();
@@ -135,9 +135,9 @@ function populateUserUI() {
 
 function getGreeting() {
   const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
+  if (hour >= 5 && hour < 12) return 'Good morning ☀️';
+  if (hour >= 12 && hour < 17) return 'Good afternoon 🌤️';
+  return 'Good evening 🌙';
 }
 
 function populateProfileView() {
@@ -1694,21 +1694,235 @@ function showToast(message, type = 'success') {
   window.toastTimeout = setTimeout(() => toast.classList.remove('active'), 4000);
 }
 
-let counterTimers = {};
-function animateCounter(id, target) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  if (counterTimers[id]) clearInterval(counterTimers[id]);
-  let current = parseInt(el.textContent) || 0;
-  if (current === target) return;
-  const diff = target - current;
-  const step = diff > 0 ? 1 : -1;
-  const interval = Math.abs(Math.floor(400 / diff)) || 30;
-  counterTimers[id] = setInterval(() => {
-    current += step;
-    el.textContent = current;
-    if (current === target) { clearInterval(counterTimers[id]); delete counterTimers[id]; }
-  }, interval);
+// =====================================================
+// NOTIFICATIONS & EXPORT FUNCTIONS
+// =====================================================
+function setupNotifications() {
+  const notifBtn = document.getElementById('db-notif-btn');
+  const notifPanel = document.getElementById('db-notif-panel');
+  const notifBackdrop = document.getElementById('db-notif-backdrop');
+  const closeBtn = document.getElementById('db-close-notif-drawer');
+  const clearBtn = document.getElementById('db-clear-notifs');
+
+  const openDrawer = () => {
+    if (notifPanel) notifPanel.classList.add('open');
+    if (notifBackdrop) notifBackdrop.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeDrawer = () => {
+    if (notifPanel) notifPanel.classList.remove('open');
+    if (notifBackdrop) notifBackdrop.classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  if (notifBtn) notifBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (notifPanel && notifPanel.classList.contains('open')) {
+      closeDrawer();
+    } else {
+      openDrawer();
+    }
+  });
+
+  if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+  if (notifBackdrop) notifBackdrop.addEventListener('click', closeDrawer);
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      const listEl = document.getElementById('db-notif-list');
+      if (listEl) listEl.innerHTML = '<div class="db-notif-empty">No notifications yet.</div>';
+      const dot = document.getElementById('db-notif-dot');
+      if (dot) dot.style.display = 'none';
+      showToast('Notifications cleared.');
+    });
+  }
+
+  // Export buttons in My Reports
+  const btnExportHistory = document.getElementById('btn-export-history');
+  const btnExportCSV     = document.getElementById('btn-export-csv');
+  if (btnExportHistory) btnExportHistory.addEventListener('click', downloadReportHistory);
+  if (btnExportCSV)     btnExportCSV.addEventListener('click', exportReportHistoryCSV);
+}
+
+function renderNotifications() {
+  const listEl = document.getElementById('db-notif-list');
+  const dot = document.getElementById('db-notif-dot');
+  if (!listEl) return;
+
+  if (!state.myItems || state.myItems.length === 0) {
+    listEl.innerHTML = '<div class="db-notif-empty">No notifications yet.</div>';
+    if (dot) dot.style.display = 'none';
+    return;
+  }
+
+  if (dot) dot.style.display = 'block';
+
+  const html = state.myItems.map(item => `
+    <div class="db-notif-item">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.35rem;">
+        <strong style="font-size:0.9rem; color:var(--primary);">${item.title}</strong>
+        <span style="font-size:0.75rem; color:var(--text-muted);">${formatDate(item.date)}</span>
+      </div>
+      <p style="font-size:0.82rem; color:var(--text-dark); margin:0 0 0.4rem 0;">${item.description || 'Report submitted.'}</p>
+      <div style="font-size:0.75rem; font-weight:600; color: ${item.status === 'returned' ? 'var(--success)' : 'var(--warning)'};">
+        Status: ${item.status === 'returned' ? 'Returned to Owner ✓' : 'Active Listing ⏳'}
+      </div>
+    </div>
+  `).join('');
+
+  listEl.innerHTML = html;
+}
+
+function downloadReportHistory() {
+  if (!state.myItems || state.myItems.length === 0) {
+    showToast('You have no report history to download yet.', 'warning');
+    return;
+  }
+  const u = state.currentUser || {};
+  const userName = u.name || 'Student';
+  const userMatric = u.matricNumber || u.matric || 'N/A';
+  const userEmail = u.email || 'N/A';
+  const now = new Date();
+  const exportTime = `${now.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })} at ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+  const reportRows = state.myItems.map((item, idx) => {
+    const itemDate = formatDate(item.date);
+    const itemTime = item.time ? ` at ${item.time}` : '';
+    const statusBadge = item.status === 'returned' 
+      ? '<span style="color:#10b981;font-weight:bold;">Returned</span>'
+      : '<span style="color:#f59e0b;font-weight:bold;">Active / Pending</span>';
+    return `
+      <tr style="border-bottom: 1px solid #e2e8f0;">
+        <td style="padding: 10px; font-size: 13px;">${idx + 1}</td>
+        <td style="padding: 10px; font-size: 13px;"><strong>${item.title || 'Untitled'}</strong><br><span style="color:#64748b;font-size:11px;">Category: ${item.category || 'Other'}</span></td>
+        <td style="padding: 10px; font-size: 13px; text-transform: capitalize;">${item.type || 'found'}</td>
+        <td style="padding: 10px; font-size: 13px;">📍 ${item.location || 'Campus'}</td>
+        <td style="padding: 10px; font-size: 13px;">📅 ${itemDate}${itemTime}</td>
+        <td style="padding: 10px; font-size: 13px;">${statusBadge}</td>
+        <td style="padding: 10px; font-size: 12px; font-family: monospace;">#${(item._id || item.id || 'LCU-REP').slice(-6).toUpperCase()}</td>
+      </tr>
+    `;
+  }).join('');
+
+  const printWindow = window.open('', '_blank', 'width=900,height=750');
+  if (!printWindow) {
+    showToast('Please allow popups to download report history.', 'warning');
+    return;
+  }
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>LCU Lost & Found - Report History Slip</title>
+      <style>
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; color: #0f172a; margin: 0; padding: 40px; background: #fff; }
+        .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #1a56db; padding-bottom: 20px; margin-bottom: 30px; }
+        .header-logo { display: flex; align-items: center; gap: 15px; }
+        .header-logo img { width: 65px; height: 65px; object-fit: contain; }
+        .header-title { font-size: 22px; font-weight: 800; color: #1a56db; margin: 0; }
+        .header-sub { font-size: 13px; color: #64748b; margin: 4px 0 0 0; font-weight: 600; }
+        .meta-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; margin-bottom: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .meta-item { font-size: 13px; }
+        .meta-item label { color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; display: block; font-weight: 700; margin-bottom: 3px; }
+        .meta-item span { font-weight: 700; color: #0f172a; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        th { background: #1a56db; color: #ffffff; font-size: 12px; font-weight: 700; text-transform: uppercase; text-align: left; padding: 12px 10px; }
+        .footer { text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 20px; margin-top: 40px; }
+        @media print {
+          body { padding: 20px; }
+          .no-print { display: none !important; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="no-print" style="margin-bottom: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+        <button onclick="window.print()" style="background: #1a56db; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer;">🖨️ Print / Save as PDF</button>
+        <button onclick="window.close()" style="background: #e2e8f0; color: #475569; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer;">Close</button>
+      </div>
+
+      <div class="header">
+        <div class="header-logo">
+          <img src="${window.location.origin}/logo.png" onerror="this.style.display='none'" />
+          <div>
+            <h1 class="header-title">LEAD CITY UNIVERSITY</h1>
+            <p class="header-sub">Official Lost & Found Student Report History</p>
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 11px; color: #64748b; font-weight: bold;">DOCUMENT TYPE</div>
+          <div style="font-size: 14px; font-weight: 800; color: #1a56db;">VERIFIED STUDENT REPORT</div>
+        </div>
+      </div>
+
+      <div class="meta-box">
+        <div class="meta-item"><label>Student Name</label><span>${userName}</span></div>
+        <div class="meta-item"><label>Matric / Staff ID</label><span>${userMatric}</span></div>
+        <div class="meta-item"><label>Contact Email</label><span>${userEmail}</span></div>
+        <div class="meta-item"><label>Date & Time Generated</label><span>${exportTime}</span></div>
+      </div>
+
+      <h3 style="font-size: 16px; margin-bottom: 12px; color: #1a56db;">Submitted Reports (${state.myItems.length})</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Item & Category</th>
+            <th>Type</th>
+            <th>Location</th>
+            <th>Date & Time</th>
+            <th>Status</th>
+            <th>Ref Code</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${reportRows}
+        </tbody>
+      </table>
+
+      <div class="footer">
+        <p>Official Record • LCU Lost & Found Item Verification System • Generated from Student Dashboard</p>
+      </div>
+
+      <script>
+        window.onload = function() {
+          setTimeout(function() { window.print(); }, 500);
+        };
+      </script>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+}
+
+function exportReportHistoryCSV() {
+  if (!state.myItems || state.myItems.length === 0) {
+    showToast('You have no report history to export yet.', 'warning');
+    return;
+  }
+  const headers = ['#', 'Reference Code', 'Title', 'Type', 'Category', 'Location', 'Date', 'Time', 'Status', 'Reporter Name'];
+  const rows = state.myItems.map((item, idx) => [
+    idx + 1,
+    `"${item._id || item.id || ''}"`,
+    `"${(item.title || '').replace(/"/g, '""')}"`,
+    `"${item.type || 'found'}"`,
+    `"${item.category || 'other'}"`,
+    `"${(item.location || '').replace(/"/g, '""')}"`,
+    `"${formatDate(item.date)}"`,
+    `"${item.time || 'N/A'}"`,
+    `"${item.status || 'active'}"`,
+    `"${(item.reporterName || '').replace(/"/g, '""')}"`
+  ]);
+
+  const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement('a');
+  link.setAttribute('href', encodedUri);
+  link.setAttribute('download', `LCU_Lost_Found_Reports_${new Date().toISOString().split('T')[0]}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  showToast('CSV History downloaded successfully.');
 }
 
 // Render notifications on load
