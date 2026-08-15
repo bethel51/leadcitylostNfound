@@ -1,13 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Instant Auto-Redirect Guard: Registered users are sent directly to their Dashboard -->
+  <script>
+    (function() {
+      try {
+        const token = localStorage.getItem('lcu_findme_token');
+        const userStr = localStorage.getItem('lcu_findme_user');
+        if (token && userStr) {
+          const user = JSON.parse(userStr);
+          if (user && user.role === 'admin') {
+            window.location.replace('admin.html');
+          } else if (user) {
+            window.location.replace('dashboard.html');
+          }
+        }
+      } catch (e) {
+        console.error('Session check error:', e);
+      }
+    })();
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="LCU FindMe - The official premium Lost and Found portal for Lead City University. Report misplaced items, search active listings, and verify owners securely.">
-  <title>LCU FindMe | Lead City University Lost & Found</title>
+  <title>LCU FindMe | Lead City University Lost &amp; Found</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Outfit:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" href="icon-192.png">
@@ -38,18 +57,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Guard Redirect if already logged in -->
-  <script>
-    if (localStorage.getItem('lcu_findme_token') && localStorage.getItem('lcu_findme_user')) {
-      const user = JSON.parse(localStorage.getItem('lcu_findme_user'));
-      if (user.role === 'admin') {
-        window.location.href = 'admin.html';
-      } else {
-        window.location.href = 'dashboard.html';
-      }
-    }
-  </script>
 
   <div class="app-container">
     <!-- Header -->
