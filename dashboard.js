@@ -135,9 +135,9 @@ function populateUserUI() {
 
 function getGreeting() {
   const hour = new Date().getHours();
-  if (hour >= 5 && hour < 12) return 'Good morning ☀️';
-  if (hour >= 12 && hour < 17) return 'Good afternoon 🌤️';
-  return 'Good evening 🌙';
+  if (hour >= 5 && hour < 12) return 'Good morning';
+  if (hour >= 12 && hour < 17) return 'Good afternoon';
+  return 'Good evening';
 }
 
 function populateProfileView() {
@@ -602,15 +602,6 @@ function setupNavigation() {
     });
   }
 
-  // Dropdown edit profile button
-  const dropdownEditProfileBtn = document.getElementById('db-dropdown-edit-profile-btn');
-  if (dropdownEditProfileBtn) {
-    dropdownEditProfileBtn.addEventListener('click', e => {
-      e.preventDefault();
-      openEditProfile();
-      if (dropdownMenu) dropdownMenu.classList.remove('open');
-    });
-  }
 
   // Sidebar user card click -> navigate to profile
   const sidebarUserCard = document.getElementById('sidebar-user-card');
@@ -821,7 +812,7 @@ function setupDetailModal() {
         <div style="word-break:break-all;">ID: <span style="font-family:monospace;font-weight:700">${document.getElementById('qr-label-id').textContent}</span></div>
         <div style="word-break:break-word;">Category: ${document.getElementById('qr-label-category').textContent}</div>
         <div style="word-break:break-word;">Location: ${document.getElementById('qr-label-location').textContent}</div>
-        <div style="margin-top:.5rem;font-weight:bold;border:1px dashed #0f172a;padding:.3rem .5rem;text-align:center;border-radius:4px">🔒 Bin Tag Required</div>
+        <div style="margin-top:.5rem;font-weight:bold;border:1px dashed #0f172a;padding:.3rem .5rem;text-align:center;border-radius:4px">Bin Tag Required</div>
         </div></div></div>
         <script>window.onload=function(){window.print();setTimeout(()=>window.close(),500)}<\/script>
         </body></html>`);
