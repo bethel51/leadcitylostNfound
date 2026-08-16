@@ -22,11 +22,11 @@ const UserSchema = new mongoose.Schema({
   },
   faculty: {
     type: String,
-    required: true
+    default: 'N/A'
   },
   department: {
     type: String,
-    required: true
+    default: 'N/A'
   },
   phoneNumber: {
     type: String,
@@ -34,7 +34,7 @@ const UserSchema = new mongoose.Schema({
   },
   level: {
     type: String,
-    required: true
+    default: 'N/A'
   },
   password: {
     type: String,

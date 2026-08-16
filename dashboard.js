@@ -601,6 +601,33 @@ function setupNavigation() {
     });
   }
 
+  // Dropdown edit profile button
+  const dropdownEditProfileBtn = document.getElementById('db-dropdown-edit-profile-btn');
+  if (dropdownEditProfileBtn) {
+    dropdownEditProfileBtn.addEventListener('click', e => {
+      e.preventDefault();
+      openEditProfile();
+      if (dropdownMenu) dropdownMenu.classList.remove('open');
+    });
+  }
+
+  // Sidebar user card click -> navigate to profile
+  const sidebarUserCard = document.getElementById('sidebar-user-card');
+  if (sidebarUserCard) {
+    sidebarUserCard.style.cursor = 'pointer';
+    sidebarUserCard.addEventListener('click', () => {
+      switchView('profile');
+      closeSidebar();
+    });
+  }
+
+  // Profile avatar click -> open edit profile modal
+  const bigAvatar = document.getElementById('profile-big-avatar');
+  if (bigAvatar) {
+    bigAvatar.style.cursor = 'pointer';
+    bigAvatar.addEventListener('click', openEditProfile);
+  }
+
   // Browse: Search
   const searchInput = document.getElementById('db-search-input');
   const searchBtn   = document.getElementById('db-search-btn');

@@ -334,9 +334,9 @@ router.put('/profile', protect, async (req, res) => {
 
     const { name, email, matricNumber, department, faculty, phoneNumber, level } = req.body;
 
-    if (name !== undefined) user.name = name.trim();
-    if (email !== undefined) user.email = email.trim().toLowerCase();
-    if (matricNumber !== undefined) user.matricNumber = matricNumber.trim().toLowerCase();
+    if (name && name.trim() !== '') user.name = name.trim();
+    if (email && email.trim() !== '') user.email = email.trim().toLowerCase();
+    if (matricNumber && matricNumber.trim() !== '') user.matricNumber = matricNumber.trim().toLowerCase();
     if (department !== undefined) user.department = department.trim();
     if (faculty !== undefined) user.faculty = faculty.trim();
     if (phoneNumber !== undefined) user.phoneNumber = phoneNumber.trim();
