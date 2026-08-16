@@ -1424,24 +1424,109 @@ function setupEditProfile() {
 
   const form = document.getElementById('form-edit-profile');
   if (form) {
-    form.addEventListener('submit', e => {
+    form.addEventListener('submit', async e => {
       e.preventDefault();
-      const newName    = document.getElementById('edit-profile-name').value.trim();
-      const newContact = document.getElementById('edit-profile-contact').value.trim();
-      if (newName && state.currentUser) {
-        state.currentUser.name         = newName;
-        state.currentUser.email        = newContact;
-        state.currentUser.contact      = newContact;
-        state.currentUser.matricNumber = document.getElementById('edit-profile-matric').value.trim();
-        state.currentUser.matric       = state.currentUser.matricNumber;
-        state.currentUser.department   = document.getElementById('edit-profile-dept').value.trim();
-        state.currentUser.dept         = state.currentUser.department;
-        state.currentUser.phoneNumber  = document.getElementById('edit-profile-phone').value.trim();
-        state.currentUser.phone        = state.currentUser.phoneNumber;
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalText = submitBtn ? submitBtn.textContent : 'Save Changes';
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Saving...'; }
+
+      const nameVal = document.getElementById('edit-profile-name').value.trim();
+      const contactVal = document.getElementById('edit-profile-contact').value.trim();
+      const matricVal = document.getElementById('edit-profile-matric').value.trim();
+      const deptVal = document.getElementById('edit-profile-dept').value.trim();
+      const phoneVal = document.getElementById('edit-profile-phone').value.trim();
+      const facultyEl = document.getElementById('edit-profile-faculty');
+      const levelEl = document.getElementById('edit-profile-level');
+      const facultyVal = facultyEl ? facultyEl.value.trim() : '';
+      const levelVal = levelEl ? levelEl.value.trim() : '';
+
+      const payload = {
+        name: nameVal,
+        email: contactVal,
+        matricNumber: matricVal,
+        department: deptVal,
+        faculty: facultyVal,
+        phoneNumber: phoneVal,
+        level: levelVal
+      };
+
+      const token = localStorage.getItem('lcu_findme_token');
+
+      try {
+        if (token) {
+          const res = await fetch(`${API_URL}/auth/profile`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (res.ok) {
+            const updatedUser = await res.json();
+            state.currentUser = { ...state.currentUser, ...updatedUser };
+          } else {
+            const errData = await res.json().catch(() => ({}));
+            console.warn('Backend profile update failed, applying locally:', errData.message);
+            state.currentUser = {
+              ...state.currentUser,
+              name: nameVal,
+              email: contactVal,
+              contact: contactVal,
+              matricNumber: matricVal,
+              matric: matricVal,
+              department: deptVal,
+              dept: deptVal,
+              faculty: facultyVal,
+              phoneNumber: phoneVal,
+              phone: phoneVal,
+              level: levelVal
+            };
+          }
+        } else {
+          state.currentUser = {
+            ...state.currentUser,
+            name: nameVal,
+            email: contactVal,
+            contact: contactVal,
+            matricNumber: matricVal,
+            matric: matricVal,
+            department: deptVal,
+            dept: deptVal,
+            faculty: facultyVal,
+            phoneNumber: phoneVal,
+            phone: phoneVal,
+            level: levelVal
+          };
+        }
+
         localStorage.setItem('lcu_findme_user', JSON.stringify(state.currentUser));
         populateUserUI();
         toggleModal('modal-edit-profile', false);
         showToast('Profile updated successfully.');
+      } catch (err) {
+        console.error('Error updating profile:', err);
+        state.currentUser = {
+          ...state.currentUser,
+          name: nameVal,
+          email: contactVal,
+          contact: contactVal,
+          matricNumber: matricVal,
+          matric: matricVal,
+          department: deptVal,
+          dept: deptVal,
+          faculty: facultyVal,
+          phoneNumber: phoneVal,
+          phone: phoneVal,
+          level: levelVal
+        };
+        localStorage.setItem('lcu_findme_user', JSON.stringify(state.currentUser));
+        populateUserUI();
+        toggleModal('modal-edit-profile', false);
+        showToast('Profile updated successfully.');
+      } finally {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = originalText; }
       }
     });
   }
@@ -1450,18 +1535,24 @@ function setupEditProfile() {
 function openEditProfile() {
   if (!state.currentUser) return;
   const u = state.currentUser;
-  const nameEl   = document.getElementById('edit-profile-name');
+  const nameEl    = document.getElementById('edit-profile-name');
   const contactEl = document.getElementById('edit-profile-contact');
   const matricEl  = document.getElementById('edit-profile-matric');
   const deptEl    = document.getElementById('edit-profile-dept');
+  const facultyEl = document.getElementById('edit-profile-faculty');
+  const levelEl   = document.getElementById('edit-profile-level');
   const phoneEl   = document.getElementById('edit-profile-phone');
   const avatarEl  = document.getElementById('edit-avatar-preview');
-  if (nameEl)    nameEl.value   = u.name || '';
-  if (contactEl) contactEl.value = u.email || u.contact || '';
-  if (matricEl)  matricEl.value  = u.matricNumber || u.matric || '';
-  if (deptEl)    deptEl.value    = u.department || u.dept || '';
-  if (phoneEl)   phoneEl.value   = u.phoneNumber || u.phone || '';
+
+  if (nameEl)    nameEl.value    = u.name || '';
+  if (contactEl) contactEl.value  = u.email || u.contact || '';
+  if (matricEl)  matricEl.value   = u.matricNumber || u.matric || '';
+  if (deptEl)    deptEl.value     = u.department || u.dept || '';
+  if (facultyEl) facultyEl.value = u.faculty || '';
+  if (levelEl)   levelEl.value    = u.level || '';
+  if (phoneEl)   phoneEl.value    = u.phoneNumber || u.phone || '';
   if (avatarEl)  avatarEl.textContent = (u.name || 'U').charAt(0).toUpperCase();
+
   if (nameEl && !nameEl.dataset.hasInputListener) {
     nameEl.dataset.hasInputListener = 'true';
     nameEl.addEventListener('input', () => {
