@@ -1445,35 +1445,99 @@ function openReportModal() {
 // =====================================================
 // EDIT PROFILE MODAL
 // =====================================================
+let isProfileEditing = false;
+
+function toggleProfileEditMode(show) {
+  if (show === undefined) isProfileEditing = !isProfileEditing;
+  else isProfileEditing = show;
+
+  const displayCard = document.getElementById('profile-display-card');
+  const editCard = document.getElementById('profile-edit-card');
+  const btnText = document.getElementById('btn-edit-profile-text');
+  const btn = document.getElementById('btn-edit-profile-view');
+
+  if (isProfileEditing) {
+    if (!state.currentUser) return;
+    const u = state.currentUser;
+    const nameEl    = document.getElementById('inline-edit-name');
+    const emailEl   = document.getElementById('inline-edit-email');
+    const matricEl  = document.getElementById('inline-edit-matric');
+    const phoneEl   = document.getElementById('inline-edit-phone');
+    const facultyEl = document.getElementById('inline-edit-faculty');
+    const deptEl    = document.getElementById('inline-edit-dept');
+    const levelEl   = document.getElementById('inline-edit-level');
+
+    if (nameEl)    nameEl.value    = u.name || '';
+    if (emailEl)   emailEl.value   = u.email || u.contact || '';
+    if (matricEl)  matricEl.value  = u.matricNumber || u.matric || '';
+    if (phoneEl)   phoneEl.value   = u.phoneNumber || u.phone || '';
+    if (facultyEl) facultyEl.value = u.faculty || '';
+    if (deptEl)    deptEl.value    = u.department || u.dept || '';
+    if (levelEl)   levelEl.value   = u.level || '';
+
+    if (displayCard) displayCard.style.display = 'none';
+    if (editCard) editCard.style.display = 'block';
+
+    if (btnText) btnText.textContent = 'Cancel Editing';
+    if (btn) {
+      btn.style.background = 'var(--bg-secondary)';
+      btn.style.color = 'var(--text-dark)';
+      btn.style.border = '1px solid var(--border-color)';
+    }
+
+    if (window.innerWidth <= 768 && editCard) {
+      editCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  } else {
+    if (displayCard) displayCard.style.display = 'block';
+    if (editCard) editCard.style.display = 'none';
+
+    if (btnText) btnText.textContent = 'Edit Profile';
+    if (btn) {
+      btn.style.background = '';
+      btn.style.color = '';
+      btn.style.border = '';
+    }
+  }
+}
+
 function setupEditProfile() {
-  const btnClose = document.getElementById('btn-close-edit-profile');
-  if (btnClose) btnClose.addEventListener('click', () => toggleModal('modal-edit-profile', false));
+  const btnViewEdit = document.getElementById('btn-edit-profile-view');
+  if (btnViewEdit) {
+    btnViewEdit.addEventListener('click', () => toggleProfileEditMode());
+  }
 
-  const form = document.getElementById('form-edit-profile');
-  if (form) {
-    form.addEventListener('submit', async e => {
+  const btnCancel = document.getElementById('btn-cancel-inline-edit');
+  if (btnCancel) {
+    btnCancel.addEventListener('click', () => toggleProfileEditMode(false));
+  }
+
+  const inlineForm = document.getElementById('form-inline-profile-edit');
+  if (inlineForm) {
+    inlineForm.addEventListener('submit', async e => {
       e.preventDefault();
-      const submitBtn = form.querySelector('button[type="submit"]');
-      const originalText = submitBtn ? submitBtn.textContent : 'Save Changes';
-      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Saving...'; }
+      const submitBtn = document.getElementById('btn-save-inline-edit');
+      const submitText = document.getElementById('btn-save-inline-text');
+      const originalText = submitText ? submitText.textContent : 'Save Changes';
 
-      const nameVal = document.getElementById('edit-profile-name').value.trim();
-      const contactVal = document.getElementById('edit-profile-contact').value.trim();
-      const matricVal = document.getElementById('edit-profile-matric').value.trim();
-      const deptVal = document.getElementById('edit-profile-dept').value.trim();
-      const phoneVal = document.getElementById('edit-profile-phone').value.trim();
-      const facultyEl = document.getElementById('edit-profile-faculty');
-      const levelEl = document.getElementById('edit-profile-level');
-      const facultyVal = facultyEl ? facultyEl.value.trim() : '';
-      const levelVal = levelEl ? levelEl.value.trim() : '';
+      if (submitBtn) submitBtn.disabled = true;
+      if (submitText) submitText.textContent = 'Saving...';
+
+      const nameVal    = document.getElementById('inline-edit-name').value.trim();
+      const emailVal   = document.getElementById('inline-edit-email').value.trim();
+      const matricVal  = document.getElementById('inline-edit-matric').value.trim();
+      const phoneVal   = document.getElementById('inline-edit-phone').value.trim();
+      const facultyVal = document.getElementById('inline-edit-faculty').value.trim();
+      const deptVal    = document.getElementById('inline-edit-dept').value.trim();
+      const levelVal   = document.getElementById('inline-edit-level').value.trim();
 
       const payload = {
         name: nameVal,
-        email: contactVal,
+        email: emailVal,
         matricNumber: matricVal,
-        department: deptVal,
-        faculty: facultyVal,
         phoneNumber: phoneVal,
+        faculty: facultyVal,
+        department: deptVal,
         level: levelVal
       };
 
@@ -1499,8 +1563,8 @@ function setupEditProfile() {
             state.currentUser = {
               ...state.currentUser,
               name: nameVal,
-              email: contactVal,
-              contact: contactVal,
+              email: emailVal,
+              contact: emailVal,
               matricNumber: matricVal,
               matric: matricVal,
               department: deptVal,
@@ -1515,8 +1579,8 @@ function setupEditProfile() {
           state.currentUser = {
             ...state.currentUser,
             name: nameVal,
-            email: contactVal,
-            contact: contactVal,
+            email: emailVal,
+            contact: emailVal,
             matricNumber: matricVal,
             matric: matricVal,
             department: deptVal,
@@ -1530,15 +1594,15 @@ function setupEditProfile() {
 
         localStorage.setItem('lcu_findme_user', JSON.stringify(state.currentUser));
         populateUserUI();
-        toggleModal('modal-edit-profile', false);
+        toggleProfileEditMode(false);
         showToast('Profile updated successfully.');
       } catch (err) {
         console.error('Error updating profile:', err);
         state.currentUser = {
           ...state.currentUser,
           name: nameVal,
-          email: contactVal,
-          contact: contactVal,
+          email: emailVal,
+          contact: emailVal,
           matricNumber: matricVal,
           matric: matricVal,
           department: deptVal,
@@ -1550,43 +1614,19 @@ function setupEditProfile() {
         };
         localStorage.setItem('lcu_findme_user', JSON.stringify(state.currentUser));
         populateUserUI();
-        toggleModal('modal-edit-profile', false);
+        toggleProfileEditMode(false);
         showToast('Profile updated successfully.');
       } finally {
-        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = originalText; }
+        if (submitBtn) submitBtn.disabled = false;
+        if (submitText) submitText.textContent = originalText;
       }
     });
   }
 }
 
 function openEditProfile() {
-  if (!state.currentUser) return;
-  const u = state.currentUser;
-  const nameEl    = document.getElementById('edit-profile-name');
-  const contactEl = document.getElementById('edit-profile-contact');
-  const matricEl  = document.getElementById('edit-profile-matric');
-  const deptEl    = document.getElementById('edit-profile-dept');
-  const facultyEl = document.getElementById('edit-profile-faculty');
-  const levelEl   = document.getElementById('edit-profile-level');
-  const phoneEl   = document.getElementById('edit-profile-phone');
-  const avatarEl  = document.getElementById('edit-avatar-preview');
-
-  if (nameEl)    nameEl.value    = u.name || '';
-  if (contactEl) contactEl.value  = u.email || u.contact || '';
-  if (matricEl)  matricEl.value   = u.matricNumber || u.matric || '';
-  if (deptEl)    deptEl.value     = u.department || u.dept || '';
-  if (facultyEl) facultyEl.value = u.faculty || '';
-  if (levelEl)   levelEl.value    = u.level || '';
-  if (phoneEl)   phoneEl.value    = u.phoneNumber || u.phone || '';
-  if (avatarEl)  avatarEl.textContent = (u.name || 'U').charAt(0).toUpperCase();
-
-  if (nameEl && !nameEl.dataset.hasInputListener) {
-    nameEl.dataset.hasInputListener = 'true';
-    nameEl.addEventListener('input', () => {
-      if (avatarEl) avatarEl.textContent = (nameEl.value || 'U').charAt(0).toUpperCase();
-    });
-  }
-  toggleModal('modal-edit-profile', true);
+  switchView('profile');
+  toggleProfileEditMode(true);
 }
 
 // =====================================================
