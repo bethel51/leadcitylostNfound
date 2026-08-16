@@ -1462,7 +1462,8 @@ function openEditProfile() {
   if (deptEl)    deptEl.value    = u.department || u.dept || '';
   if (phoneEl)   phoneEl.value   = u.phoneNumber || u.phone || '';
   if (avatarEl)  avatarEl.textContent = (u.name || 'U').charAt(0).toUpperCase();
-  if (nameEl) {
+  if (nameEl && !nameEl.dataset.hasInputListener) {
+    nameEl.dataset.hasInputListener = 'true';
     nameEl.addEventListener('input', () => {
       if (avatarEl) avatarEl.textContent = (nameEl.value || 'U').charAt(0).toUpperCase();
     });
@@ -1788,10 +1789,13 @@ function toggleModal(modalId, show = true) {
   if (show) {
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
-    setTimeout(() => {
-      const first = modal.querySelector('.otp-digit-input, input:not([type="hidden"]):not([disabled]), select, textarea');
-      if (first) first.focus();
-    }, 100);
+    // Only auto-focus on desktop viewports to avoid mobile virtual keyboard shifts and touch hangs
+    if (window.innerWidth > 768) {
+      setTimeout(() => {
+        const first = modal.querySelector('.otp-digit-input, input:not([type="hidden"]):not([disabled]), select, textarea');
+        if (first) first.focus();
+      }, 100);
+    }
   } else {
     modal.classList.remove('active');
     document.body.style.overflow = '';
