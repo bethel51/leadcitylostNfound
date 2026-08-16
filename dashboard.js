@@ -573,8 +573,9 @@ function setupNavigation() {
 
   // Edit Profile button in profile view
   const btnEditProfileView = document.getElementById('btn-edit-profile-view');
-  if (btnEditProfileView) {
-    btnEditProfileView.addEventListener('click', openEditProfile);
+  if (btnEditProfileView && !btnEditProfileView.dataset.hasListener) {
+    btnEditProfileView.dataset.hasListener = 'true';
+    btnEditProfileView.addEventListener('click', () => toggleProfileEditMode());
   }
 
   // User Dropdown toggle
@@ -1503,7 +1504,8 @@ function toggleProfileEditMode(show) {
 
 function setupEditProfile() {
   const btnViewEdit = document.getElementById('btn-edit-profile-view');
-  if (btnViewEdit) {
+  if (btnViewEdit && !btnViewEdit.dataset.hasListener) {
+    btnViewEdit.dataset.hasListener = 'true';
     btnViewEdit.addEventListener('click', () => toggleProfileEditMode());
   }
 
