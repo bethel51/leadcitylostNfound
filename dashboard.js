@@ -1125,7 +1125,7 @@ function openAmbassadorInstructionModal(item, claimantName, claimantMatric) {
   const btnPrint = document.getElementById('btn-ambassador-print');
   if (btnPrint) {
     btnPrint.onclick = () => {
-      printAmbassadorSlip(item, claimantName, claimantMatric);
+      downloadAmbassadorSlip(item, claimantName, claimantMatric);
     };
   }
 
@@ -1156,77 +1156,166 @@ function addStudentAmbassadorNotification(item) {
   renderNotifications();
 }
 
-function printAmbassadorSlip(item, claimantName, claimantMatric) {
+function downloadAmbassadorSlip(item, claimantName, claimantMatric) {
   const refCode = `#${(item._id || item.id || 'LCU-VERIF').slice(-6).toUpperCase()}`;
   const now = new Date();
-  const printTime = `${now.toLocaleDateString()} at ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  const issueDate = `${now.toLocaleDateString()} at ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 
-  const printWindow = window.open('', '_blank', 'width=800,height=650');
-  if (!printWindow) {
-    showToast('Please allow popups to print slip.', 'warning');
-    return;
+  const canvas = document.createElement('canvas');
+  const W = 750, H = 920;
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
+
+  // Border
+  ctx.strokeStyle = '#1a56db';
+  ctx.lineWidth = 4;
+  roundRect(ctx, 20, 20, W - 40, H - 40, 20);
+  ctx.stroke();
+
+  // Header area
+  ctx.fillStyle = '#1a56db';
+  ctx.font = 'bold 26px Inter, system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('LEAD CITY UNIVERSITY', W / 2, 75);
+
+  ctx.fillStyle = '#64748b';
+  ctx.font = '600 13px Inter, system-ui, sans-serif';
+  ctx.fillText('Student Ambassador Unit • Item Collection & Verification Pass', W / 2, 100);
+
+  // Gold dashed separator
+  ctx.setLineDash([6, 4]);
+  ctx.strokeStyle = '#d4af37';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(50, 120);
+  ctx.lineTo(W - 50, 120);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Badge box
+  ctx.fillStyle = '#eff6ff';
+  roundRect(ctx, 60, 145, W - 120, 75, 12);
+  ctx.fill();
+  ctx.strokeStyle = '#1a56db';
+  ctx.lineWidth = 1.5;
+  roundRect(ctx, 60, 145, W - 120, 75, 12);
+  ctx.stroke();
+
+  ctx.fillStyle = '#1a56db';
+  ctx.font = 'bold 11px Inter, system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('VERIFICATION REFERENCE PASS CODE', W / 2, 175);
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 26px monospace';
+  ctx.fillText(refCode, W / 2, 207);
+
+  // Info grid
+  const infoStartY = 255;
+  const col1X = 80, col2X = W / 2 + 20;
+
+  const infoItems = [
+    { label: 'CLAIMANT STUDENT', value: claimantName || 'Student', x: col1X },
+    { label: 'MATRIC / STAFF ID', value: claimantMatric || 'N/A', x: col2X },
+    { label: 'ITEM TITLE', value: item.title || 'Misplaced Item', x: col1X },
+    { label: 'ITEM CATEGORY', value: (item.category || 'General').toUpperCase(), x: col2X },
+    { label: 'FOUND / LOGGED LOCATION', value: item.location || 'Campus', x: col1X },
+    { label: 'PASS ISSUED DATE', value: issueDate, x: col2X }
+  ];
+
+  infoItems.forEach((info, i) => {
+    const row = Math.floor(i / 2);
+    const y = infoStartY + row * 65;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#64748b';
+    ctx.font = 'bold 11px Inter, system-ui, sans-serif';
+    ctx.fillText(info.label, info.x, y);
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 15px Inter, system-ui, sans-serif';
+    // Truncate long text
+    let val = info.value;
+    if (ctx.measureText(val).width > 280) {
+      while (ctx.measureText(val + '…').width > 280 && val.length > 0) val = val.slice(0, -1);
+      val += '…';
+    }
+    ctx.fillText(val, info.x, y + 20);
+  });
+
+  // Instruction banner
+  const bannerY = infoStartY + 3 * 65 + 15;
+  ctx.fillStyle = '#fffbeb';
+  roundRect(ctx, 50, bannerY, W - 100, 90, 12);
+  ctx.fill();
+  ctx.strokeStyle = '#f59e0b';
+  ctx.lineWidth = 1.5;
+  roundRect(ctx, 50, bannerY, W - 100, 90, 12);
+  ctx.stroke();
+
+  ctx.fillStyle = '#92400e';
+  ctx.font = 'bold 13px Inter, system-ui, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('🏛️ Action Required:', 75, bannerY + 28);
+  ctx.font = '13px Inter, system-ui, sans-serif';
+  wrapText(ctx, 'Please present this official pass along with your physical Lead City University Student ID Card at the Student Ambassador Unit to verify physical ownership and collect your item.', 75, bannerY + 48, W - 150, 18);
+
+  // Footer separator
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(50, H - 85);
+  ctx.lineTo(W - 50, H - 85);
+  ctx.stroke();
+
+  // Footer text
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '11px Inter, system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Official LCU Lost & Found System Pass • Security Verification & Owner Matching Portal', W / 2, H - 60);
+  ctx.fillText(`Generated: ${now.toISOString().slice(0, 10)}`, W / 2, H - 42);
+
+  // Trigger download
+  const link = document.createElement('a');
+  link.download = `LCU_Verification_Pass_${refCode.replace('#', '')}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  showToast('Verification pass downloaded!', 'success');
+}
+
+// Canvas helper: rounded rectangle
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+// Canvas helper: word-wrap text
+function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+  const words = text.split(' ');
+  let line = '';
+  for (let i = 0; i < words.length; i++) {
+    const test = line + words[i] + ' ';
+    if (ctx.measureText(test).width > maxWidth && i > 0) {
+      ctx.fillText(line.trim(), x, y);
+      line = words[i] + ' ';
+      y += lineHeight;
+    } else {
+      line = test;
+    }
   }
-
-  printWindow.document.write(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>LCU Student Ambassador Unit - Item Verification Pass</title>
-      <style>
-        body { font-family: 'Inter', system-ui, sans-serif; padding: 40px; color: #0f172a; margin: 0; }
-        .pass-card { border: 3px solid #1a56db; border-radius: 20px; padding: 30px; background: #fff; max-width: 650px; margin: 0 auto; }
-        .header { text-align: center; border-bottom: 2px dashed #d4af37; padding-bottom: 20px; margin-bottom: 20px; }
-        .header h1 { font-size: 22px; color: #1a56db; margin: 0 0 5px 0; }
-        .header p { color: #64748b; font-size: 13px; margin: 0; font-weight: 600; }
-        .badge-box { background: #eff6ff; border: 1.5px solid #1a56db; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 25px; }
-        .badge-title { font-size: 11px; text-transform: uppercase; color: #1a56db; font-weight: 800; letter-spacing: 1px; }
-        .badge-code { font-size: 22px; font-weight: 800; font-family: monospace; color: #0f172a; margin-top: 4px; }
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; font-size: 14px; }
-        .info-item label { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 3px; }
-        .info-item span { font-weight: 700; }
-        .instruction-banner { background: #fffbeb; border: 1.5px solid #f59e0b; padding: 15px; border-radius: 12px; margin-bottom: 25px; font-size: 13px; line-height: 1.5; color: #92400e; }
-        .footer { text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
-        @media print {
-          body { padding: 10px; }
-          .no-print { display: none !important; }
-        }
-      </style>
-    </head>
-    <body>
-      <div class="no-print" style="text-align: right; margin-bottom: 20px;">
-        <button onclick="window.print()" style="background: #1a56db; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer;">🖨️ Print Pass</button>
-      </div>
-      <div class="pass-card">
-        <div class="header">
-          <h1>LEAD CITY UNIVERSITY</h1>
-          <p>Student Ambassador Unit • Item Collection & Verification Pass</p>
-        </div>
-        <div class="badge-box">
-          <div class="badge-title">VERIFICATION REFERENCE PASS CODE</div>
-          <div class="badge-code">${refCode}</div>
-        </div>
-        <div class="info-grid">
-          <div class="info-item"><label>Claimant Student</label><span>${claimantName || 'Student'}</span></div>
-          <div class="info-item"><label>Matric / Staff ID</label><span>${claimantMatric || 'N/A'}</span></div>
-          <div class="info-item"><label>Item Title</label><span>${item.title || 'Misplaced Item'}</span></div>
-          <div class="info-item"><label>Item Category</label><span style="text-transform:capitalize">${item.category || 'General'}</span></div>
-          <div class="info-item"><label>Found / Logged Location</label><span>${item.location || 'Campus'}</span></div>
-          <div class="info-item"><label>Pass Issued Date</label><span>${printTime}</span></div>
-        </div>
-        <div class="instruction-banner">
-          <strong>🏛️ Action Required:</strong> Please present this official pass along with your physical <strong>Lead City University Student ID Card</strong> at the <strong>Student Ambassador Unit</strong> to verify physical ownership and collect your item.
-        </div>
-        <div class="footer">
-          Official LCU Lost & Found System Pass • Security Verification & Owner Matching Portal
-        </div>
-      </div>
-      <script>
-        window.onload = function() { setTimeout(function() { window.print(); }, 400); };
-      </script>
-    </body>
-    </html>
-  `);
-  printWindow.document.close();
+  ctx.fillText(line.trim(), x, y);
 }
 
 // =====================================================
