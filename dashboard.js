@@ -1082,7 +1082,7 @@ function openDetailModal(itemId) {
         const claimDetails   = document.getElementById('claim-claimant-details').value.trim();
         try {
           const token = localStorage.getItem('lcu_findme_token');
-          const res = await fetch(`${API_URL}/items/${item._id}/claim`, {
+          const res = await fetch(`${API_URL}/items/${item._id || item.id}/claim`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ claimantName, claimantMatric, claimDetails })
