@@ -204,7 +204,7 @@ function setupEventListeners() {
       splitOverlay.classList.add('split-open');
       setTimeout(() => {
         splitOverlay.classList.add('hidden');
-      }, 950);
+      }, 1150);
     });
   }
 
