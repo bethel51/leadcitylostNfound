@@ -25,6 +25,7 @@ app.use((req, res, next) => {
 // Mount Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/items', require('./routes/items'));
+app.use('/api/admin', require('./routes/admin'));
 
 // Base Route
 app.get('/', (req, res) => {

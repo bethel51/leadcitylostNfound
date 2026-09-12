@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LCU FindMe | Security Admin Portal</title>
+  <title>LCU FindMe | Campus Security Operations Center</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" href="icon-192.png">
@@ -22,30 +22,54 @@
         </div>
         <div class="logo-text">
           <h1 style="color: var(--primary);">LCU Security</h1>
-          <p>Admin Portal</p>
+          <p style="display: flex; align-items: center; gap: 0.4rem;">
+            <span>Operations Console</span>
+            <span class="admin-badge-pulse" id="admin-duty-station-badge">Post A Active</span>
+          </p>
         </div>
       </div>
+
       <!-- Mobile hamburger -->
       <button class="hamburger" id="hamburger-btn" aria-label="Open menu">
         <span></span><span></span><span></span>
       </button>
 
       <nav id="main-nav">
-        <a href="#" class="active" id="nav-dashboard">Dashboard</a>
-        <a href="#" id="nav-verif-log">Verification Log <span class="nav-badge" id="verif-log-badge" style="display:none;">0</span></a>
-        <a href="#" id="nav-scanner">QR Scanner</a>
-        <a href="index.html" style="color: var(--text-muted);">Back to Public Site</a>
+        <a href="#" class="active" id="nav-dashboard">Overview & Items</a>
+        <a href="#" id="nav-claims">Claims Inbox <span class="nav-badge-alert" id="claims-badge" style="display:none;">0</span></a>
+        <a href="#" id="nav-users">User Directory</a>
+        <a href="#" id="nav-verif-log">Custody Ledger <span class="nav-badge" id="verif-log-badge" style="display:none;">0</span></a>
+        <a href="#" id="nav-alerts">Campus Alerts</a>
+        <a href="index.html" style="color: var(--text-muted);">Public Portal</a>
 
-        <div class="user-profile-mock" style="display: flex; gap: 1rem;">
-          <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <!-- Header Quick Action Tools -->
+        <div class="admin-header-tools">
+          <button class="btn-admin-pill primary" id="btn-header-intake" title="Quick property intake at security desk">
+            <span>➕</span> <span>Intake Property</span>
+          </button>
+          <button class="btn-admin-pill" id="btn-header-scanner" title="Scan bin tag QR">
+            <span>🔍</span> <span>Scan QR</span>
+          </button>
+        </div>
+
+        <!-- Officer Profile & Logout -->
+        <div class="user-profile-mock" style="display: flex; align-items: center; gap: 0.6rem; margin-left: 0.5rem;">
+          <div style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer;" id="btn-officer-profile-trigger">
             <div class="avatar" id="admin-header-avatar" style="background-color: var(--primary-light); color: var(--primary); border-color: var(--primary);">O</div>
-            <span id="admin-header-username">CSO Olabisi</span>
+            <div style="display: flex; flex-direction: column; text-align: left;">
+              <span id="admin-header-username" style="font-weight: 700; font-size: 0.85rem; line-height: 1.1;">CSO Olabisi</span>
+              <span id="admin-header-rank" style="font-size: 0.7rem; color: var(--text-muted);">Duty Officer</span>
+            </div>
           </div>
-          <button class="btn btn-secondary" id="btn-edit-admin-profile" style="padding: 0.35rem 0.85rem; font-size: 0.75rem;">Edit</button>
+          <button class="btn-admin-logout" id="btn-admin-logout" title="Safely lock console and log out">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            <span>Sign Out</span>
+          </button>
         </div>
       </nav>
+
       <!-- Theme Toggle Button -->
-      <button class="theme-toggle-btn" id="theme-toggle" title="Toggle Dark/Light Mode" aria-label="Toggle Dark/Light Mode" style="margin-left: auto; margin-right: 1rem;">
+      <button class="theme-toggle-btn" id="theme-toggle" title="Toggle Dark/Light Mode" aria-label="Toggle Dark/Light Mode" style="margin-left: auto; margin-right: 0.5rem;">
         <svg class="sun-icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"></path></svg>
         <svg class="moon-icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
       </button>
@@ -54,45 +78,141 @@
     <!-- Main Content -->
     <main>
       <!-- Hero Section -->
-      <section class="hero-section" style="padding: 3.5rem 5% 3rem 5%; border-bottom: none;">
-        <span class="hero-tag">Master Security Console</span>
-        <h2>Review & Manage <br><span>Campus Claims</span></h2>
-        <p style="margin-bottom: 0;">Approve returns, moderate claims, and keep the campus secure.</p>
-      </section>
-
-      <!-- Stats Area -->
-      <section class="stats-container" style="margin-top: -3rem;">
-        <div class="stat-card">
-          <h3 id="admin-stat-total" style="color: var(--primary);">0</h3>
-          <p>Total Active Reports</p>
-        </div>
-        <div class="stat-card">
-          <h3 id="admin-stat-lost" style="color: var(--primary);">0</h3>
-          <p>Unresolved Lost Items</p>
-        </div>
-        <div class="stat-card">
-          <h3 id="admin-stat-returned" style="color: var(--success);">0</h3>
-          <p>Items Secured & Returned</p>
-        </div>
-      </section>
-
-      <!-- Admin Dashboard Section -->
-      <section class="dashboard-section" id="section-dashboard" style="padding-top: 1rem;">
-        <div class="section-header">
+      <section class="hero-section" style="padding: 3rem 5% 2.5rem 5%; border-bottom: none;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
           <div>
-            <h2>Recent Campus Activity</h2>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">All lost and found claims across the university. Review and verify claims here.</p>
+            <span class="hero-tag">Lead City University Campus Security</span>
+            <h2>Security Operations &amp; <br><span>Property Custody Console</span></h2>
+            <p style="margin-bottom: 0;">Centralized custody management, verified student handovers, and account oversight.</p>
+          </div>
+          <div style="display: flex; gap: 0.75rem; align-items: center; margin-top: 0.5rem;">
+            <button class="btn btn-primary" id="btn-hero-intake" style="padding: 0.7rem 1.25rem;">
+              <span>➕ Log Property Intake</span>
+            </button>
+            <button class="btn btn-secondary" id="btn-hero-post-alert" style="padding: 0.7rem 1.15rem;">
+              <span>📢 Broadcast Alert</span>
+            </button>
           </div>
         </div>
-        
-        <!-- Pending Claims Alert Banner -->
-        <div id="admin-pending-claims-alert" style="display: none; background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.15); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; align-items: center; justify-content: space-between; font-weight: 500;">
-          <span style="display: flex; align-items: center; gap: 0.5rem;">
-            🔔 <strong>Claim Notice:</strong> <span id="pending-claims-text">You have pending verification claim requests.</span>
-          </span>
-          <button class="btn btn-secondary" id="btn-view-pending-claims" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; border-color: var(--warning); color: var(--warning); background: none; cursor: pointer;">Review First Claim</button>
+      </section>
+
+      <!-- Expanded KPI Deck -->
+      <section class="admin-kpi-grid" style="margin-top: -2.5rem; padding: 0 5%;">
+        <div class="admin-kpi-card">
+          <div class="admin-kpi-top">
+            <span class="admin-kpi-title">Total Reports</span>
+            <span class="admin-kpi-icon">📦</span>
+          </div>
+          <div class="admin-kpi-value" id="admin-stat-total" style="color: var(--primary);">0</div>
+          <div class="admin-kpi-sub">Across all campus zones</div>
         </div>
- 
+
+        <div class="admin-kpi-card">
+          <div class="admin-kpi-top">
+            <span class="admin-kpi-title">Active Lost Items</span>
+            <span class="admin-kpi-icon">🔍</span>
+          </div>
+          <div class="admin-kpi-value" id="admin-stat-lost" style="color: #ef4444;">0</div>
+          <div class="admin-kpi-sub">Awaiting matches</div>
+        </div>
+
+        <div class="admin-kpi-card">
+          <div class="admin-kpi-top">
+            <span class="admin-kpi-title">Found In Custody</span>
+            <span class="admin-kpi-icon">🛡️</span>
+          </div>
+          <div class="admin-kpi-value" id="admin-stat-found" style="color: #3b82f6;">0</div>
+          <div class="admin-kpi-sub">Secured at security desks</div>
+        </div>
+
+        <div class="admin-kpi-card">
+          <div class="admin-kpi-top">
+            <span class="admin-kpi-title">Items Returned</span>
+            <span class="admin-kpi-icon">✅</span>
+          </div>
+          <div class="admin-kpi-value" id="admin-stat-returned" style="color: var(--success);">0</div>
+          <div class="admin-kpi-sub">Verified & handed over</div>
+        </div>
+
+        <div class="admin-kpi-card">
+          <div class="admin-kpi-top">
+            <span class="admin-kpi-title">Registered Accounts</span>
+            <span class="admin-kpi-icon">👥</span>
+          </div>
+          <div class="admin-kpi-value" id="admin-stat-users" style="color: #8b5cf6;">0</div>
+          <div class="admin-kpi-sub"><span id="admin-stat-activated-count">0</span> activated accounts</div>
+        </div>
+
+        <div class="admin-kpi-card">
+          <div class="admin-kpi-top">
+            <span class="admin-kpi-title">Pending Claims</span>
+            <span class="admin-kpi-icon">⚠️</span>
+          </div>
+          <div class="admin-kpi-value" id="admin-stat-claims" style="color: #f59e0b;">0</div>
+          <div class="admin-kpi-sub">Requiring officer review</div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           TAB 1: OVERVIEW & ITEMS SECTION
+           ============================================================ -->
+      <section class="dashboard-section" id="section-dashboard" style="padding-top: 0.5rem;">
+        <!-- Pending Claims Alert Banner -->
+        <div id="admin-pending-claims-alert" style="display: none; background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.25); padding: 1rem 1.25rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; align-items: center; justify-content: space-between; font-weight: 500;">
+          <span style="display: flex; align-items: center; gap: 0.6rem;">
+            <span style="font-size: 1.2rem;">🔔</span>
+            <span><strong>Urgent Attention:</strong> <span id="pending-claims-text">You have pending student ownership claims awaiting in-person verification.</span></span>
+          </span>
+          <button class="btn btn-secondary" id="btn-view-pending-claims" style="padding: 0.4rem 0.85rem; font-size: 0.8rem; border-color: var(--warning); color: var(--warning); background: rgba(245, 158, 11, 0.1); cursor: pointer; font-weight: 700;">Open Claims Inbox →</button>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="admin-toolbar">
+          <div class="admin-search-box">
+            <span class="admin-search-icon">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </span>
+            <input type="text" id="admin-search-input" placeholder="Search by title, item ID, reporter name, matric, location...">
+          </div>
+
+          <div class="admin-filter-group">
+            <select class="admin-select" id="filter-item-type">
+              <option value="all">All Types (Lost &amp; Found)</option>
+              <option value="found">Found Items (In Custody)</option>
+              <option value="lost">Lost Items Reported</option>
+            </select>
+
+            <select class="admin-select" id="filter-item-category">
+              <option value="all">All Categories</option>
+              <option value="electronics">Electronics &amp; Gadgets</option>
+              <option value="id_cards">Student IDs &amp; Cards</option>
+              <option value="books">Books &amp; Folders</option>
+              <option value="valuable">Valuables &amp; Wallets</option>
+              <option value="clothing">Clothing &amp; Accessories</option>
+              <option value="keys">Keys &amp; Fobs</option>
+              <option value="documents">Documents &amp; Certificates</option>
+              <option value="other">Other Campus Items</option>
+            </select>
+
+            <select class="admin-select" id="filter-item-status">
+              <option value="all">All Statuses</option>
+              <option value="active">Active (Unresolved)</option>
+              <option value="claims_pending">Claims Pending Only</option>
+              <option value="returned">Returned / Secured</option>
+            </select>
+
+            <select class="admin-select" id="filter-item-sort">
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="title_asc">Title (A - Z)</option>
+            </select>
+
+            <button class="btn btn-secondary" id="btn-export-items-csv" style="padding: 0.5rem 0.85rem; font-size: 0.8rem;" title="Download items CSV">
+              📥 Export CSV
+            </button>
+          </div>
+        </div>
+
         <!-- Master Data Table -->
         <div class="data-table-wrapper" style="box-shadow: var(--shadow-premium);">
           <table class="data-table" id="admin-table">
@@ -103,8 +223,9 @@
                 <th>Category</th>
                 <th>Type</th>
                 <th>Status</th>
-                <th>Reporter</th>
-                <th>Actions</th>
+                <th>Reporter / Finder</th>
+                <th>Date Logged</th>
+                <th style="text-align: right;">Actions</th>
               </tr>
             </thead>
             <tbody id="admin-table-body">
@@ -114,17 +235,112 @@
         </div>
       </section>
 
-      <!-- Verification Log Section -->
-      <section class="dashboard-section" id="section-verif-log" style="padding-top: 1rem;">
+      <!-- ============================================================
+           TAB 2: CLAIMS & DISPUTES INBOX SECTION
+           ============================================================ -->
+      <section class="dashboard-section hidden" id="section-claims" style="padding-top: 1rem;">
         <div class="section-header">
           <div>
-            <h2>🔒 Chain of Custody — Verification Log</h2>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Permanent ledger of all in-person item handovers approved by security officers.</p>
+            <h2>🚨 Centralized Claims &amp; Disputes Inbox</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Review student verification claims submitted for lost &amp; found property before issuing physical handover.</p>
           </div>
-          <button class="btn-export-csv" id="btn-export-csv" title="Export log as CSV file">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-            Export CSV
-          </button>
+          <div class="admin-filter-group">
+            <select class="admin-select" id="filter-claims-status">
+              <option value="all">All Claims</option>
+              <option value="pending" selected>Pending Review Only</option>
+              <option value="accepted">Accepted / Released</option>
+              <option value="declined">Declined Claims</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="claims-grid-container" class="claims-grid">
+          <!-- Populated by admin.js -->
+        </div>
+      </section>
+
+      <!-- ============================================================
+           TAB 3: USER & STUDENT DIRECTORY SECTION
+           ============================================================ -->
+      <section class="dashboard-section hidden" id="section-users" style="padding-top: 1rem;">
+        <div class="section-header">
+          <div>
+            <h2>👥 Registered User &amp; Student Directory</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Lookup student accounts, verify identities, and manually manage account activation keys (e.g. for bursary / cash desk payments).</p>
+          </div>
+        </div>
+
+        <!-- User Directory Toolbar -->
+        <div class="admin-toolbar">
+          <div class="admin-search-box">
+            <span class="admin-search-icon">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </span>
+            <input type="text" id="admin-user-search" placeholder="Search by student name, matric number, email, department...">
+          </div>
+
+          <div class="admin-filter-group">
+            <select class="admin-select" id="filter-user-role">
+              <option value="all">All Roles</option>
+              <option value="student">Students</option>
+              <option value="staff">Staff Members</option>
+              <option value="admin">Security / Admins</option>
+            </select>
+
+            <select class="admin-select" id="filter-user-activation">
+              <option value="all">All Activation Statuses</option>
+              <option value="true">Activated Accounts</option>
+              <option value="false">Unactivated (Pending Key)</option>
+            </select>
+
+            <select class="admin-select" id="filter-user-verification">
+              <option value="all">All Email Statuses</option>
+              <option value="true">Verified Email</option>
+              <option value="false">Unverified Email</option>
+            </select>
+
+            <button class="btn btn-secondary" id="btn-export-users-csv" style="padding: 0.5rem 0.85rem; font-size: 0.8rem;">
+              📥 Export Users
+            </button>
+          </div>
+        </div>
+
+        <!-- Users Data Table -->
+        <div class="data-table-wrapper" style="box-shadow: var(--shadow-premium);">
+          <table class="data-table" id="admin-users-table">
+            <thead>
+              <tr>
+                <th>User / Student</th>
+                <th>Matric / Staff ID</th>
+                <th>Contact Info</th>
+                <th>Faculty &amp; Department</th>
+                <th>Role</th>
+                <th>Activation Key Status</th>
+                <th style="text-align: right;">Account Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-users-tbody">
+              <!-- Populated by admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           TAB 4: CHAIN OF CUSTODY (VERIFICATION LOG)
+           ============================================================ -->
+      <section class="dashboard-section hidden" id="section-verif-log" style="padding-top: 1rem;">
+        <div class="section-header">
+          <div>
+            <h2>🔒 Chain of Custody — Verification Ledger</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Permanent database ledger of all campus item handovers authorized by security officers.</p>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn-export-csv" id="btn-export-csv" title="Export log as CSV file">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              Export CSV
+            </button>
+          </div>
         </div>
 
         <!-- Summary stat cards for log -->
@@ -138,8 +354,8 @@
             <div style="font-size: 1.75rem; font-weight: 800; color: var(--success); font-family: 'Outfit', sans-serif;" id="log-stat-today">0</div>
           </div>
           <div class="stat-card" style="padding: 1rem; text-align: left;">
-            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 0.25rem;">Officer on Duty</div>
-            <div style="font-size: 1.1rem; font-weight: 700; color: var(--secondary); font-family: 'Outfit', sans-serif;" id="log-stat-officer">—</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 0.25rem;">Station / Duty Post</div>
+            <div style="font-size: 1.1rem; font-weight: 700; color: var(--secondary); font-family: 'Outfit', sans-serif;" id="log-stat-officer">Gate A Desk</div>
           </div>
         </div>
 
@@ -154,6 +370,8 @@
                 <th>Claimant Name</th>
                 <th>Matric / Staff ID</th>
                 <th>Officer</th>
+                <th>Duty Station</th>
+                <th style="text-align: right;">Slip</th>
               </tr>
             </thead>
             <tbody id="verif-log-tbody">
@@ -162,17 +380,222 @@
           </table>
         </div>
       </section>
+
+      <!-- ============================================================
+           TAB 5: CAMPUS SECURITY BROADCAST ALERTS
+           ============================================================ -->
+      <section class="dashboard-section hidden" id="section-alerts" style="padding-top: 1rem;">
+        <div class="section-header">
+          <div>
+            <h2>📢 Campus Security Broadcasts</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Post security announcements and high-priority notices visible across all campus portals.</p>
+          </div>
+          <button class="btn btn-primary" id="btn-create-alert-trigger" style="padding: 0.5rem 1rem;">
+            ➕ New Broadcast
+          </button>
+        </div>
+
+        <div id="alerts-list-container" class="alerts-list">
+          <!-- Populated by admin.js -->
+        </div>
+      </section>
     </main>
 
     <!-- Footer -->
     <footer style="margin-top: auto;">
       <div class="footer-bottom">
-        <p>&copy; 2026 <a href="https://www.lcu.edu.ng/" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">Lead City University</a>. Senior Software Project by LCU Dev. Security Portal.</p>
+        <p>&copy; 2026 <a href="https://www.lcu.edu.ng/" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">Lead City University</a>. Campus Safety &amp; Security Property Office. Senior Software Project.</p>
       </div>
     </footer>
   </div>
 
-  <!-- QR Scanner Modal -->
+  <!-- ============================================================
+       MODAL: SECURITY PROPERTY INTAKE FORM
+       ============================================================ -->
+  <div class="modal-backdrop" id="modal-security-intake">
+    <div class="modal-container" style="max-width: 540px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden;">
+      <div class="modal-header" style="background-color: var(--secondary); border-bottom: none;">
+        <h3 class="modal-title" style="color: white;">🛡️ Security Property Intake</h3>
+        <button class="modal-close" id="btn-close-intake" style="color: white; font-size: 1.4rem; background: none; border: none; cursor: pointer;">&times;</button>
+      </div>
+      <div class="modal-body" style="overflow-y: auto; padding: 1.5rem; flex: 1;">
+        <form id="form-security-intake">
+          <div class="form-group">
+            <label class="form-label" for="intake-title">Item Name / Title *</label>
+            <input type="text" class="form-control" id="intake-title" placeholder="e.g. Black Dell Laptop in Blue Bag" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="intake-category">Category *</label>
+              <select class="form-control" id="intake-category" required>
+                <option value="electronics">Electronics &amp; Gadgets</option>
+                <option value="id_cards">Student IDs &amp; Cards</option>
+                <option value="books">Books &amp; Folders</option>
+                <option value="valuable">Valuables &amp; Wallets</option>
+                <option value="clothing">Clothing &amp; Accessories</option>
+                <option value="keys">Keys &amp; Fobs</option>
+                <option value="documents">Documents &amp; Certificates</option>
+                <option value="other">Other Property</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="intake-bin">Security Bin / Locker Tag *</label>
+              <input type="text" class="form-control" id="intake-bin" placeholder="e.g. Safe Bin B-12" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="intake-location">Recovery Location on Campus *</label>
+            <input type="text" class="form-control" id="intake-location" placeholder="e.g. Senate Building Ground Floor" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="intake-finder-name">Finder's Name (or Officer)</label>
+              <input type="text" class="form-control" id="intake-finder-name" placeholder="e.g. Security Patrol / John Doe">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="intake-finder-contact">Finder Phone Number</label>
+              <input type="text" class="form-control" id="intake-finder-contact" placeholder="e.g. 08012345678">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="intake-description">Description &amp; Identifying Marks *</label>
+            <textarea class="form-control" id="intake-description" rows="3" placeholder="Serial numbers, scratches, unique stickers, condition, contents..." required></textarea>
+          </div>
+
+          <div style="padding-top: 1rem; border-top: 1px solid var(--border-color); margin-top: 0.5rem;">
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.75rem; font-size: 0.95rem;">
+              Confirm Custody &amp; Log Intake
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL: OFFICIAL PRINTABLE PROPERTY RELEASE SLIP
+       ============================================================ -->
+  <div class="modal-backdrop" id="modal-handover-slip">
+    <div class="modal-container" style="max-width: 680px; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden;">
+      <div class="modal-header no-print" style="background-color: var(--primary); border-bottom: none;">
+        <h3 class="modal-title" style="color: white;">📄 Official Handover Release Slip</h3>
+        <button class="modal-close" id="btn-close-slip" style="color: white; font-size: 1.4rem; background: none; border: none; cursor: pointer;">&times;</button>
+      </div>
+      <div class="modal-body" style="overflow-y: auto; padding: 1.5rem; flex: 1;">
+        <div class="handover-slip-wrapper" id="printable-slip-area">
+          <div class="handover-slip-header">
+            <img src="logo.png" alt="LCU Logo" style="width: 58px; height: 58px; margin-bottom: 0.5rem;">
+            <h2>Lead City University, Ibadan</h2>
+            <p><strong>CAMPUS SAFETY &amp; SECURITY DEPARTMENT</strong></p>
+            <p style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px; color: #4b5563; margin-top: 0.2rem;">Official Property Release &amp; Custody Transfer Certificate</p>
+          </div>
+
+          <div class="handover-slip-meta-grid">
+            <div class="handover-slip-meta-item">
+              <strong>Certificate Reference:</strong>
+              <span id="slip-cert-ref" style="font-family: monospace; font-weight: 700;">LCU-SEC-RELEASE-0000</span>
+            </div>
+            <div class="handover-slip-meta-item">
+              <strong>Date &amp; Time Released:</strong>
+              <span id="slip-cert-date">12 Sep 2026, 10:30 AM</span>
+            </div>
+            <div class="handover-slip-meta-item">
+              <strong>Authorizing Officer:</strong>
+              <span id="slip-cert-officer">CSO Olabisi (Badge #LCU-SEC-04)</span>
+            </div>
+            <div class="handover-slip-meta-item">
+              <strong>Security Duty Station:</strong>
+              <span id="slip-cert-station">Gate A Main Desk</span>
+            </div>
+          </div>
+
+          <div class="handover-slip-item-box">
+            <div style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: #6b7280; letter-spacing: 0.5px; margin-bottom: 0.4rem;">Recovered Property Details</div>
+            <div style="font-size: 1.1rem; font-weight: 800; color: #111827; margin-bottom: 0.25rem;" id="slip-item-title">Item Title</div>
+            <div style="font-size: 0.82rem; color: #4b5563; font-family: monospace; margin-bottom: 0.5rem;" id="slip-item-id">Item ID: 66e...</div>
+            <div style="font-size: 0.85rem; color: #374151;" id="slip-item-desc">Item description will appear here...</div>
+          </div>
+
+          <div class="handover-slip-item-box" style="background: #ffffff; border-color: #cbd5e1;">
+            <div style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: #6b7280; letter-spacing: 0.5px; margin-bottom: 0.4rem;">Claimant / Recipient Identity Verification</div>
+            <div style="font-size: 0.95rem; font-weight: 700; color: #111827;" id="slip-claimant-name">Student Name</div>
+            <div style="font-size: 0.85rem; color: #4b5563; margin-top: 0.2rem;">Matric / Staff ID: <strong id="slip-claimant-matric" style="font-family: monospace;">LCU/22/0000</strong></div>
+            <div style="font-size: 0.82rem; color: #4b5563; margin-top: 0.15rem;" id="slip-claimant-contact">Email: student@lcu.edu.ng | Phone: 080...</div>
+          </div>
+
+          <div class="handover-slip-signatures">
+            <div>
+              <div style="height: 45px;"></div>
+              <div class="signature-line">Claimant Recipient Signature &amp; Date</div>
+            </div>
+            <div>
+              <div style="height: 45px;"></div>
+              <div class="signature-line">Security Officer Signature &amp; Official Stamp</div>
+            </div>
+          </div>
+
+          <div style="text-align: center; margin-top: 2rem; font-size: 0.72rem; color: #9ca3af;">
+            This slip constitutes permanent institutional proof of property release. Keep for personal academic records.
+          </div>
+        </div>
+
+        <div class="no-print" style="margin-top: 1.25rem; display: flex; gap: 1rem; justify-content: flex-end;">
+          <button class="btn btn-secondary" id="btn-close-slip-2">Close</button>
+          <button class="btn btn-primary" id="btn-print-slip">🖨️ Print Release Slip</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL: NEW BROADCAST ALERT
+       ============================================================ -->
+  <div class="modal-backdrop" id="modal-create-alert">
+    <div class="modal-container" style="max-width: 480px;">
+      <div class="modal-header" style="background-color: var(--secondary); border-bottom: none;">
+        <h3 class="modal-title" style="color: white;">📢 Broadcast Campus Security Notice</h3>
+        <button class="modal-close" id="btn-close-create-alert" style="color: white; font-size: 1.4rem; background: none; border: none; cursor: pointer;">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 1.5rem;">
+        <form id="form-create-alert">
+          <div class="form-group">
+            <label class="form-label" for="alert-title">Notice Title *</label>
+            <input type="text" class="form-control" id="alert-title" placeholder="e.g. High Value Laptop Recovered at Law Faculty" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="alert-priority">Priority Level *</label>
+            <select class="form-control" id="alert-priority" required>
+              <option value="info">Information (Standard Notice)</option>
+              <option value="warning">Warning (Important Finding / Alert)</option>
+              <option value="urgent">Urgent (Immediate Owner Required)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="alert-message">Notice Details *</label>
+            <textarea class="form-control" id="alert-message" rows="4" placeholder="Enter clear notice details for campus students and staff..." required></textarea>
+          </div>
+
+          <div style="padding-top: 1rem; border-top: 1px solid var(--border-color); margin-top: 0.5rem;">
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.75rem;">
+              Broadcast Notice
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL: QR SCANNER
+       ============================================================ -->
   <div class="modal-backdrop" id="modal-scanner">
     <div class="modal-container" style="max-width: 420px;">
       <div class="modal-header" style="background-color: var(--secondary); border-bottom: none;">
@@ -180,25 +603,19 @@
         <button class="modal-close" id="btn-close-scanner" style="color: rgba(255,255,255,0.85); font-size: 1.4rem; line-height: 1; background: none; border: none; cursor: pointer; padding: 0 0.25rem;">&times;</button>
       </div>
       <div class="modal-body" style="text-align: center; padding: 1.5rem 1rem;">
-
-        <!-- Camera viewfinder -->
         <div id="reader" style="width: 100%; min-height: 140px; border: 2px dashed var(--border-color); border-radius: var(--radius-md); margin: 0 auto 1rem auto; background-color: var(--bg-secondary); overflow: hidden; position: relative;">
           <div style="padding: 3rem 0; font-size: 3rem; opacity: 0.2;">📷</div>
-          <!-- Laser scan line (shown when scanning active) -->
           <div class="scan-laser" id="scan-laser-line" style="display:none;"></div>
         </div>
 
-        <!-- Status text -->
         <p id="scan-status-text" style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
           Click <strong>Start Camera Scan</strong> to activate the QR scanner.
         </p>
 
-        <!-- START SCAN BUTTON -->
         <button class="btn btn-primary" id="btn-start-scan" style="width: 100%; justify-content: center; padding: 0.75rem; font-size: 0.95rem; margin-bottom: 1.5rem;">
           ▶ Start Camera Scan
         </button>
 
-        <!-- Manual entry fallback -->
         <div style="border-top: 1px solid var(--border-color); padding-top: 1.25rem; text-align: left;">
           <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Manual Entry Override</label>
           <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0.25rem 0 0.6rem 0;">Paste or type the Item ID from the QR label.</p>
@@ -211,9 +628,11 @@
     </div>
   </div>
 
-  <!-- Item Verification Modal (Admin Side) -->
+  <!-- ============================================================
+       MODAL: ITEM VERIFICATION / REVIEW (ADMIN SIDE)
+       ============================================================ -->
   <div class="modal-backdrop" id="modal-admin-detail">
-    <div class="modal-container">
+    <div class="modal-container" style="max-width: 620px;">
       <div class="modal-header">
         <h3 class="modal-title">Security Verification Desk</h3>
         <button class="modal-close" id="btn-close-admin-detail">&times;</button>
@@ -224,46 +643,44 @@
     </div>
   </div>
 
-  <!-- MODAL: Edit Admin Profile -->
+  <!-- ============================================================
+       MODAL: EDIT ADMIN PROFILE & STATION
+       ============================================================ -->
   <div class="modal-backdrop" id="modal-edit-admin-profile">
     <div class="modal-container" style="max-width: 480px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden;">
-
-      <!-- Slim Header -->
       <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); flex-shrink: 0;">
-        <div id="admin-edit-avatar-preview" style="width: 40px; height: 40px; background: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: var(--primary); font-family: 'Outfit', sans-serif; flex-shrink: 0;">O</div>
+        <div id="admin-edit-avatar-preview" style="width: 42px; height: 42px; background: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 800; color: var(--primary); font-family: 'Outfit', sans-serif; flex-shrink: 0;">O</div>
         <div style="flex: 1;">
-          <h3 style="margin: 0; font-size: 1rem; font-family: 'Outfit', sans-serif; color: var(--secondary);">Edit Admin Profile</h3>
-          <p style="margin: 0; font-size: 0.75rem; color: var(--text-muted);">LCU Campus Security Office</p>
+          <h3 style="margin: 0; font-size: 1.05rem; font-family: 'Outfit', sans-serif; color: var(--secondary);">Security Officer Profile</h3>
+          <p style="margin: 0; font-size: 0.75rem; color: var(--text-muted);">LCU Safety &amp; Security Office</p>
         </div>
         <button class="modal-close" id="btn-close-edit-admin-profile">&times;</button>
       </div>
 
-      <!-- Scrollable Form Body -->
       <div class="modal-body" style="overflow-y: auto; padding: 1.5rem; flex: 1;">
         <form id="form-edit-admin-profile">
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label" for="edit-admin-name">Admin Full Name</label>
+              <label class="form-label" for="edit-admin-name">Officer Full Name</label>
               <input type="text" class="form-control" id="edit-admin-name" placeholder="e.g. CSO David Taiwo" required>
             </div>
             <div class="form-group">
-              <label class="form-label" for="edit-admin-rank">Rank / Title</label>
-              <input type="text" class="form-control" id="edit-admin-rank" placeholder="e.g. Chief Security Officer">
+              <label class="form-label" for="edit-admin-rank">Rank / Badge ID</label>
+              <input type="text" class="form-control" id="edit-admin-rank" placeholder="e.g. Chief Security Officer (LCU-SEC-04)">
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label" for="edit-admin-email">Official Email</label>
+            <label class="form-label" for="edit-admin-email">Official Security Email</label>
             <input type="email" class="form-control" id="edit-admin-email" placeholder="security@lcu.edu.ng">
           </div>
           <div class="form-group">
-            <label class="form-label" for="edit-admin-office">Office / Unit</label>
-            <input type="text" class="form-control" id="edit-admin-office" placeholder="e.g. Gate B Security Desk">
+            <label class="form-label" for="edit-admin-office">Current Duty Station / Post</label>
+            <input type="text" class="form-control" id="edit-admin-office" placeholder="e.g. Gate A Main Security Desk">
           </div>
 
-          <!-- Sticky footer inside modal -->
           <div style="padding-top: 1rem; border-top: 1px solid var(--border-color); margin-top: 0.5rem;">
             <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.75rem; font-size: 0.95rem;">
-              Save Admin Profile
+              Save Profile &amp; Post
             </button>
           </div>
         </form>
@@ -271,13 +688,15 @@
     </div>
   </div>
 
-  <!-- ADMIN PORTAL ACCESS OVERLAY -->
+  <!-- ============================================================
+       ADMIN PORTAL ACCESS OVERLAY (GATE)
+       ============================================================ -->
   <div id="admin-login-overlay" style="position: fixed; inset: 0; background: var(--bg-primary); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 1.5rem; font-family: 'Inter', sans-serif;">
     <div style="background: var(--modal-bg); border: 1px solid var(--border-color); width: 100%; max-width: 440px; padding: 2.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-premium); display: flex; flex-direction: column; gap: 1.5rem;">
       <div style="text-align: center;">
-        <div style="width: 54px; height: 54px; background: var(--primary-light); color: var(--primary); font-size: 1.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; border: 2px solid var(--primary); font-weight: 800; font-family: 'Outfit', sans-serif;">A</div>
+        <div style="width: 58px; height: 58px; background: var(--primary-light); color: var(--primary); font-size: 1.6rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; border: 2px solid var(--primary); font-weight: 800; font-family: 'Outfit', sans-serif;">🛡️</div>
         <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.4rem; color: var(--secondary); margin-bottom: 0.25rem;">Security Portal Gate</h2>
-        <p style="font-size: 0.85rem; color: var(--text-muted);">Please log in with admin/officer credentials to access the console.</p>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">Lead City University Campus Security &amp; Operations Command.</p>
       </div>
 
       <div id="admin-login-error" style="display: none; background: var(--danger-bg); color: var(--danger); font-size: 0.82rem; padding: 0.6rem 0.85rem; border-radius: var(--radius-sm); border: 1px solid rgba(239, 68, 68, 0.15); text-align: center; font-weight: 500;">
@@ -286,7 +705,7 @@
 
       <form id="admin-login-form" style="display: flex; flex-direction: column; gap: 1.25rem;">
         <div class="form-group" style="margin-bottom: 0;">
-          <label class="form-label" for="admin-login-email">Official Admin Email</label>
+          <label class="form-label" for="admin-login-email">Official Security Email</label>
           <div class="input-icon-wrapper" style="position: relative; display: flex; align-items: center;">
             <span style="position: absolute; left: 1rem; color: var(--text-muted); pointer-events: none; display: flex; align-items: center;">
               <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
@@ -296,7 +715,7 @@
         </div>
 
         <div class="form-group" style="margin-bottom: 0;">
-          <label class="form-label" for="admin-login-password">Security Access Key (Password)</label>
+          <label class="form-label" for="admin-login-password">Access Passkey / Password</label>
           <div class="input-icon-wrapper" style="position: relative; display: flex; align-items: center;">
             <span style="position: absolute; left: 1rem; color: var(--text-muted); pointer-events: none; display: flex; align-items: center;">
               <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
@@ -306,7 +725,7 @@
         </div>
 
         <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.85rem; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); font-weight: 700; margin-top: 0.5rem;">
-          Verify & Access Console
+          Verify &amp; Enter Console
         </button>
       </form>
 
@@ -314,6 +733,8 @@
         <a href="index.html" style="font-size: 0.85rem; color: var(--text-muted); text-decoration: none; font-weight: 600; transition: color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted)'">← Return to Public Site</a>
       </div>
     </div>
+  </div>
+
   <!-- TOAST NOTIFICATION -->
   <div class="toast toast-success" id="toast-notification">
     <div class="toast-icon">✓</div>
