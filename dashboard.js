@@ -58,6 +58,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   populateUserUI();
   setupNavigation();
   setupSidebar();
+  setupMobileBottomNav();
+  setupPWAInstallBanner();
   setupReportModal();
   setupDetailModal();
   setupEditProfile();
@@ -704,6 +706,9 @@ function switchView(viewName) {
   }
 
   state.currentView = viewName;
+
+  // Sync mobile bottom nav active state
+  syncMobileNavActive(viewName);
 
   // Re-render on switch to ensure fresh data
   if (viewName === 'home') renderOverview();
@@ -2815,5 +2820,135 @@ function launchConfettiAnimation() {
   }
 
   render();
+}
+
+// =====================================================
+// MOBILE BOTTOM NAVIGATION BAR
+// =====================================================
+function setupMobileBottomNav() {
+  const bottomNav = document.getElementById('db-mobile-bottom-nav');
+  if (!bottomNav) return;
+
+  // Tab buttons (Home, Reports, Browse, Profile)
+  const mobNavItems = bottomNav.querySelectorAll('.db-mob-nav-item[data-view]');
+  mobNavItems.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const view = btn.dataset.view;
+      switchView(view);
+
+      // Sync mobile nav active state
+      syncMobileNavActive(view);
+    });
+  });
+
+  // Center FAB button → open report modal
+  const fab = document.getElementById('mob-fab-report');
+  if (fab) {
+    fab.addEventListener('click', () => {
+      openReportModal();
+    });
+  }
+
+  // Also sync mobile badge with sidebar badge
+  syncMobileReportsBadge();
+}
+
+function syncMobileNavActive(viewName) {
+  const bottomNav = document.getElementById('db-mobile-bottom-nav');
+  if (!bottomNav) return;
+
+  bottomNav.querySelectorAll('.db-mob-nav-item').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.dataset.view === viewName) {
+      btn.classList.add('active');
+    }
+  });
+}
+
+function syncMobileReportsBadge() {
+  const sidebarBadge = document.getElementById('my-reports-badge');
+  const mobBadge = document.getElementById('mob-reports-badge');
+  if (!sidebarBadge || !mobBadge) return;
+
+  const observer = new MutationObserver(() => {
+    mobBadge.textContent = sidebarBadge.textContent;
+    mobBadge.style.display = sidebarBadge.style.display;
+  });
+
+  observer.observe(sidebarBadge, {
+    attributes: true,
+    childList: true,
+    characterData: true,
+    subtree: true
+  });
+
+  // Initial sync
+  mobBadge.textContent = sidebarBadge.textContent;
+  mobBadge.style.display = sidebarBadge.style.display;
+}
+
+// =====================================================
+// PWA INSTALL PROMPT BANNER
+// =====================================================
+let deferredInstallPrompt = null;
+
+function setupPWAInstallBanner() {
+  // Listen for the browser's beforeinstallprompt event
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+
+    // Check if user previously dismissed
+    const dismissed = localStorage.getItem('lcu_findme_pwa_dismissed');
+    if (dismissed) {
+      const dismissedAt = parseInt(dismissed, 10);
+      // Show again after 7 days
+      if (Date.now() - dismissedAt < 7 * 24 * 60 * 60 * 1000) return;
+    }
+
+    // Show the banner after a short delay
+    setTimeout(() => showPWABanner(), 3000);
+  });
+
+  // Hide banner when app is installed
+  window.addEventListener('appinstalled', () => {
+    hidePWABanner();
+    deferredInstallPrompt = null;
+  });
+}
+
+function showPWABanner() {
+  const banner = document.getElementById('pwa-install-banner');
+  if (!banner) return;
+  banner.classList.add('visible');
+
+  // Install button
+  const installBtn = banner.querySelector('.pwa-install-btn');
+  if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      const result = await deferredInstallPrompt.userChoice;
+      if (result.outcome === 'accepted') {
+        showToast('🎉 App installed successfully!');
+      }
+      deferredInstallPrompt = null;
+      hidePWABanner();
+    }, { once: true });
+  }
+
+  // Dismiss button
+  const dismissBtn = banner.querySelector('.pwa-banner-dismiss');
+  if (dismissBtn) {
+    dismissBtn.addEventListener('click', () => {
+      localStorage.setItem('lcu_findme_pwa_dismissed', Date.now().toString());
+      hidePWABanner();
+    }, { once: true });
+  }
+}
+
+function hidePWABanner() {
+  const banner = document.getElementById('pwa-install-banner');
+  if (banner) banner.classList.remove('visible');
 }
 

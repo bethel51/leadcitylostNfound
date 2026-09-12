@@ -1,11 +1,15 @@
 {
-  "name": "LCU Lost & Found Portal",
-  "short_name": "LCU Lost&Found",
-  "description": "Lead City University Official Lost and Found Portal - Lost Today, Found Together",
+  "name": "LCU FindMe — Lead City Lost & Found",
+  "short_name": "LCU FindMe",
+  "id": "/lcu-lost-and-found-portal",
+  "description": "Lead City University Official Lost and Found Student & Security Portal — Lost Today, Found Together",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#002147",
-  "theme_color": "#002147",
+  "orientation": "portrait-primary",
+  "background_color": "#0f2b5c",
+  "theme_color": "#0f2b5c",
+  "categories": ["utilities", "education", "lifestyle"],
   "icons": [
     {
       "src": "icon-192.png",
@@ -18,6 +22,22 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Report Item",
+      "short_name": "Report",
+      "description": "Report a lost or found item immediately",
+      "url": "./dashboard.html?action=report",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Browse Listings",
+      "short_name": "Browse",
+      "description": "Browse active campus lost and found items",
+      "url": "./dashboard.html?view=browse",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     }
   ]
 }
