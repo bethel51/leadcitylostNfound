@@ -63,7 +63,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupEditProfile();
   setupNotifications();
   setupOtpModal();
+  setupActivationPaymentModal();
+  setupActivationOtpCard();
+  setupActivationWelcomeModal();
 
+  await refreshUserProfile();
   await loadData();
   checkUrlParams();
 });
@@ -131,6 +135,9 @@ function populateUserUI() {
 
   // Profile view
   populateProfileView();
+
+  // Activation Status UI
+  updateActivationUI();
 }
 
 function getGreeting() {
@@ -797,6 +804,11 @@ function setupDetailModal() {
   const btnPrintQR = document.getElementById('btn-print-qr');
   if (btnPrintQR) {
     btnPrintQR.addEventListener('click', () => {
+      if (!isUserActivated()) {
+        showToast('Account activation required to print security bin labels.', 'warning');
+        openActivationPaymentModal();
+        return;
+      }
       const qrCanvas = document.getElementById('qr-canvas');
       const qrImg = qrCanvas.toDataURL('image/png');
       const pw = window.open('', '_blank');
@@ -1047,6 +1059,11 @@ function openDetailModal(itemId) {
   const btnClaim = document.getElementById('btn-start-claim');
   if (btnClaim) {
     btnClaim.addEventListener('click', () => {
+      if (!isUserActivated()) {
+        showToast('Account activation required. Please pay the one-time activation fee to submit claim verifications.', 'warning');
+        openActivationPaymentModal();
+        return;
+      }
       const section = document.getElementById('claim-verification-section');
       if (!section) return;
       const defName   = state.currentUser ? (state.currentUser.name || '') : '';
@@ -1504,6 +1521,11 @@ function setupReportModal() {
 }
 
 function openReportModal() {
+  if (!isUserActivated()) {
+    showToast('Account activation required. Please pay the one-time activation key fee to report items.', 'warning');
+    openActivationPaymentModal();
+    return;
+  }
   const form = document.getElementById('form-report');
   if (form) form.reset();
   state.tempUploadedImage = null;
@@ -1531,6 +1553,13 @@ let isProfileEditing = false;
 function toggleProfileEditMode(show) {
   if (show === undefined) isProfileEditing = !isProfileEditing;
   else isProfileEditing = show;
+
+  if (isProfileEditing && !isUserActivated()) {
+    isProfileEditing = false;
+    showToast('Account activation required to edit student profile.', 'warning');
+    openActivationPaymentModal();
+    return;
+  }
 
   const displayCard = document.getElementById('profile-display-card');
   const editCard = document.getElementById('profile-edit-card');
@@ -2143,6 +2172,11 @@ function renderNotifications() {
 }
 
 function downloadReportHistory() {
+  if (!isUserActivated()) {
+    showToast('Account activation required to download report history.', 'warning');
+    openActivationPaymentModal();
+    return;
+  }
   if (!state.myItems || state.myItems.length === 0) {
     showToast('You have no report history to download yet.', 'warning');
     return;
@@ -2264,6 +2298,11 @@ function downloadReportHistory() {
 }
 
 function exportReportHistoryCSV() {
+  if (!isUserActivated()) {
+    showToast('Account activation required to export report history.', 'warning');
+    openActivationPaymentModal();
+    return;
+  }
   if (!state.myItems || state.myItems.length === 0) {
     showToast('You have no report history to export yet.', 'warning');
     return;
@@ -2295,3 +2334,486 @@ function exportReportHistoryCSV() {
 
 // Render notifications on load
 renderNotifications();
+
+/* =====================================================
+   ACTIVATION & PAYMENT SYSTEM
+   ===================================================== */
+
+let activationOtpCountdownTimer = null;
+
+function isUserActivated() {
+  if (!state.currentUser) return false;
+  if (state.currentUser.role === 'admin' || state.currentUser.role === 'staff') return true;
+  return state.currentUser.isActivated === true;
+}
+
+function updateActivationUI() {
+  const isAct = isUserActivated();
+  const banner = document.getElementById('db-activation-banner');
+  const lockTag = document.getElementById('btn-report-lock-tag');
+  const sidebarPill = document.getElementById('sidebar-status-pill');
+  const dropdownPill = document.getElementById('dropdown-status-pill');
+
+  if (banner) {
+    banner.style.display = isAct ? 'none' : 'flex';
+  }
+  if (lockTag) {
+    lockTag.style.display = isAct ? 'none' : 'inline-block';
+  }
+  if (sidebarPill) {
+    if (isAct) {
+      sidebarPill.textContent = '✓ Verified Student';
+      sidebarPill.className = 'db-status-pill status-active';
+    } else {
+      sidebarPill.textContent = '🔒 Activation Req';
+      sidebarPill.className = 'db-status-pill status-inactive';
+    }
+  }
+  if (dropdownPill) {
+    if (isAct) {
+      dropdownPill.textContent = '✓ Verified Student';
+      dropdownPill.className = 'db-status-pill status-active';
+    } else {
+      dropdownPill.textContent = '🔒 Activation Req';
+      dropdownPill.className = 'db-status-pill status-inactive';
+    }
+  }
+}
+
+async function refreshUserProfile() {
+  const token = localStorage.getItem('lcu_findme_token');
+  if (!token) return;
+  try {
+    const res = await fetch(`${API_URL}/auth/me`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok) {
+      const user = await res.json();
+      state.currentUser = { ...state.currentUser, ...user };
+      localStorage.setItem('lcu_findme_user', JSON.stringify(state.currentUser));
+      populateUserUI();
+      updateActivationUI();
+    }
+  } catch (err) {
+    console.warn('Could not refresh user profile from server:', err);
+  }
+}
+
+function openActivationPaymentModal() {
+  if (isUserActivated()) {
+    showToast('Your account is already activated and verified! ✓', 'info');
+    return;
+  }
+  const u = state.currentUser || {};
+  const nameEl = document.getElementById('checkout-student-name');
+  const matricEl = document.getElementById('checkout-student-matric');
+  const emailEl = document.getElementById('checkout-student-email');
+  if (nameEl) nameEl.textContent = u.name || 'Student';
+  if (matricEl) matricEl.textContent = u.matricNumber || u.matric || 'N/A';
+  if (emailEl) emailEl.textContent = u.email || 'N/A';
+
+  toggleModal('modal-activation-pay', true);
+}
+
+function setupActivationPaymentModal() {
+  const btnBanner = document.getElementById('btn-banner-activate');
+  if (btnBanner) {
+    btnBanner.addEventListener('click', openActivationPaymentModal);
+  }
+
+  const btnClose = document.getElementById('btn-close-activation-pay');
+  if (btnClose) {
+    btnClose.addEventListener('click', () => toggleModal('modal-activation-pay', false));
+  }
+
+  // Payment tabs
+  const tabCard = document.getElementById('tab-pay-card');
+  const tabTransfer = document.getElementById('tab-pay-transfer');
+  const tabInstant = document.getElementById('tab-pay-instant');
+  const viewCard = document.getElementById('checkout-view-card');
+  const viewTransfer = document.getElementById('checkout-view-transfer');
+  const viewInstant = document.getElementById('checkout-view-instant');
+  let selectedMethod = 'card';
+
+  if (tabCard && tabTransfer && tabInstant) {
+    tabCard.addEventListener('click', () => {
+      selectedMethod = 'card';
+      tabCard.classList.add('active');
+      tabTransfer.classList.remove('active');
+      tabInstant.classList.remove('active');
+      if (viewCard) viewCard.style.display = 'block';
+      if (viewTransfer) viewTransfer.style.display = 'none';
+      if (viewInstant) viewInstant.style.display = 'none';
+    });
+    tabTransfer.addEventListener('click', () => {
+      selectedMethod = 'transfer';
+      tabTransfer.classList.add('active');
+      tabCard.classList.remove('active');
+      tabInstant.classList.remove('active');
+      if (viewCard) viewCard.style.display = 'none';
+      if (viewTransfer) viewTransfer.style.display = 'block';
+      if (viewInstant) viewInstant.style.display = 'none';
+    });
+    tabInstant.addEventListener('click', () => {
+      selectedMethod = 'instant';
+      tabInstant.classList.add('active');
+      tabCard.classList.remove('active');
+      tabTransfer.classList.remove('active');
+      if (viewCard) viewCard.style.display = 'none';
+      if (viewTransfer) viewTransfer.style.display = 'none';
+      if (viewInstant) viewInstant.style.display = 'block';
+    });
+  }
+
+  // Form submission
+  const form = document.getElementById('form-activation-payment');
+  const submitBtn = document.getElementById('btn-submit-activation-payment');
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const token = localStorage.getItem('lcu_findme_token');
+      if (!token) {
+        showToast('Please log in to authorize payment.', 'error');
+        return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.6s linear infinite;margin-right:8px;vertical-align:middle;"></span> Processing Authorization...';
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/auth/initiate-activation-payment`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ amount: 1000, paymentMethod: selectedMethod })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          toggleModal('modal-activation-pay', false);
+          
+          // Open the New Activation OTP Card
+          const otpEmailEl = document.getElementById('act-otp-email-display');
+          if (otpEmailEl) {
+            otpEmailEl.textContent = data.email || (state.currentUser ? state.currentUser.email : 'your email');
+          }
+          toggleModal('modal-activation-otp', true);
+
+          // Clear any old error and focus first input
+          const errEl = document.getElementById('act-otp-error-msg');
+          if (errEl) errEl.style.display = 'none';
+          resetActivationOtpInputs();
+
+          // Start 60s countdown for resend
+          startActivationOtpCountdown(60);
+          showToast(data.message || 'Payment confirmed! An activation OTP has been sent to your email.');
+        } else {
+          showToast(data.message || 'Payment authorization failed.', 'error');
+        }
+      } catch (err) {
+        console.error('Payment request error:', err);
+        showToast('Connection error connecting to backend.', 'error');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = 'Authorize Payment &bull; ₦1,000';
+        }
+      }
+    });
+  }
+}
+
+function resetActivationOtpInputs() {
+  const inputs = document.querySelectorAll('.act-otp-digit');
+  inputs.forEach((inp, idx) => {
+    inp.value = '';
+    inp.classList.remove('filled');
+    if (idx === 0) inp.focus();
+  });
+}
+
+function startActivationOtpCountdown(seconds = 60) {
+  if (activationOtpCountdownTimer) clearInterval(activationOtpCountdownTimer);
+
+  const btnResend = document.getElementById('btn-resend-act-otp');
+  const timerSpan = document.getElementById('act-otp-timer');
+  let remaining = seconds;
+
+  if (btnResend) {
+    btnResend.disabled = true;
+    btnResend.style.opacity = '0.5';
+    btnResend.style.cursor = 'not-allowed';
+  }
+
+  const updateDisplay = () => {
+    const mins = Math.floor(remaining / 60);
+    const secs = remaining % 60;
+    if (timerSpan) {
+      timerSpan.textContent = `(${mins}:${secs < 10 ? '0' : ''}${secs})`;
+    }
+  };
+
+  updateDisplay();
+
+  activationOtpCountdownTimer = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(activationOtpCountdownTimer);
+      if (timerSpan) timerSpan.textContent = '';
+      if (btnResend) {
+        btnResend.disabled = false;
+        btnResend.style.opacity = '1';
+        btnResend.style.cursor = 'pointer';
+      }
+    } else {
+      updateDisplay();
+    }
+  }, 1000);
+}
+
+function setupActivationOtpCard() {
+  const btnClose = document.getElementById('btn-close-activation-otp');
+  if (btnClose) {
+    btnClose.addEventListener('click', () => toggleModal('modal-activation-otp', false));
+  }
+
+  // Segmented 6-digit inputs
+  const inputs = document.querySelectorAll('.act-otp-digit');
+  inputs.forEach((input, index) => {
+    input.addEventListener('input', (e) => {
+      const val = e.target.value.replace(/\D/g, '');
+      e.target.value = val ? val.slice(-1) : '';
+
+      if (e.target.value) {
+        e.target.classList.add('filled');
+        if (index < inputs.length - 1) {
+          inputs[index + 1].focus();
+        }
+      } else {
+        e.target.classList.remove('filled');
+      }
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !input.value && index > 0) {
+        inputs[index - 1].focus();
+        inputs[index - 1].value = '';
+        inputs[index - 1].classList.remove('filled');
+      }
+    });
+
+    input.addEventListener('paste', (e) => {
+      e.preventDefault();
+      const pasteData = (e.clipboardData || window.clipboardData).getData('text').trim();
+      const digits = pasteData.replace(/\D/g, '').slice(0, 6);
+      if (digits.length > 0) {
+        digits.split('').forEach((char, i) => {
+          if (inputs[i]) {
+            inputs[i].value = char;
+            inputs[i].classList.add('filled');
+          }
+        });
+        const nextFocus = Math.min(digits.length, inputs.length - 1);
+        inputs[nextFocus].focus();
+      }
+    });
+  });
+
+  // Resend code
+  const btnResend = document.getElementById('btn-resend-act-otp');
+  if (btnResend) {
+    btnResend.addEventListener('click', async () => {
+      const token = localStorage.getItem('lcu_findme_token');
+      if (!token) return;
+
+      try {
+        const res = await fetch(`${API_URL}/auth/resend-activation-otp`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          startActivationOtpCountdown(60);
+          showToast(data.message || 'A new 6-digit activation code has been sent to your email.');
+        } else {
+          showToast(data.message || 'Failed to resend code.', 'error');
+        }
+      } catch (err) {
+        showToast('Connection error resending activation code.', 'error');
+      }
+    });
+  }
+
+  // Submit OTP Verification Form
+  const formVerify = document.getElementById('form-verify-activation-otp');
+  const submitBtn = document.getElementById('btn-submit-activation-otp');
+  const errEl = document.getElementById('act-otp-error-msg');
+
+  if (formVerify) {
+    formVerify.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const token = localStorage.getItem('lcu_findme_token');
+      if (!token) {
+        showToast('Please log in to verify your activation code.', 'error');
+        return;
+      }
+
+      // Collect 6 digits
+      const digits = Array.from(inputs).map(inp => inp.value.trim()).join('');
+      if (digits.length !== 6) {
+        if (errEl) {
+          errEl.textContent = 'Please enter all 6 digits of the activation code.';
+          errEl.style.display = 'block';
+        }
+        return;
+      }
+
+      if (errEl) errEl.style.display = 'none';
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.6s linear infinite;margin-right:8px;vertical-align:middle;"></span> Verifying Code...';
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/auth/verify-activation-otp`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ otp: digits })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          toggleModal('modal-activation-otp', false);
+
+          // Update user state to activated!
+          if (state.currentUser) {
+            state.currentUser.isActivated = true;
+            state.currentUser.activationPaid = true;
+            localStorage.setItem('lcu_findme_user', JSON.stringify(state.currentUser));
+          }
+
+          // Live unlock of the dashboard!
+          updateActivationUI();
+
+          // Open Welcome Celebration Modal
+          toggleModal('modal-activation-welcome', true);
+
+          // Launch confetti celebration animation
+          launchConfettiAnimation();
+
+          showToast('🎉 Account Activated! Welcome to LCU FindMe!');
+        } else {
+          if (errEl) {
+            errEl.textContent = data.message || 'Invalid activation code.';
+            errEl.style.display = 'block';
+          }
+        }
+      } catch (err) {
+        if (errEl) {
+          errEl.textContent = 'Connection error. Please try again.';
+          errEl.style.display = 'block';
+        }
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = 'Verify Code &amp; Activate Dashboard';
+        }
+      }
+    });
+  }
+}
+
+function setupActivationWelcomeModal() {
+  const btnExplore = document.getElementById('btn-welcome-explore');
+  if (btnExplore) {
+    btnExplore.addEventListener('click', () => {
+      toggleModal('modal-activation-welcome', false);
+      showToast('Welcome to the official Lead City University Lost & Found platform! 🎓', 'success');
+      // Navigate to overview and focus smoothly
+      if (typeof switchView === 'function') switchView('home');
+    });
+  }
+}
+
+function launchConfettiAnimation() {
+  const canvas = document.getElementById('welcome-confetti-canvas');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+
+  canvas.width = (rect.width || 480) * dpr;
+  canvas.height = (rect.height || 520) * dpr;
+  ctx.scale(dpr, dpr);
+
+  const colors = ['#1a56db', '#d4af37', '#10b981', '#3b82f6', '#f59e0b', '#8b5cf6'];
+  const particles = [];
+  const particleCount = 80;
+
+  for (let i = 0; i < particleCount; i++) {
+    particles.push({
+      x: (rect.width || 480) / 2 + (Math.random() - 0.5) * 60,
+      y: 120 + (Math.random() - 0.5) * 40,
+      vx: (Math.random() - 0.5) * 8,
+      vy: (Math.random() - 0.5) * 8 - 4,
+      size: Math.random() * 8 + 4,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      rotation: Math.random() * 360,
+      vRot: (Math.random() - 0.5) * 12,
+      opacity: 1,
+      gravity: 0.18
+    });
+  }
+
+  let animationFrame;
+  let startTime = Date.now();
+
+  function render() {
+    const elapsed = Date.now() - startTime;
+    ctx.clearRect(0, 0, rect.width || 480, rect.height || 520);
+
+    let activeParticles = 0;
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += p.gravity;
+      p.rotation += p.vRot;
+      if (elapsed > 1800) {
+        p.opacity -= 0.02;
+      }
+
+      if (p.opacity > 0 && p.y < (rect.height || 520)) {
+        activeParticles++;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = Math.max(0, p.opacity);
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+        ctx.restore();
+      }
+    });
+
+    if (activeParticles > 0 && elapsed < 4000) {
+      animationFrame = requestAnimationFrame(render);
+    } else {
+      ctx.clearRect(0, 0, rect.width || 480, rect.height || 520);
+      cancelAnimationFrame(animationFrame);
+    }
+  }
+
+  render();
+}
+

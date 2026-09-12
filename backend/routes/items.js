@@ -137,6 +137,13 @@ router.get('/:id', async (req, res) => {
 // @access  Protected
 router.post('/', protect, async (req, res) => {
   try {
+    if (!req.user.isActivated && req.user.role !== 'admin') {
+      return res.status(403).json({
+        message: 'Account activation required. Please pay the one-time activation fee and verify your activation code to report items.',
+        requiresActivation: true
+      });
+    }
+
     const { title, type, category, location, date, description, reporterName, reporterContact, image, reporterEmail, reporterMatric } = req.body;
 
     const newItem = new Item({
@@ -197,6 +204,13 @@ router.post('/', protect, async (req, res) => {
 // @access  Protected
 router.post('/:id/claim', protect, async (req, res) => {
   try {
+    if (!req.user.isActivated && req.user.role !== 'admin') {
+      return res.status(403).json({
+        message: 'Account activation required. Please pay the one-time activation fee and verify your activation code to submit claims.',
+        requiresActivation: true
+      });
+    }
+
     const { claimantName, claimantMatric, claimDetails } = req.body;
     const item = await Item.findById(req.params.id);
 

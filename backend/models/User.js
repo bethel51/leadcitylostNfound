@@ -58,6 +58,30 @@ const UserSchema = new mongoose.Schema({
   resetPasswordOTPExpires: {
     type: Date
   },
+  isActivated: {
+    type: Boolean,
+    default: false
+  },
+  activationPaid: {
+    type: Boolean,
+    default: false
+  },
+  activationAmount: {
+    type: Number,
+    default: 1000
+  },
+  activationPaymentRef: {
+    type: String
+  },
+  activationOTP: {
+    type: String
+  },
+  activationOTPExpires: {
+    type: Date
+  },
+  activatedAt: {
+    type: Date
+  },
   createdAt: {
     type: Date,
     default: Date.now

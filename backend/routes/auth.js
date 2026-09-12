@@ -3,7 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { protect } = require('../middleware/auth');
-const { sendVerificationEmail, sendResetEmail, sendWelcomeEmail } = require('../config/email');
+const { sendVerificationEmail, sendResetEmail, sendWelcomeEmail, sendActivationEmail, sendOfficialWelcomeEmail } = require('../config/email');
 
 // Helper to generate Token
 const generateToken = (id) => {
@@ -184,7 +184,10 @@ router.post('/verify-otp', async (req, res) => {
         faculty: user.faculty,
         department: user.department,
         level: user.level,
-        role: user.role
+        role: user.role,
+        isVerified: user.isVerified,
+        isActivated: user.role === 'admin' ? true : (user.isActivated || false),
+        activationPaid: user.role === 'admin' ? true : (user.activationPaid || false)
       }
     });
   } catch (error) {
@@ -238,7 +241,10 @@ router.post('/login', async (req, res) => {
           faculty: user.faculty,
           department: user.department,
           level: user.level,
-          role: user.role
+          role: user.role,
+          isVerified: user.isVerified,
+          isActivated: user.role === 'admin' ? true : (user.isActivated || false),
+          activationPaid: user.role === 'admin' ? true : (user.activationPaid || false)
         }
       });
     } else {
@@ -357,11 +363,185 @@ router.put('/profile', protect, async (req, res) => {
       dept: updatedUser.department,
       level: updatedUser.level,
       role: updatedUser.role,
-      isVerified: updatedUser.isVerified
+      isVerified: updatedUser.isVerified,
+      isActivated: updatedUser.role === 'admin' ? true : (updatedUser.isActivated || false),
+      activationPaid: updatedUser.role === 'admin' ? true : (updatedUser.activationPaid || false)
     });
   } catch (error) {
     console.error('Update profile error:', error);
     res.status(500).json({ message: 'Failed to update profile', error: error.message });
+  }
+});
+
+// @route   POST api/auth/initiate-activation-payment
+// @desc    Process activation payment simulation and dispatch email OTP code
+// @access  Private (JWT protected)
+router.post('/initiate-activation-payment', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: 'User account not found' });
+    }
+
+    if (user.isActivated) {
+      return res.status(400).json({ message: 'Your account is already activated.' });
+    }
+
+    const { amount = 1000, paymentMethod = 'card' } = req.body;
+    const activationOTP = generateOTP();
+    const paymentRef = `LCU-ACT-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    user.activationPaid = true;
+    user.activationAmount = Number(amount) || 1000;
+    user.activationPaymentRef = paymentRef;
+    user.activationOTP = activationOTP;
+    user.activationOTPExpires = Date.now() + 15 * 60 * 1000; // 15 mins expiry
+    await user.save();
+
+    if (user.email) {
+      sendActivationEmail(user.email, activationOTP, user.name, paymentRef).catch(mailErr => {
+        console.error('Failed to send activation email:', mailErr);
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Activation key payment confirmed! A 6-digit OTP code has been dispatched to your email.',
+      paymentRef,
+      email: user.email,
+      amount: user.activationAmount
+    });
+  } catch (error) {
+    console.error('Activation payment error:', error);
+    res.status(500).json({ message: 'Server error processing activation payment', error: error.message });
+  }
+});
+
+// @route   POST api/auth/verify-activation-otp
+// @desc    Verify the activation OTP, permanently activate account, and dispatch welcome email
+// @access  Private (JWT protected)
+router.post('/verify-activation-otp', protect, async (req, res) => {
+  try {
+    const { otp } = req.body;
+    if (!otp || typeof otp !== 'string') {
+      return res.status(400).json({ message: 'Please enter the 6-digit activation code.' });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: 'User account not found' });
+    }
+
+    if (user.isActivated) {
+      return res.json({
+        success: true,
+        message: 'Account is already fully activated!',
+        isActivated: true,
+        user: {
+          id: user._id,
+          name: user.name,
+          matricNumber: user.matricNumber,
+          email: user.email,
+          phoneNumber: user.phoneNumber,
+          faculty: user.faculty,
+          department: user.department,
+          level: user.level,
+          role: user.role,
+          isVerified: user.isVerified,
+          isActivated: true,
+          activationPaid: true
+        }
+      });
+    }
+
+    if (!user.activationPaid) {
+      return res.status(400).json({ message: 'Activation fee payment must be completed before verifying code.' });
+    }
+
+    const cleanInputOTP = otp.trim();
+    if (!user.activationOTP || user.activationOTP !== cleanInputOTP) {
+      return res.status(400).json({ message: 'Invalid activation code. Please check your email and try again.' });
+    }
+
+    if (user.activationOTPExpires && user.activationOTPExpires < Date.now()) {
+      return res.status(400).json({ message: 'Activation code has expired. Please request a new code.' });
+    }
+
+    // Permanently mark account as activated
+    user.isActivated = true;
+    user.activatedAt = new Date();
+    user.activationOTP = undefined;
+    user.activationOTPExpires = undefined;
+    await user.save();
+
+    // Send official welcome email as requested
+    if (user.email) {
+      sendOfficialWelcomeEmail(user.email, user.name).catch(mailErr => {
+        console.error('Failed to send official welcome email:', mailErr);
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Welcome to the official lost and found platform widely for leadcity university students!',
+      user: {
+        id: user._id,
+        name: user.name,
+        matricNumber: user.matricNumber,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        faculty: user.faculty,
+        department: user.department,
+        level: user.level,
+        role: user.role,
+        isVerified: user.isVerified,
+        isActivated: true,
+        activationPaid: true,
+        activatedAt: user.activatedAt
+      }
+    });
+  } catch (error) {
+    console.error('Verify activation OTP error:', error);
+    res.status(500).json({ message: 'Server error verifying activation code', error: error.message });
+  }
+});
+
+// @route   POST api/auth/resend-activation-otp
+// @desc    Resend activation key OTP code to user email
+// @access  Private (JWT protected)
+router.post('/resend-activation-otp', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: 'User account not found' });
+    }
+
+    if (user.isActivated) {
+      return res.status(400).json({ message: 'Account is already activated.' });
+    }
+
+    if (!user.activationPaid) {
+      return res.status(400).json({ message: 'Please initiate activation payment first.' });
+    }
+
+    const newOTP = generateOTP();
+    user.activationOTP = newOTP;
+    user.activationOTPExpires = Date.now() + 15 * 60 * 1000;
+    await user.save();
+
+    if (user.email) {
+      sendActivationEmail(user.email, newOTP, user.name, user.activationPaymentRef).catch(mailErr => {
+        console.error('Resend activation OTP failed:', mailErr);
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'A new 6-digit activation code has been sent to your email.'
+    });
+  } catch (error) {
+    console.error('Resend activation OTP error:', error);
+    res.status(500).json({ message: 'Server error resending activation code', error: error.message });
   }
 });
 

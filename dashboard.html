@@ -42,6 +42,7 @@
       <div class="db-sidebar-user-info">
         <div class="db-sidebar-username" id="sidebar-username">Loading...</div>
         <div class="db-sidebar-role" id="sidebar-role">Student</div>
+        <div class="db-status-pill status-inactive" id="sidebar-status-pill">🔒 Activation Req</div>
       </div>
     </div>
 
@@ -126,6 +127,7 @@
             <div style="display:flex; flex-direction:column; min-width:0;">
               <span class="db-dropdown-name" id="dropdown-username">Loading...</span>
               <span class="db-dropdown-role" id="dropdown-role">Student</span>
+              <span class="db-status-pill status-inactive" id="dropdown-status-pill" style="margin-top:4px;">🔒 Activation Req</span>
             </div>
           </div>
           <div class="db-dropdown-divider"></div>
@@ -182,7 +184,42 @@
         <button class="btn db-report-cta" id="btn-report-cta">
           <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
           Report an Item
+          <span class="btn-locked-tag" id="btn-report-lock-tag" style="display:none;">🔒 Inactive</span>
         </button>
+      </div>
+
+      <!-- Account Activation Hero Banner / Card (Dynamic) -->
+      <div class="db-activation-banner" id="db-activation-banner" style="display: none;">
+        <div class="db-activation-top">
+          <div class="db-activation-info">
+            <div class="db-activation-badge-row">
+              <span class="db-activation-badge">🔒 Activation Required</span>
+              <span class="db-activation-fee-pill">One-Time Fee: ₦1,000</span>
+            </div>
+            <h2 class="db-activation-title">One-Time Account Activation Key Required</h2>
+            <p class="db-activation-desc">
+              Welcome to the official Lead City University Lost &amp; Found Portal! To safeguard student identities and enable full security clearance, please pay for your account activation key to unlock item reporting, claims verification, and official passes.
+            </p>
+          </div>
+          <button class="db-activation-action-btn" id="btn-banner-activate">
+            <span>✨ Pay &amp; Activate Now</span>
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </button>
+        </div>
+        <div class="db-activation-steps">
+          <div class="db-activation-step">
+            <div class="db-step-number">1</div>
+            <div class="db-step-text">Pay ₦1,000 one-time security activation fee</div>
+          </div>
+          <div class="db-activation-step">
+            <div class="db-step-number">2</div>
+            <div class="db-step-text">Receive instant 6-digit OTP in student email</div>
+          </div>
+          <div class="db-activation-step">
+            <div class="db-step-number">3</div>
+            <div class="db-step-text">Verify code &amp; unlock all dashboard activities</div>
+          </div>
+        </div>
       </div>
 
       <!-- Personal Stats -->
@@ -776,6 +813,199 @@
   </div>
 
 
+
+  <!-- MODAL: Activation Key Payment Checkout -->
+  <div class="modal-backdrop" id="modal-activation-pay">
+    <div class="modal-container" style="max-width: 460px; border-radius: 18px; overflow: hidden; box-shadow: var(--shadow-premium); border: 1.5px solid rgba(212, 175, 55, 0.4); background: var(--bg-primary);">
+      <div class="modal-header" style="background: linear-gradient(135deg, #0a192f 0%, #0f2b5c 100%); padding: 1.25rem 1.5rem; color: #ffffff; border-bottom: none;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(212,175,55,0.5); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+            🏛️
+          </div>
+          <div>
+            <h3 class="modal-title" style="font-size: 1.15rem; font-family: 'Outfit', sans-serif; color: #ffffff; margin: 0;">Portal Activation Checkout</h3>
+            <p style="font-size: 0.75rem; color: #d4af37; margin: 2px 0 0 0; text-transform: uppercase; letter-spacing: 0.8px;">Lead City University Security Directorate</p>
+          </div>
+        </div>
+        <button class="modal-close" id="btn-close-activation-pay" style="color: #ffffff; opacity: 0.8;">&times;</button>
+      </div>
+
+      <div class="modal-body" style="padding: 1.5rem;">
+        <!-- Fee Summary Card -->
+        <div class="checkout-amount-badge">
+          <div style="font-size: 0.75rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">One-Time Student Account Activation Key</div>
+          <div class="checkout-amount-val">₦1,000<span style="font-size: 1rem; font-weight: 500; color: var(--text-muted);">.00</span></div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Includes Campus Verification Token &amp; Permanent Access</div>
+        </div>
+
+        <!-- Student Account Details -->
+        <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 1.25rem; font-size: 0.84rem;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
+            <span style="color: var(--text-muted);">Student Name:</span>
+            <strong id="checkout-student-name" style="color: var(--text-dark);">Student</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
+            <span style="color: var(--text-muted);">Matric / ID:</span>
+            <strong id="checkout-student-matric" style="font-family: monospace; color: var(--text-dark);">—</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">Delivery Email:</span>
+            <strong id="checkout-student-email" style="color: var(--primary);">—</strong>
+          </div>
+        </div>
+
+        <!-- Payment Method Tabs -->
+        <div class="checkout-tab-group">
+          <button type="button" class="checkout-tab active" id="tab-pay-card">
+            💳 Debit Card
+          </button>
+          <button type="button" class="checkout-tab" id="tab-pay-transfer">
+            🏛️ Campus Transfer
+          </button>
+          <button type="button" class="checkout-tab" id="tab-pay-instant">
+            ⚡ Quick Pay
+          </button>
+        </div>
+
+        <!-- Card Form View -->
+        <form id="form-activation-payment">
+          <div id="checkout-view-card">
+            <div class="form-group" style="margin-bottom: 0.85rem;">
+              <label class="form-label" style="font-size: 0.82rem;">Card Number</label>
+              <input type="text" class="form-control" id="pay-card-number" placeholder="5399 •••• •••• 1234" value="5399 4500 8921 7844" maxlength="19" required>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+              <div class="form-group" style="margin: 0;">
+                <label class="form-label" style="font-size: 0.82rem;">Expiry Date</label>
+                <input type="text" class="form-control" id="pay-card-expiry" placeholder="MM/YY" value="08/28" maxlength="5" required>
+              </div>
+              <div class="form-group" style="margin: 0;">
+                <label class="form-label" style="font-size: 0.82rem;">CVV</label>
+                <input type="password" class="form-control" id="pay-card-cvv" placeholder="•••" value="482" maxlength="4" required>
+              </div>
+            </div>
+          </div>
+
+          <!-- Transfer View (Hidden by default) -->
+          <div id="checkout-view-transfer" style="display: none; background: var(--bg-tertiary); padding: 1rem; border-radius: 8px; border: 1px dashed var(--border-color); margin-bottom: 1rem; font-size: 0.82rem; line-height: 1.5;">
+            <div style="font-weight: 700; color: var(--secondary); margin-bottom: 0.35rem;">Lead City University Bursary Account</div>
+            <div>Bank: <strong>Wema Bank / LCU Microfinance</strong></div>
+            <div>Account: <strong style="font-family: monospace; color: var(--primary);">0120938491</strong></div>
+            <div style="color: var(--text-muted); margin-top: 0.35rem;">Simulated payment: Clicking Authorize will instantly credit activation.</div>
+          </div>
+
+          <!-- Instant View (Hidden by default) -->
+          <div id="checkout-view-instant" style="display: none; background: rgba(16, 185, 129, 0.08); padding: 1rem; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.2); margin-bottom: 1rem; font-size: 0.82rem; color: #065f46;">
+            ✨ <strong>Instant Authorization Mode:</strong> Click authorize below to complete simulation and dispatch the activation OTP code to your inbox right away.
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="btn-submit-activation-payment" style="width: 100%; justify-content: center; padding: 0.85rem; font-size: 0.95rem; font-weight: 700; background: linear-gradient(135deg, #0f2b5c, #1a56db); box-shadow: 0 4px 15px rgba(26, 86, 219, 0.3);">
+            Authorize Payment &bull; ₦1,000
+          </button>
+
+          <div class="checkout-trust-badge">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            <span>256-Bit SSL Encrypted &bull; Lead City University Verified</span>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Dedicated Account Activation OTP Card -->
+  <div class="modal-backdrop" id="modal-activation-otp">
+    <div class="modal-container" style="max-width: 440px; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-premium); border: 1.5px solid rgba(26, 86, 219, 0.3); background: var(--bg-primary);">
+      <div class="modal-header" style="background: linear-gradient(135deg, rgba(26, 86, 219, 0.08), transparent); padding: 1.25rem 1.5rem 0.5rem; border-bottom: none; display: flex; justify-content: space-between;">
+        <span style="font-size: 0.75rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 1px;">Security Key Verification</span>
+        <button class="modal-close" id="btn-close-activation-otp">&times;</button>
+      </div>
+
+      <div class="modal-body" style="padding: 1rem 1.75rem 1.75rem;">
+        <div class="activation-otp-card">
+          <div class="otp-shield-badge">
+            🔐
+          </div>
+          <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.35rem; font-weight: 800; color: var(--secondary); margin: 0 0 0.35rem 0;">
+            Enter Activation OTP Code
+          </h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0 0 1.25rem 0;">
+            A 6-digit activation key code has been sent to your student email:
+            <br><strong id="act-otp-email-display" style="color: var(--primary); font-size: 0.9rem;">your-email@leadcity.edu.ng</strong>
+          </p>
+
+          <div id="act-otp-error-msg" style="display: none; background: var(--danger-bg); color: var(--danger); font-size: 0.82rem; padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2); margin-bottom: 1rem; font-weight: 600;"></div>
+
+          <form id="form-verify-activation-otp">
+            <!-- 6-digit segmented input cards -->
+            <div class="act-otp-inputs" id="act-otp-inputs-row">
+              <input type="text" class="act-otp-digit" maxlength="1" pattern="\d" inputmode="numeric" data-idx="0" autofocus required autocomplete="off">
+              <input type="text" class="act-otp-digit" maxlength="1" pattern="\d" inputmode="numeric" data-idx="1" required autocomplete="off">
+              <input type="text" class="act-otp-digit" maxlength="1" pattern="\d" inputmode="numeric" data-idx="2" required autocomplete="off">
+              <input type="text" class="act-otp-digit" maxlength="1" pattern="\d" inputmode="numeric" data-idx="3" required autocomplete="off">
+              <input type="text" class="act-otp-digit" maxlength="1" pattern="\d" inputmode="numeric" data-idx="4" required autocomplete="off">
+              <input type="text" class="act-otp-digit" maxlength="1" pattern="\d" inputmode="numeric" data-idx="5" required autocomplete="off">
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="btn-submit-activation-otp" style="width: 100%; justify-content: center; padding: 0.85rem; font-weight: 700; font-size: 0.95rem; background: linear-gradient(135deg, #10b981, #059669); border: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
+              Verify Code &amp; Activate Dashboard
+            </button>
+          </form>
+
+          <div style="margin-top: 1.25rem; font-size: 0.84rem; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+            <span>Didn't receive the code?</span>
+            <button type="button" id="btn-resend-act-otp" style="background: none; border: none; color: var(--primary); font-weight: 700; cursor: pointer; padding: 0; text-decoration: underline;">
+              Resend Code
+            </button>
+            <span id="act-otp-timer" style="color: var(--text-light); font-size: 0.78rem;"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Official Welcome Celebration Modal -->
+  <div class="modal-backdrop" id="modal-activation-welcome">
+    <div class="modal-container" style="max-width: 480px; border-radius: 24px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 2px solid rgba(16, 185, 129, 0.4); background: var(--bg-primary); position: relative;">
+      <canvas id="welcome-confetti-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;"></canvas>
+      
+      <div class="modal-body" style="padding: 2.25rem 2rem 2rem; text-align: center; position: relative; z-index: 2;">
+        <div class="celebration-badge-wrap">
+          <div class="celebration-icon">🎓</div>
+        </div>
+
+        <h2 class="celebration-title">
+          Welcome to the official lost and found platform widely for leadcity university students!
+        </h2>
+        
+        <p style="font-size: 0.92rem; color: var(--text-muted); line-height: 1.6; margin: 0 auto 1.25rem; max-width: 380px;">
+          Your student account has been successfully verified and granted full campus security clearance.
+        </p>
+
+        <div class="celebration-feature-list">
+          <div class="celebration-feature-item">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            <span><strong>Full Report Privileges:</strong> Log lost or found items campus-wide</span>
+          </div>
+          <div class="celebration-feature-item">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            <span><strong>Ambassador Claim Processing:</strong> Instant verified passes</span>
+          </div>
+          <div class="celebration-feature-item">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            <span><strong>Automated Alerts:</strong> Real-time match notifications to email</span>
+          </div>
+          <div class="celebration-feature-item">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            <span><strong>Security Bin Tagging:</strong> Generate verified QR receipts</span>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="btn-welcome-explore" style="width: 100%; justify-content: center; padding: 0.95rem; font-size: 1rem; font-weight: 800; background: linear-gradient(135deg, #0f2b5c 0%, #1a56db 100%); border-radius: 12px; box-shadow: 0 8px 25px rgba(26, 86, 219, 0.35);">
+          🚀 Explore My Dashboard
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- MODAL: OTP -->
   <div class="modal-backdrop" id="modal-otp">
