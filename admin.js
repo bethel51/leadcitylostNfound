@@ -761,25 +761,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (res.ok) {
         showToast(`Claim successfully ${action}ed!`, 'success');
-        const targetItem = adminItems.find(i => (i._id || i.id) === itemId);
-        const targetClaim = (targetItem?.verificationClaims || []).find(c => (c._id || c.id) === claimId);
+        const targetItem = adminItems.find(i => String(i._id || i.id) === String(itemId));
+        const targetClaim = (targetItem?.verificationClaims || []).find(c => String(c._id || c.id) === String(claimId));
+        const claimFromInbox = adminClaims.find(c => String(c.claimId || c._id) === String(claimId));
 
         if (action === 'accept') {
-          // Record permanent chain of custody
+          const finalTitle = targetItem ? targetItem.title : (claimFromInbox ? claimFromInbox.itemTitle : 'Campus Property');
+          const finalName = targetClaim ? targetClaim.claimantName : (claimFromInbox ? claimFromInbox.claimantName : 'Verified Student');
+          const finalMatric = targetClaim ? targetClaim.claimantMatric : (claimFromInbox ? claimFromInbox.claimantMatric : 'N/A');
+          const finalEmail = targetClaim ? targetClaim.claimantEmail : (claimFromInbox ? claimFromInbox.claimantEmail : '');
+          const finalPhone = targetClaim ? targetClaim.claimantPhone : (claimFromInbox ? claimFromInbox.claimantPhone : '');
+          const finalDetails = targetClaim ? targetClaim.claimDetails : (claimFromInbox ? claimFromInbox.claimDetails : 'Verified in person');
+
+          // Record permanent chain of custody in ledger
           await recordVerificationLogEntry({
             itemId,
-            itemTitle: targetItem ? targetItem.title : 'Campus Property',
-            claimantName: targetClaim ? targetClaim.claimantName : 'Verified Student',
-            claimantId: targetClaim ? targetClaim.claimantMatric : 'N/A',
-            claimantEmail: targetClaim ? targetClaim.claimantEmail : '',
-            claimantPhone: targetClaim ? targetClaim.claimantPhone : '',
+            itemTitle: finalTitle,
+            claimantName: finalName,
+            claimantId: finalMatric,
+            claimantEmail: finalEmail,
+            claimantPhone: finalPhone,
             officerName: adminName,
             station: adminOffice,
-            notes: `Claim accepted & custody transferred at ${adminOffice}. Proof: ${targetClaim?.claimDetails || 'Verified in person'}.`
+            notes: `Claim accepted & custody transferred at ${adminOffice}. Proof: ${finalDetails}.`
           });
 
           // Open Handover Slip for immediate printing
-          openHandoverSlipForItem(itemId, targetClaim);
+          openHandoverSlipForItem(itemId, targetClaim || claimFromInbox);
         }
 
         await loadAllData();
@@ -1285,10 +1293,25 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function openHandoverSlipForItem(itemId, explicitClaim = null) {
-    const item = adminItems.find(i => (i._id || i.id) === itemId);
+    let item = adminItems.find(i => String(i._id || i.id) === String(itemId));
+    const claimFromInbox = adminClaims.find(c => String(c.itemId) === String(itemId));
+
+    if (!item && claimFromInbox) {
+      item = {
+        _id: itemId,
+        title: claimFromInbox.itemTitle || 'Recovered Item',
+        type: claimFromInbox.itemType || 'found',
+        description: claimFromInbox.claimDetails || 'Institutional Custody Transfer',
+        reporterName: 'Campus Security',
+        reporterMatric: 'STAFF-SECURITY',
+        reporterContact: 'Campus Security Desk Gate A',
+        verificationClaims: [claimFromInbox]
+      };
+    }
+
     if (!item) { showToast('Item details not found.', 'error'); return; }
 
-    const claim = explicitClaim || (item.verificationClaims || []).find(c => c.status === 'accepted') || (item.verificationClaims || [])[0];
+    const claim = explicitClaim || (item.verificationClaims || []).find(c => c.status === 'accepted') || claimFromInbox || (item.verificationClaims || [])[0];
 
     const ref = `LCU-SEC-${String(itemId).substring(0, 6).toUpperCase()}-${Date.now().toString().slice(-4)}`;
     const dateStr = formatDateTime(new Date());
@@ -1638,11 +1661,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!inputId) return;
 
       stopScanner();
-      const exists = adminItems.find(i =>
-        (i._id || i.id) === inputId ||
-        (i._id || i.id).endsWith(inputId) ||
-        (i._id || i.id).replace('item-', '') === inputId
-      );
+      const exists = adminItems.find(i => {
+        const strId = String(i._id || i.id || '');
+        return strId === inputId || strId.toLowerCase().endsWith(inputId.toLowerCase()) || strId.replace('item-', '') === inputId;
+      });
 
       if (exists) {
         toggleModal('modal-scanner', false);

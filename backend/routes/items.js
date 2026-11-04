@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Item = require('../models/Item');
+const VerificationLog = require('../models/VerificationLog');
 const { protect, adminOnly } = require('../middleware/auth');
 
 // @route   GET api/items
@@ -91,8 +92,8 @@ router.get('/notifications', protect, async (req, res) => {
       });
 
       myClaimedItems.forEach(item => {
-        item.verificationClaims.forEach(claim => {
-          if (claim.claimantMatric.toLowerCase() === req.user.matricNumber.toLowerCase()) {
+        (item.verificationClaims || []).forEach(claim => {
+          if (claim.claimantMatric && claim.claimantMatric.toLowerCase() === req.user.matricNumber.toLowerCase()) {
             if (claim.status === 'accepted') {
               notifications.push({
                 message: `👮 Security has accepted your user verification claim request for "${item.title}".`,
@@ -212,6 +213,10 @@ router.post('/:id/claim', protect, async (req, res) => {
     }
 
     const { claimantName, claimantMatric, claimDetails } = req.body;
+    if (!claimDetails || !claimDetails.trim()) {
+      return res.status(400).json({ message: 'Please provide proof or details of ownership for this item.' });
+    }
+
     const item = await Item.findById(req.params.id);
 
     if (!item) {
@@ -222,11 +227,37 @@ router.post('/:id/claim', protect, async (req, res) => {
       return res.status(400).json({ message: 'Only found items can be claimed' });
     }
 
+    if (item.status === 'returned') {
+      return res.status(400).json({ message: 'This item has already been claimed and returned to its owner.' });
+    }
+
+    // Verify user is not claiming their own reported item
+    const userMatric = (req.user && req.user.matricNumber) ? req.user.matricNumber.trim().toLowerCase() : (claimantMatric || '').trim().toLowerCase();
+    const userEmail = (req.user && req.user.email) ? req.user.email.trim().toLowerCase() : '';
+    const reporterMatric = (item.reporterMatric || '').trim().toLowerCase();
+    const reporterEmail = (item.reporterEmail || '').trim().toLowerCase();
+
+    if ((userMatric && reporterMatric && userMatric === reporterMatric) || (userEmail && reporterEmail && userEmail === reporterEmail)) {
+      return res.status(400).json({ message: 'You submitted the initial report for this item and cannot claim ownership of your own report.' });
+    }
+
+    // Check for existing pending claim by this student on this item
+    const alreadyPending = (item.verificationClaims || []).some(c =>
+      c.status === 'pending' && c.claimantMatric && c.claimantMatric.trim().toLowerCase() === userMatric
+    );
+    if (alreadyPending) {
+      return res.status(400).json({ message: 'You already have an active verification claim pending review for this item.' });
+    }
+
+    // Enforce verified identity from authenticated user
+    const finalClaimantName = (req.user && req.user.name) ? req.user.name : (claimantName ? claimantName.trim() : 'Student');
+    const finalClaimantMatric = (req.user && req.user.matricNumber) ? req.user.matricNumber : (claimantMatric ? claimantMatric.trim() : 'N/A');
+
     // Append claim request details
     item.verificationClaims.push({
-      claimantName,
-      claimantMatric,
-      claimDetails,
+      claimantName: finalClaimantName,
+      claimantMatric: finalClaimantMatric,
+      claimDetails: claimDetails.trim(),
       claimantEmail: req.user.email || '',
       claimantPhone: req.user.phoneNumber || '',
       claimantFaculty: req.user.faculty || '',
@@ -254,11 +285,21 @@ router.put('/:id/resolve', protect, adminOnly, async (req, res) => {
 
     item.status = 'returned';
     
-    // Resolve all claims if any
-    item.verificationClaims.forEach(claim => {
-      claim.resolved = true;
-      claim.status = 'accepted';
-    });
+    // Resolve claims appropriately without blanket-accepting rival claims
+    const acceptedClaim = (item.verificationClaims || []).find(c => c.status === 'accepted');
+    if (!acceptedClaim && item.verificationClaims && item.verificationClaims.length === 1) {
+      // Single pending claim: accept it
+      item.verificationClaims[0].status = 'accepted';
+      item.verificationClaims[0].resolved = true;
+    } else {
+      // Mark all claims resolved; preserve existing individual status (accepted vs declined)
+      (item.verificationClaims || []).forEach(claim => {
+        claim.resolved = true;
+        if (claim.status !== 'accepted') {
+          claim.status = 'declined';
+        }
+      });
+    }
 
     await item.save();
     res.json({ message: 'Item marked as successfully resolved/returned', item });
@@ -292,13 +333,31 @@ router.put('/:id/claims/:claimId/respond', protect, adminOnly, async (req, res) 
       claim.resolved = true;
       item.status = 'returned';
       
-      // Mark other claims on this item as resolved & declined
+      // Mark other rival claims on this item as resolved & declined
       item.verificationClaims.forEach(c => {
         if (c._id.toString() !== claim._id.toString()) {
           c.status = 'declined';
           c.resolved = true;
         }
       });
+
+      // Automatically guarantee permanent chain-of-custody ledger record
+      try {
+        await VerificationLog.create({
+          itemId: item._id,
+          itemTitle: item.title,
+          claimantName: claim.claimantName || 'Verified Student',
+          claimantId: claim.claimantMatric || 'N/A',
+          claimantEmail: claim.claimantEmail || '',
+          claimantPhone: claim.claimantPhone || '',
+          officerName: req.user ? (req.user.name || 'CSO Duty Officer') : 'Security Command',
+          station: 'Security Post A',
+          notes: `Institutional handover completed. Claim verified & accepted. Proof: ${claim.claimDetails || 'In-person verification.'}`,
+          timestamp: new Date()
+        });
+      } catch (logErr) {
+        console.error('Auto-ledger creation note:', logErr.message);
+      }
     } else {
       claim.status = 'declined';
       claim.resolved = true;
