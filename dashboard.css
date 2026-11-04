@@ -915,6 +915,32 @@
   overflow: hidden;
 }
 
+/* "View All ›" hint — floats to the bottom-right, visible only on hover */
+.db-stat-nav-hint {
+  position: absolute;
+  bottom: 10px;
+  right: 14px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  opacity: 0;
+  transform: translateX(6px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+}
+.db-stat-clickable:hover .db-stat-nav-hint {
+  opacity: 1;
+  transform: translateX(0);
+}
+.db-stat-blue:hover   .db-stat-nav-hint { color: var(--accent); }
+.db-stat-orange:hover .db-stat-nav-hint { color: var(--warning); }
+.db-stat-green:hover  .db-stat-nav-hint { color: var(--success); }
+.db-stat-purple:hover .db-stat-nav-hint { color: var(--primary); }
+
 .db-stat-card::after {
   content: '';
   position: absolute;
@@ -941,6 +967,21 @@
 .db-stat-orange:hover { border-color: var(--warning); }
 .db-stat-green:hover  { border-color: var(--success); }
 .db-stat-purple:hover { border-color: var(--primary); }
+
+/* Clickable stat cards */
+.db-stat-clickable {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+.db-stat-clickable:active {
+  transform: translateY(-2px) scale(0.985);
+  transition: transform 0.08s ease;
+}
+.db-stat-clickable:focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 3px;
+}
 
 .db-stat-icon {
   width: 48px;

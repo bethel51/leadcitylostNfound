@@ -666,6 +666,35 @@ function setupNavigation() {
   const actionMyReports = document.getElementById('btn-action-myreports');
   if (actionMyReports) actionMyReports.addEventListener('click', () => switchView('my-reports'));
 
+  // ── Stat card navigation ────────────────────────────────────────────────
+  // Each clickable stat card carries data-stat-nav (the target view) and
+  // an optional data-stat-filter to pre-select a tab/filter on arrival.
+  document.querySelectorAll('.db-stat-clickable[data-stat-nav]').forEach(card => {
+    card.addEventListener('click', () => {
+      const targetView = card.dataset.statNav;
+      const filter     = card.dataset.statFilter || null;
+      switchView(targetView);
+      // If a filter was specified, apply it after the view renders
+      if (filter && targetView === 'my-reports') {
+        setTimeout(() => {
+          // Try to click the matching filter pill/tab if it exists
+          const filterBtn = document.querySelector(
+            `[data-reports-filter="${filter}"], [data-filter="${filter}"], #filter-${filter}`
+          );
+          if (filterBtn) filterBtn.click();
+        }, 120);
+      }
+    });
+    // Keyboard accessibility: Enter / Space also triggers navigation
+    card.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        card.click();
+      }
+    });
+  });
+  // ────────────────────────────────────────────────────────────────────────
+
   // Overview: "View All" my reports link
   const linkViewAll = document.getElementById('link-view-all-reports');
   if (linkViewAll) {

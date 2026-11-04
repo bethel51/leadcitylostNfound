@@ -238,7 +238,7 @@
 
       <!-- Personal Stats -->
       <div class="db-stats-grid">
-        <div class="db-stat-card db-stat-blue">
+        <div class="db-stat-card db-stat-blue db-stat-clickable" data-stat-nav="my-reports" role="button" tabindex="0" aria-label="Go to My Reports">
           <div class="db-stat-icon">
             <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
           </div>
@@ -246,8 +246,9 @@
             <div class="db-stat-value" id="my-stat-total"><span class="db-skeleton-pill"></span></div>
             <div class="db-stat-label">My Total Reports</div>
           </div>
+          <div class="db-stat-nav-hint">View All &#8250;</div>
         </div>
-        <div class="db-stat-card db-stat-orange">
+        <div class="db-stat-card db-stat-orange db-stat-clickable" data-stat-nav="my-reports" data-stat-filter="lost" role="button" tabindex="0" aria-label="Go to Active Lost Reports">
           <div class="db-stat-icon">
             <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
           </div>
@@ -255,8 +256,9 @@
             <div class="db-stat-value" id="my-stat-lost"><span class="db-skeleton-pill"></span></div>
             <div class="db-stat-label">Active Lost Reports</div>
           </div>
+          <div class="db-stat-nav-hint">View All &#8250;</div>
         </div>
-        <div class="db-stat-card db-stat-green">
+        <div class="db-stat-card db-stat-green db-stat-clickable" data-stat-nav="my-reports" data-stat-filter="returned" role="button" tabindex="0" aria-label="Go to Items Returned">
           <div class="db-stat-icon">
             <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           </div>
@@ -264,8 +266,9 @@
             <div class="db-stat-value" id="my-stat-returned"><span class="db-skeleton-pill"></span></div>
             <div class="db-stat-label">Items Returned</div>
           </div>
+          <div class="db-stat-nav-hint">View All &#8250;</div>
         </div>
-        <div class="db-stat-card db-stat-purple">
+        <div class="db-stat-card db-stat-purple db-stat-clickable" data-stat-nav="browse" role="button" tabindex="0" aria-label="Browse Campus Listings">
           <div class="db-stat-icon">
             <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
           </div>
@@ -273,6 +276,7 @@
             <div class="db-stat-value" id="my-stat-campus"><span class="db-skeleton-pill"></span></div>
             <div class="db-stat-label">Campus Listings</div>
           </div>
+          <div class="db-stat-nav-hint">Browse All &#8250;</div>
         </div>
       </div>
 
