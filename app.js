@@ -193,18 +193,43 @@ function showToast(message, type = 'success') {
   }, 4000);
 }
 
+// Helper to dismiss split intro overlay smoothly
+function dismissIntroOverlay(instant = false) {
+  const splitOverlay = document.getElementById('intro-split-overlay');
+  if (!splitOverlay) return;
+  sessionStorage.setItem('lcu_findme_intro_dismissed', 'true');
+  if (instant) {
+    splitOverlay.classList.add('split-open', 'hidden');
+  } else {
+    splitOverlay.classList.add('split-open');
+    setTimeout(() => {
+      splitOverlay.classList.add('hidden');
+    }, 1150);
+  }
+}
+
 // Event Listeners Binding
 function setupEventListeners() {
   // Horizontal Split Intro Overlay Click Handler
   const splitOverlay = document.getElementById('intro-split-overlay');
   const splitLogoTrigger = document.getElementById('split-logo-trigger');
   
+  if (sessionStorage.getItem('lcu_findme_intro_dismissed') === 'true' && splitOverlay) {
+    splitOverlay.classList.add('split-open', 'hidden');
+  }
+
   if (splitLogoTrigger && splitOverlay) {
     splitLogoTrigger.addEventListener('click', () => {
-      splitOverlay.classList.add('split-open');
-      setTimeout(() => {
-        splitOverlay.classList.add('hidden');
-      }, 1150);
+      dismissIntroOverlay(false);
+    });
+  }
+
+  // Nav Home click smooth scroll
+  const navHome = document.getElementById('nav-home');
+  if (navHome) {
+    navHome.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
 
@@ -230,7 +255,7 @@ function setupEventListeners() {
     });
 
     // Close nav when a link inside it is clicked
-    mainNav.querySelectorAll('a').forEach(link => {
+    mainNav.querySelectorAll('a, button').forEach(link => {
       link.addEventListener('click', () => {
         mainNav.classList.remove('mobile-open');
         hamburgerBtn.classList.remove('open');
@@ -287,6 +312,7 @@ function setupEventListeners() {
   const btnWelcomeLogin = document.getElementById('btn-welcome-login');
 
   const openAuthModal = (view) => {
+    dismissIntroOverlay(true);
     if (formLogin) formLogin.reset();
     if (formSignup) formSignup.reset();
     
@@ -618,6 +644,8 @@ function setupEventListeners() {
   if (linkForgot) {
     linkForgot.addEventListener('click', (e) => {
       e.preventDefault();
+      const err1 = document.getElementById('forgot-error-msg');
+      if (err1) err1.style.display = 'none';
       toggleModal('modal-auth', false);
       toggleModal('modal-forgot-password', true);
     });
@@ -647,6 +675,8 @@ function setupEventListeners() {
         if (res.ok) {
           toggleModal('modal-forgot-password', false);
           document.getElementById('reset-email-hidden').value = email;
+          const resetErr = document.getElementById('reset-error-msg');
+          if (resetErr) resetErr.style.display = 'none';
           toggleModal('modal-reset-password', true);
           showToast('Reset code sent to your email!');
         } else {
@@ -695,19 +725,10 @@ function setupEventListeners() {
   }
 }
 
-// Close dropdown on outside click
-document.addEventListener('click', (e) => {
-  const mainNav = document.getElementById('main-nav');
-  const hamburgerBtn = document.getElementById('hamburger-btn');
-  if (mainNav && mainNav.classList.contains('open') && !mainNav.contains(e.target) && e.target !== hamburgerBtn) {
-    mainNav.classList.remove('open');
-    hamburgerBtn.classList.remove('open');
-  }
-});
-
 async function checkUrlParams() {
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('login') === 'required') {
+    dismissIntroOverlay(true);
     showToast('Please log in to access your dashboard.', 'warning');
     openAuthModal('login');
   }

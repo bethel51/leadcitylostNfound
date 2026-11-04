@@ -8,6 +8,74 @@
 }
 
 /* =====================================================
+   TOP PROGRESS LOADING BAR & SKELETON LOADERS
+   ===================================================== */
+.db-top-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3.5px;
+  width: 0%;
+  background: linear-gradient(90deg, #1a56db, #38bdf8, #10b981);
+  z-index: 99999;
+  opacity: 0;
+  pointer-events: none;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.8);
+}
+.db-top-loader.active {
+  opacity: 1;
+}
+
+.db-skeleton-pill {
+  display: inline-block;
+  width: 48px;
+  height: 28px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, rgba(226, 232, 240, 0.5) 25%, rgba(203, 213, 225, 0.85) 50%, rgba(226, 232, 240, 0.5) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  vertical-align: middle;
+}
+.dark-theme .db-skeleton-pill {
+  background: linear-gradient(90deg, rgba(30, 41, 59, 0.6) 25%, rgba(51, 65, 85, 0.9) 50%, rgba(30, 41, 59, 0.6) 75%);
+  background-size: 200% 100%;
+}
+.db-skeleton-pill.mini {
+  width: 28px;
+  height: 16px;
+}
+.db-skeleton-pill.name {
+  width: 120px;
+  height: 32px;
+  border-radius: 8px;
+}
+
+/* Profile Inline Edit Form */
+.profile-inline-form {
+  padding: 1.5rem;
+}
+.form-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.form-row-3col {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.profile-edit-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border-color);
+}
+
+/* =====================================================
    SIDEBAR LAYOUT & NAVIGATION
    ===================================================== */
 .db-sidebar {
@@ -1974,25 +2042,47 @@
 }
 
 /* =====================================================
-   PAYMENT CHECKOUT MODAL
+   PAYMENT CHECKOUT MODAL & ACTIVATION OTP
    ===================================================== */
-#modal-activation-pay .modal-container {
+.checkout-modal-container {
+  max-width: 480px;
+  border-radius: 20px;
+  box-shadow: var(--shadow-premium);
   border: 1.5px solid rgba(212, 175, 55, 0.4);
-  box-shadow: var(--shadow-premium);
+  background: var(--bg-primary);
+  overflow-y: auto;
 }
 
-#modal-activation-otp .modal-container {
-  border: 1.5px solid rgba(26, 86, 219, 0.3);
-  box-shadow: var(--shadow-premium);
+.checkout-modal-header {
+  background: linear-gradient(135deg, #0a192f 0%, #0f2b5c 100%);
+  padding: 1.25rem 1.5rem;
+  color: #ffffff;
+  border-bottom: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-#modal-activation-welcome .modal-container {
-  border: 2px solid rgba(16, 185, 129, 0.4);
+.checkout-header-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.checkout-modal-body {
+  padding: 1.5rem;
 }
 
 .checkout-amount-badge {
   text-align: center;
-  padding: 1.25rem;
+  padding: 1.25rem 1rem;
   background: linear-gradient(135deg, rgba(26, 86, 219, 0.05), rgba(212, 175, 55, 0.1));
   border: 1.5px dashed #1a56db;
   border-radius: 12px;
@@ -2004,6 +2094,30 @@
   font-weight: 800;
   color: #0f2b5c;
   font-family: 'Outfit', sans-serif;
+  letter-spacing: -0.5px;
+}
+.dark-theme .checkout-amount-val {
+  color: #60a5fa;
+}
+
+.checkout-student-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.84rem;
+}
+
+.checkout-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.35rem;
+  gap: 0.5rem;
+}
+.checkout-detail-row:last-child {
+  margin-bottom: 0;
 }
 
 .checkout-tab-group {
@@ -2018,12 +2132,12 @@
 
 .checkout-tab {
   flex: 1;
-  padding: 0.6rem 0.5rem;
+  padding: 0.65rem 0.5rem;
   background: none;
   border: none;
   border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.85rem;
+  font-weight: 700;
+  font-size: 0.84rem;
   color: var(--text-muted);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -2031,12 +2145,72 @@
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 40px;
 }
 
 .checkout-tab.active {
   background: var(--card-bg);
   color: var(--primary);
   box-shadow: var(--shadow-sm);
+}
+
+.checkout-card-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.checkout-transfer-box {
+  background: var(--bg-tertiary);
+  padding: 1rem;
+  border-radius: 10px;
+  border: 1px dashed var(--border-color);
+  margin-bottom: 1rem;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.transfer-acc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.btn-copy-acc {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  border-radius: 6px;
+  font-weight: 700;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  color: var(--primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-copy-acc:active {
+  transform: scale(0.95);
+}
+
+.checkout-instant-box {
+  background: rgba(16, 185, 129, 0.08);
+  padding: 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  margin-bottom: 1rem;
+  font-size: 0.84rem;
+  color: #065f46;
+  line-height: 1.5;
+}
+.dark-theme .checkout-instant-box {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.12);
 }
 
 .checkout-trust-badge {
@@ -2054,6 +2228,28 @@
 /* =====================================================
    DEDICATED SEGMENTED OTP CARD & MODAL
    ===================================================== */
+.activation-otp-modal-container {
+  max-width: 440px;
+  border-radius: 20px;
+  box-shadow: var(--shadow-premium);
+  border: 1.5px solid rgba(26, 86, 219, 0.3);
+  background: var(--bg-primary);
+  overflow-y: auto;
+}
+
+.activation-otp-header {
+  background: linear-gradient(135deg, rgba(26, 86, 219, 0.08), transparent);
+  padding: 1.25rem 1.5rem 0.5rem;
+  border-bottom: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.activation-otp-modal-body {
+  padding: 1rem 1.75rem 1.75rem;
+}
+
 .activation-otp-card {
   text-align: center;
 }
@@ -2083,35 +2279,42 @@
 .act-otp-inputs {
   display: flex;
   justify-content: center;
-  gap: 0.6rem;
-  margin: 1.5rem 0;
+  gap: clamp(4px, 1.8vw, 8px);
+  width: 100%;
+  max-width: 360px;
+  margin: 1.25rem auto;
 }
 
 .act-otp-digit {
-  width: 48px;
-  height: 56px;
+  flex: 1;
+  min-width: 0;
+  max-width: 48px;
+  width: 100%;
+  height: clamp(44px, 12vw, 54px);
   text-align: center;
-  font-size: 1.85rem;
+  font-size: clamp(1.25rem, 5vw, 1.7rem);
   font-weight: 800;
   font-family: 'Outfit', monospace;
   color: var(--text-dark);
   background: var(--bg-primary);
   border: 2px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: 10px;
   outline: none;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .act-otp-digit:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(26, 86, 219, 0.15);
+  box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.18);
   transform: translateY(-2px);
   background: var(--card-bg);
 }
 
 .act-otp-digit.filled {
   border-color: #1a56db;
-  background: rgba(26, 86, 219, 0.03);
+  background: rgba(26, 86, 219, 0.04);
 }
 
 /* =====================================================
@@ -2296,14 +2499,25 @@
    COMPREHENSIVE MOBILE SWEEP — 768px
    ===================================================== */
 @media (max-width: 768px) {
+  /* Prevent iOS zoom on input focus */
+  input, select, textarea, .form-control {
+    font-size: 16px !important;
+  }
+
   .db-header {
-    padding: 0.65rem 1rem;
+    padding: 0.65rem 0.85rem;
   }
   .db-header-right {
-    gap: 0.5rem;
+    gap: 0.45rem;
   }
+
+  /* Main container bottom padding to clear mobile navigation */
+  .db-main {
+    padding: 1rem 0.85rem calc(88px + env(safe-area-inset-bottom, 0px)) 0.85rem !important;
+  }
+
   .db-welcome-banner {
-    padding: 1.5rem 1.25rem;
+    padding: 1.35rem 1.15rem;
     gap: 1rem;
     border-radius: 16px;
     margin-bottom: 1.25rem;
@@ -2321,91 +2535,226 @@
   .db-welcome-sub {
     font-size: 0.82rem !important;
   }
+  .db-report-cta {
+    width: 100%;
+    justify-content: center;
+    padding: 0.85rem 1.25rem;
+    font-size: 0.92rem;
+  }
+
+  /* 2-column mobile stats */
   .db-stats-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
+    gap: 0.65rem;
     margin-bottom: 1.25rem;
   }
   .db-stat-card {
-    padding: 1rem 1.1rem;
-    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    gap: 0.65rem;
   }
   .db-stat-icon {
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
   }
   .db-stat-value {
-    font-size: 1.5rem;
+    font-size: 1.45rem;
   }
+  .db-stat-label {
+    font-size: 0.74rem;
+  }
+
   .db-view-title {
-    font-size: 1.3rem;
+    font-size: 1.25rem;
+  }
+  .db-view-sub {
+    font-size: 0.82rem;
   }
   .db-view-header {
     margin-bottom: 1rem;
   }
+
+  /* My Reports action buttons on mobile */
+  #view-my-reports .db-view-header > div:last-child {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+  #view-my-reports .db-view-header > div:last-child #btn-export-history,
+  #view-my-reports .db-view-header > div:last-child #btn-export-csv {
+    flex: 1 1 calc(50% - 0.25rem);
+    justify-content: center;
+    padding: 0.6rem 0.5rem;
+    font-size: 0.78rem;
+  }
+  #view-my-reports .db-view-header > div:last-child #btn-report-my-reports {
+    flex: 1 1 100%;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+  }
+
+  /* Activation Banner Mobile */
   .db-activation-banner {
-    padding: 1.15rem 1.25rem;
+    padding: 1.15rem 1.15rem;
     border-radius: 14px;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .db-activation-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.85rem;
   }
   .db-activation-title {
-    font-size: 1.15rem;
+    font-size: 1.1rem;
+    line-height: 1.35;
   }
   .db-activation-desc {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
+    line-height: 1.5;
   }
   .db-activation-action-btn {
     width: 100%;
     justify-content: center;
-    padding: 0.8rem 1.5rem;
-    font-size: 0.9rem;
+    padding: 0.85rem 1.25rem;
+    font-size: 0.92rem;
   }
-  .act-otp-digit {
-    width: 42px;
-    height: 50px;
-    font-size: 1.6rem;
+  .db-activation-steps {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+    margin-top: 1rem;
   }
-  .act-otp-inputs {
-    gap: 0.45rem;
+  .db-activation-step {
+    padding: 0.65rem 0.85rem;
   }
+
+  /* Reports Grids */
   .db-reports-grid {
     grid-template-columns: 1fr !important;
-    gap: 1rem;
+    gap: 0.85rem;
   }
-  .db-filter-row {
+
+  /* Filter Rows Touch-scroll */
+  .db-filter-row,
+  .db-category-row {
     flex-wrap: nowrap;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    padding-bottom: 4px;
+    padding-bottom: 6px;
     gap: 0.4rem;
   }
-  .db-filter-row::-webkit-scrollbar { display: none; }
-  .db-filter-chip {
+  .db-filter-row::-webkit-scrollbar,
+  .db-category-row::-webkit-scrollbar { display: none; }
+  .db-filter-chip,
+  .db-cat-chip {
     flex-shrink: 0;
     padding: 0.4rem 0.85rem;
     font-size: 0.78rem;
     touch-action: manipulation;
   }
-  .modal-overlay {
+
+  /* Profile Form Rows Stack */
+  .form-row-2col,
+  .form-row-3col {
+    grid-template-columns: 1fr !important;
+    gap: 0.85rem !important;
+    margin-bottom: 0.85rem !important;
+  }
+  .profile-inline-form {
+    padding: 1.15rem 1rem;
+  }
+  .profile-edit-actions {
+    flex-direction: column-reverse;
+    gap: 0.6rem;
+  }
+  .profile-edit-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Modals Mobile Bottom Sheet Behavior */
+  .modal-backdrop {
     align-items: flex-end !important;
     padding: 0 !important;
+    overscroll-behavior: contain;
   }
-  .modal-container {
-    border-radius: 24px 24px 0 0 !important;
+  .modal-container,
+  .checkout-modal-container,
+  .activation-otp-modal-container {
+    border-radius: 22px 22px 0 0 !important;
     max-height: 92vh !important;
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 !important;
-    overflow-y: auto;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
-  .modal-header {
-    border-radius: 24px 24px 0 0;
-    padding: 1.1rem 1.25rem !important;
+  .modal-header,
+  .checkout-modal-header,
+  .activation-otp-header {
+    border-radius: 22px 22px 0 0;
+    padding: 1.15rem 1.25rem 0.85rem !important;
+    position: sticky;
+    top: 0;
+    z-index: 10;
   }
-  .modal-body {
-    padding: 1.25rem !important;
+  .modal-body,
+  .checkout-modal-body,
+  .activation-otp-modal-body {
+    padding: 1.15rem 1.15rem 1.5rem !important;
   }
+
+  /* Payment Checkout Modal Mobile Sweep */
+  .checkout-amount-badge {
+    padding: 1rem 0.85rem;
+  }
+  .checkout-amount-val {
+    font-size: 1.85rem;
+  }
+  .checkout-tab {
+    padding: 0.55rem 0.35rem;
+    font-size: 0.78rem;
+  }
+  .checkout-student-card {
+    padding: 0.75rem 0.85rem;
+    font-size: 0.8rem;
+  }
+
+  /* Segmented OTP Inputs Mobile Sweep */
+  .act-otp-inputs {
+    gap: clamp(3px, 1.6vw, 6px);
+    max-width: 340px;
+    margin: 1rem auto;
+  }
+  .act-otp-digit {
+    flex: 1;
+    min-width: 0;
+    max-width: 44px;
+    height: 48px;
+    font-size: 1.45rem;
+    border-radius: 9px;
+  }
+
+  /* Print QR Label Mobile Stack */
+  #print-label-area > div {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 1rem !important;
+  }
+  #print-label-area > div > div {
+    padding-left: 0 !important;
+    align-items: center !important;
+    width: 100% !important;
+  }
+  #qr-canvas {
+    width: 130px !important;
+    height: 130px !important;
+  }
+
+  /* Notification Drawer Mobile Bottom Sheet */
   .db-notif-panel-drawer {
     width: 100%;
     max-width: 100%;
@@ -2420,6 +2769,7 @@
   .db-notif-panel-drawer.open {
     transform: translateY(0);
   }
+
   .db-quick-actions {
     padding: 0.85rem;
     gap: 0.6rem;
@@ -2445,23 +2795,33 @@
 /* === 480px === */
 @media (max-width: 480px) {
   .db-header {
-    padding: 0.6rem 0.85rem;
+    padding: 0.55rem 0.75rem;
+  }
+  .logo-text-brand .app-name {
+    font-size: 0.95rem !important;
+  }
+  .logo-text-brand .app-tag {
+    font-size: 0.56rem !important;
+  }
+  .logo-badge {
+    width: 34px !important;
+    height: 34px !important;
+  }
+  .logo-image {
+    width: 24px !important;
+    height: 24px !important;
   }
   .db-welcome-banner {
-    padding: 1.1rem 1rem;
+    padding: 1.15rem 1rem;
     border-radius: 14px;
   }
   .db-welcome-name {
-    font-size: 1.2rem !important;
+    font-size: 1.25rem !important;
   }
   .act-otp-digit {
-    width: 38px;
     height: 46px;
-    font-size: 1.4rem;
-    border-radius: 10px;
-  }
-  .act-otp-inputs {
-    gap: 0.35rem;
+    font-size: 1.35rem;
+    border-radius: 8px;
   }
   .db-view-title {
     font-size: 1.15rem;
@@ -2469,17 +2829,14 @@
   .db-stat-value {
     font-size: 1.35rem;
   }
-  .db-report-cta {
-    width: 100%;
-    justify-content: center;
-  }
   .celebration-icon {
     width: 64px;
     height: 64px;
     font-size: 2rem;
   }
   .celebration-title {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
+    line-height: 1.35;
   }
   .db-card-header {
     padding: 0.85rem 1rem;
@@ -2492,7 +2849,10 @@
   }
   .db-stats-grid {
     grid-template-columns: 1fr 1fr;
-    gap: 0.65rem;
+    gap: 0.55rem;
+  }
+  .checkout-amount-val {
+    font-size: 1.65rem;
   }
 }
 
@@ -2500,21 +2860,26 @@
 @media (max-width: 380px) {
   .db-stats-grid {
     grid-template-columns: 1fr 1fr;
-    gap: 0.6rem;
+    gap: 0.5rem;
   }
   .db-stat-card {
-    padding: 0.85rem 0.9rem;
-    gap: 0.6rem;
+    padding: 0.8rem 0.85rem;
+    gap: 0.5rem;
   }
   .db-stat-value {
     font-size: 1.2rem;
   }
   .db-stat-icon {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
   }
   .db-mobile-bottom-nav {
-    height: 60px;
+    height: 58px;
+  }
+  .db-mob-nav-item {
+    min-width: 48px;
+    padding: 0.25rem 0.45rem;
+    font-size: 0.55rem;
   }
   .db-mob-center-fab {
     width: 46px;
@@ -2522,13 +2887,16 @@
     margin-top: -16px;
   }
   .act-otp-digit {
-    width: 34px;
     height: 42px;
-    font-size: 1.25rem;
-    border-radius: 8px;
+    font-size: 1.2rem;
+    border-radius: 7px;
   }
   .act-otp-inputs {
-    gap: 0.28rem;
+    gap: 3px;
+  }
+  .checkout-tab {
+    font-size: 0.74rem;
+    padding: 0.5rem 0.2rem;
   }
 }
 

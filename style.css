@@ -751,6 +751,12 @@ main {
   border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
+.badge-returned {
+  background-color: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid rgba(26, 86, 219, 0.25);
+}
+
 .card-content {
   padding: 1.5rem;
   display: flex;

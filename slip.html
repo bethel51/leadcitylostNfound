@@ -126,6 +126,18 @@
       background-color: var(--success-bg);
       color: var(--success);
     }
+    @media (max-width: 500px) {
+      body {
+        padding: 0.75rem;
+      }
+      .slip-container {
+        padding: 1.25rem 1rem;
+        border-radius: var(--radius-md);
+      }
+      .slip-ticket {
+        padding: 1.15rem 1rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -155,32 +167,32 @@
 
         <div class="detail-row">
           <span class="detail-label">Slip Reference:</span>
-          <span class="detail-value" id="slip-ref" style="font-family: monospace;">REF-XXXXXXXX</span>
+          <span class="detail-value" id="slip-ref" style="font-family: monospace;">—</span>
         </div>
 
         <div class="detail-row">
           <span class="detail-label">Tag Status:</span>
-          <span class="detail-value"><span class="status-badge" id="slip-status">ACTIVE</span></span>
+          <span class="detail-value"><span class="status-badge" id="slip-status">—</span></span>
         </div>
 
         <div class="detail-row" style="flex-direction: column; align-items: stretch; gap: 0.25rem;">
           <span class="detail-label">Item / Description:</span>
-          <span class="detail-value" id="slip-title" style="text-align: left; font-size: 1rem;">Casio Wristwatch</span>
+          <span class="detail-value" id="slip-title" style="text-align: left; font-size: 1rem;">—</span>
         </div>
 
         <div class="detail-row">
           <span class="detail-label">Category:</span>
-          <span class="detail-value" id="slip-category">Electronics</span>
+          <span class="detail-value" id="slip-category">—</span>
         </div>
 
         <div class="detail-row">
           <span class="detail-label">Location Logged:</span>
-          <span class="detail-value" id="slip-location">FSS Cafe</span>
+          <span class="detail-value" id="slip-location">—</span>
         </div>
 
         <div class="detail-row">
           <span class="detail-label">Date Logged:</span>
-          <span class="detail-value" id="slip-date">June 16, 2026</span>
+          <span class="detail-value" id="slip-date">—</span>
         </div>
 
         <!-- STRICT REPORTER CREDENTIALS DISPLAY -->
@@ -217,11 +229,17 @@
   </div>
 
   <script>
-    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-      ? 'http://localhost:5000/api' 
+    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:'
+      ? 'http://127.0.0.1:5000/api' 
       : 'https://leadcitylostnfound.onrender.com/api';
 
     document.addEventListener('DOMContentLoaded', async () => {
+      // Sync dark mode theme
+      const savedTheme = localStorage.getItem('lcu_findme_theme') || 'light';
+      if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+      }
+
       const urlParams = new URLSearchParams(window.location.search);
       const itemId = urlParams.get('item');
 

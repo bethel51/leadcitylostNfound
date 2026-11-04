@@ -21,6 +21,9 @@
 </head>
 <body class="db-body">
 
+  <!-- Top Progress Loading Bar -->
+  <div class="db-top-loader" id="db-top-loader"></div>
+
   <!-- Authentication Guard -->
   <script>
     if (!localStorage.getItem('lcu_findme_token') || !localStorage.getItem('lcu_findme_user')) {
@@ -188,8 +191,8 @@
       <!-- Welcome Banner -->
       <div class="db-welcome-banner">
         <div class="db-welcome-text">
-          <div class="db-welcome-greeting" id="welcome-greeting">Good morning,</div>
-          <h1 class="db-welcome-name" id="welcome-name">Student</h1>
+          <div class="db-welcome-greeting" id="welcome-greeting">Welcome back,</div>
+          <h1 class="db-welcome-name" id="welcome-name"><span class="db-skeleton-pill name"></span></h1>
           <p class="db-welcome-sub">Here's what's happening with your LCU FindMe account today.</p>
         </div>
         <button class="btn db-report-cta" id="btn-report-cta">
@@ -240,7 +243,7 @@
             <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
           </div>
           <div class="db-stat-info">
-            <div class="db-stat-value" id="my-stat-total">0</div>
+            <div class="db-stat-value" id="my-stat-total"><span class="db-skeleton-pill"></span></div>
             <div class="db-stat-label">My Total Reports</div>
           </div>
         </div>
@@ -249,7 +252,7 @@
             <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
           </div>
           <div class="db-stat-info">
-            <div class="db-stat-value" id="my-stat-lost">0</div>
+            <div class="db-stat-value" id="my-stat-lost"><span class="db-skeleton-pill"></span></div>
             <div class="db-stat-label">Active Lost Reports</div>
           </div>
         </div>
@@ -258,7 +261,7 @@
             <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           </div>
           <div class="db-stat-info">
-            <div class="db-stat-value" id="my-stat-returned">0</div>
+            <div class="db-stat-value" id="my-stat-returned"><span class="db-skeleton-pill"></span></div>
             <div class="db-stat-label">Items Returned</div>
           </div>
         </div>
@@ -267,7 +270,7 @@
             <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
           </div>
           <div class="db-stat-info">
-            <div class="db-stat-value" id="my-stat-campus">0</div>
+            <div class="db-stat-value" id="my-stat-campus"><span class="db-skeleton-pill"></span></div>
             <div class="db-stat-label">Campus Listings</div>
           </div>
         </div>
@@ -334,17 +337,17 @@
               <div class="db-activity-row">
                 <span class="db-activity-label">Found Items</span>
                 <div class="db-bar-wrap"><div class="db-bar db-bar-green" id="bar-found" style="width:0%"></div></div>
-                <span class="db-activity-count" id="count-found">0</span>
+                <span class="db-activity-count" id="count-found"><span class="db-skeleton-pill mini"></span></span>
               </div>
               <div class="db-activity-row">
                 <span class="db-activity-label">Lost Items</span>
                 <div class="db-bar-wrap"><div class="db-bar db-bar-red" id="bar-lost" style="width:0%"></div></div>
-                <span class="db-activity-count" id="count-lost">0</span>
+                <span class="db-activity-count" id="count-lost"><span class="db-skeleton-pill mini"></span></span>
               </div>
               <div class="db-activity-row">
                 <span class="db-activity-label">Returned</span>
                 <div class="db-bar-wrap"><div class="db-bar db-bar-blue" id="bar-returned" style="width:0%"></div></div>
-                <span class="db-activity-count" id="count-returned">0</span>
+                <span class="db-activity-count" id="count-returned"><span class="db-skeleton-pill mini"></span></span>
               </div>
             </div>
           </div>
@@ -447,21 +450,21 @@
             <div class="db-profile-avatar" id="profile-big-avatar">U</div>
             <div class="db-profile-avatar-glow"></div>
           </div>
-          <h2 class="db-profile-name" id="profile-name-big">Student</h2>
-          <span class="db-profile-badge" id="profile-role-badge">Student</span>
+          <h2 class="db-profile-name" id="profile-name-big"><span class="db-skeleton-pill name"></span></h2>
+          <span class="db-profile-badge" id="profile-role-badge">—</span>
           <div class="db-profile-matric" id="profile-matric-display">—</div>
 
           <div class="db-profile-stats-row">
             <div class="db-profile-mini-stat">
-              <div class="db-profile-mini-val" id="profile-mini-reports">0</div>
+              <div class="db-profile-mini-val" id="profile-mini-reports"><span class="db-skeleton-pill mini"></span></div>
               <div class="db-profile-mini-label">Reports</div>
             </div>
             <div class="db-profile-mini-stat">
-              <div class="db-profile-mini-val" id="profile-mini-returned">0</div>
+              <div class="db-profile-mini-val" id="profile-mini-returned"><span class="db-skeleton-pill mini"></span></div>
               <div class="db-profile-mini-label">Returned</div>
             </div>
             <div class="db-profile-mini-stat">
-              <div class="db-profile-mini-val" id="profile-mini-active">0</div>
+              <div class="db-profile-mini-val" id="profile-mini-active"><span class="db-skeleton-pill mini"></span></div>
               <div class="db-profile-mini-label">Active</div>
             </div>
           </div>
@@ -521,47 +524,47 @@
               </h2>
               <span style="font-size: 0.8rem; color: var(--text-muted);">Update details & click save</span>
             </div>
-            <form id="form-inline-profile-edit" style="padding: 1.5rem;">
-              <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem;">
+            <form id="form-inline-profile-edit" class="profile-inline-form">
+              <div class="form-row form-row-2col">
                 <div class="form-group">
-                  <label class="form-label" for="inline-edit-name" style="font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 0.4rem; color: var(--text-dark);">Full Name</label>
-                  <input type="text" class="form-control" id="inline-edit-name" placeholder="e.g. Adewale Okonkwo" required style="width: 100%; padding: 0.75rem 1rem; border-radius: var(--radius-md); border: 1.5px solid var(--border-color); background: var(--bg-secondary); color: var(--text-dark); font-size: 0.95rem;">
+                  <label class="form-label" for="inline-edit-name">Full Name</label>
+                  <input type="text" class="form-control" id="inline-edit-name" placeholder="e.g. Adewale Okonkwo" required>
                 </div>
                 <div class="form-group">
-                  <label class="form-label" for="inline-edit-email" style="font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 0.4rem; color: var(--text-dark);">University Email</label>
-                  <input type="email" class="form-control" id="inline-edit-email" placeholder="user@lcu.edu.ng" style="width: 100%; padding: 0.75rem 1rem; border-radius: var(--radius-md); border: 1.5px solid var(--border-color); background: var(--bg-secondary); color: var(--text-dark); font-size: 0.95rem;">
-                </div>
-              </div>
-
-              <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem;">
-                <div class="form-group">
-                  <label class="form-label" for="inline-edit-matric" style="font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 0.4rem; color: var(--text-dark);">Matric Number</label>
-                  <input type="text" class="form-control" id="inline-edit-matric" placeholder="LCU/UG/00/00000" style="width: 100%; padding: 0.75rem 1rem; border-radius: var(--radius-md); border: 1.5px solid var(--border-color); background: var(--bg-secondary); color: var(--text-dark); font-size: 0.95rem;">
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="inline-edit-phone" style="font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 0.4rem; color: var(--text-dark);">Phone Number</label>
-                  <input type="tel" class="form-control" id="inline-edit-phone" placeholder="+234 800 000 0000" style="width: 100%; padding: 0.75rem 1rem; border-radius: var(--radius-md); border: 1.5px solid var(--border-color); background: var(--bg-secondary); color: var(--text-dark); font-size: 0.95rem;">
+                  <label class="form-label" for="inline-edit-email">University Email</label>
+                  <input type="email" class="form-control" id="inline-edit-email" placeholder="user@lcu.edu.ng">
                 </div>
               </div>
 
-              <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem;">
+              <div class="form-row form-row-2col">
                 <div class="form-group">
-                  <label class="form-label" for="inline-edit-faculty" style="font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 0.4rem; color: var(--text-dark);">Faculty</label>
-                  <input type="text" class="form-control" id="inline-edit-faculty" placeholder="e.g. Computing" style="width: 100%; padding: 0.75rem 1rem; border-radius: var(--radius-md); border: 1.5px solid var(--border-color); background: var(--bg-secondary); color: var(--text-dark); font-size: 0.95rem;">
+                  <label class="form-label" for="inline-edit-matric">Matric Number</label>
+                  <input type="text" class="form-control" id="inline-edit-matric" placeholder="LCU/UG/00/00000">
                 </div>
                 <div class="form-group">
-                  <label class="form-label" for="inline-edit-dept" style="font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 0.4rem; color: var(--text-dark);">Department</label>
-                  <input type="text" class="form-control" id="inline-edit-dept" placeholder="e.g. Software Eng." style="width: 100%; padding: 0.75rem 1rem; border-radius: var(--radius-md); border: 1.5px solid var(--border-color); background: var(--bg-secondary); color: var(--text-dark); font-size: 0.95rem;">
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="inline-edit-level" style="font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 0.4rem; color: var(--text-dark);">Level</label>
-                  <input type="text" class="form-control" id="inline-edit-level" placeholder="e.g. 400" style="width: 100%; padding: 0.75rem 1rem; border-radius: var(--radius-md); border: 1.5px solid var(--border-color); background: var(--bg-secondary); color: var(--text-dark); font-size: 0.95rem;">
+                  <label class="form-label" for="inline-edit-phone">Phone Number</label>
+                  <input type="tel" class="form-control" id="inline-edit-phone" placeholder="+234 800 000 0000">
                 </div>
               </div>
 
-              <div style="display: flex; gap: 0.75rem; justify-content: flex-end; padding-top: 1.25rem; border-top: 1px solid var(--border-color);">
-                <button type="button" class="btn btn-secondary" id="btn-cancel-inline-edit" style="padding: 0.7rem 1.35rem; font-size: 0.9rem;">Cancel</button>
-                <button type="submit" class="btn btn-primary" id="btn-save-inline-edit" style="padding: 0.7rem 1.6rem; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.5rem;">
+              <div class="form-row form-row-3col">
+                <div class="form-group">
+                  <label class="form-label" for="inline-edit-faculty">Faculty</label>
+                  <input type="text" class="form-control" id="inline-edit-faculty" placeholder="e.g. Computing">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="inline-edit-dept">Department</label>
+                  <input type="text" class="form-control" id="inline-edit-dept" placeholder="e.g. Software Eng.">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="inline-edit-level">Level</label>
+                  <input type="text" class="form-control" id="inline-edit-level" placeholder="e.g. 400">
+                </div>
+              </div>
+
+              <div class="profile-edit-actions">
+                <button type="button" class="btn btn-secondary" id="btn-cancel-inline-edit">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="btn-save-inline-edit">
                   <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                   <span id="btn-save-inline-text">Save Changes</span>
                 </button>
@@ -827,10 +830,10 @@
 
   <!-- MODAL: Activation Key Payment Checkout -->
   <div class="modal-backdrop" id="modal-activation-pay">
-    <div class="modal-container" style="max-width: 460px; border-radius: 18px; overflow: hidden; box-shadow: var(--shadow-premium); border: 1.5px solid rgba(212, 175, 55, 0.4); background: var(--bg-primary);">
-      <div class="modal-header" style="background: linear-gradient(135deg, #0a192f 0%, #0f2b5c 100%); padding: 1.25rem 1.5rem; color: #ffffff; border-bottom: none;">
+    <div class="modal-container checkout-modal-container">
+      <div class="modal-header checkout-modal-header">
         <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(212,175,55,0.5); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+          <div class="checkout-header-icon">
             🏛️
           </div>
           <div>
@@ -841,7 +844,7 @@
         <button class="modal-close" id="btn-close-activation-pay" style="color: #ffffff; opacity: 0.8;">&times;</button>
       </div>
 
-      <div class="modal-body" style="padding: 1.5rem;">
+      <div class="modal-body checkout-modal-body">
         <!-- Fee Summary Card -->
         <div class="checkout-amount-badge">
           <div style="font-size: 0.75rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">One-Time Student Account Activation Key</div>
@@ -850,18 +853,18 @@
         </div>
 
         <!-- Student Account Details -->
-        <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 1.25rem; font-size: 0.84rem;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
+        <div class="checkout-student-card">
+          <div class="checkout-detail-row">
             <span style="color: var(--text-muted);">Student Name:</span>
-            <strong id="checkout-student-name" style="color: var(--text-dark);">Student</strong>
+            <strong id="checkout-student-name" style="color: var(--text-dark);">—</strong>
           </div>
-          <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
+          <div class="checkout-detail-row">
             <span style="color: var(--text-muted);">Matric / ID:</span>
             <strong id="checkout-student-matric" style="font-family: monospace; color: var(--text-dark);">—</strong>
           </div>
-          <div style="display: flex; justify-content: space-between;">
+          <div class="checkout-detail-row">
             <span style="color: var(--text-muted);">Delivery Email:</span>
-            <strong id="checkout-student-email" style="color: var(--primary);">—</strong>
+            <strong id="checkout-student-email" style="color: var(--primary); word-break: break-all;">—</strong>
           </div>
         </div>
 
@@ -883,34 +886,37 @@
           <div id="checkout-view-card">
             <div class="form-group" style="margin-bottom: 0.85rem;">
               <label class="form-label" style="font-size: 0.82rem;">Card Number</label>
-              <input type="text" class="form-control" id="pay-card-number" placeholder="5399 •••• •••• 1234" value="5399 4500 8921 7844" maxlength="19" required>
+              <input type="text" class="form-control" id="pay-card-number" placeholder="•••• •••• •••• ••••" inputmode="numeric" maxlength="19" autocomplete="cc-number" required>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+            <div class="checkout-card-split">
               <div class="form-group" style="margin: 0;">
                 <label class="form-label" style="font-size: 0.82rem;">Expiry Date</label>
-                <input type="text" class="form-control" id="pay-card-expiry" placeholder="MM/YY" value="08/28" maxlength="5" required>
+                <input type="text" class="form-control" id="pay-card-expiry" placeholder="MM/YY" inputmode="numeric" maxlength="5" autocomplete="cc-exp" required>
               </div>
               <div class="form-group" style="margin: 0;">
                 <label class="form-label" style="font-size: 0.82rem;">CVV</label>
-                <input type="password" class="form-control" id="pay-card-cvv" placeholder="•••" value="482" maxlength="4" required>
+                <input type="password" class="form-control" id="pay-card-cvv" placeholder="•••" inputmode="numeric" maxlength="4" autocomplete="cc-csc" required>
               </div>
             </div>
           </div>
 
           <!-- Transfer View (Hidden by default) -->
-          <div id="checkout-view-transfer" style="display: none; background: var(--bg-tertiary); padding: 1rem; border-radius: 8px; border: 1px dashed var(--border-color); margin-bottom: 1rem; font-size: 0.82rem; line-height: 1.5;">
+          <div id="checkout-view-transfer" style="display: none;" class="checkout-transfer-box">
             <div style="font-weight: 700; color: var(--secondary); margin-bottom: 0.35rem;">Lead City University Bursary Account</div>
             <div>Bank: <strong>Wema Bank / LCU Microfinance</strong></div>
-            <div>Account: <strong style="font-family: monospace; color: var(--primary);">0120938491</strong></div>
-            <div style="color: var(--text-muted); margin-top: 0.35rem;">Simulated payment: Clicking Authorize will instantly credit activation.</div>
+            <div class="transfer-acc-row">
+              <div>Account: <strong id="transfer-acc-num" style="font-family: monospace; font-size: 1rem; color: var(--primary);">0120938491</strong></div>
+              <button type="button" class="btn btn-secondary btn-copy-acc" id="btn-copy-acc-num">Copy</button>
+            </div>
+            <div style="color: var(--text-muted); margin-top: 0.4rem; font-size: 0.78rem;">Simulated payment: Clicking Authorize will instantly credit activation.</div>
           </div>
 
           <!-- Instant View (Hidden by default) -->
-          <div id="checkout-view-instant" style="display: none; background: rgba(16, 185, 129, 0.08); padding: 1rem; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.2); margin-bottom: 1rem; font-size: 0.82rem; color: #065f46;">
+          <div id="checkout-view-instant" style="display: none;" class="checkout-instant-box">
             ✨ <strong>Instant Authorization Mode:</strong> Click authorize below to complete simulation and dispatch the activation OTP code to your inbox right away.
           </div>
 
-          <button type="submit" class="btn btn-primary" id="btn-submit-activation-payment" style="width: 100%; justify-content: center; padding: 0.85rem; font-size: 0.95rem; font-weight: 700; background: linear-gradient(135deg, #0f2b5c, #1a56db); box-shadow: 0 4px 15px rgba(26, 86, 219, 0.3);">
+          <button type="submit" class="btn btn-primary" id="btn-submit-activation-payment" style="width: 100%; justify-content: center; padding: 0.85rem; font-size: 0.95rem; font-weight: 700; background: linear-gradient(135deg, #0f2b5c, #1a56db); box-shadow: 0 4px 15px rgba(26, 86, 219, 0.3); min-height: 48px;">
             Authorize Payment &bull; ₦1,000
           </button>
 
@@ -925,13 +931,13 @@
 
   <!-- MODAL: Dedicated Account Activation OTP Card -->
   <div class="modal-backdrop" id="modal-activation-otp">
-    <div class="modal-container" style="max-width: 440px; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-premium); border: 1.5px solid rgba(26, 86, 219, 0.3); background: var(--bg-primary);">
-      <div class="modal-header" style="background: linear-gradient(135deg, rgba(26, 86, 219, 0.08), transparent); padding: 1.25rem 1.5rem 0.5rem; border-bottom: none; display: flex; justify-content: space-between;">
+    <div class="modal-container activation-otp-modal-container">
+      <div class="modal-header activation-otp-header">
         <span style="font-size: 0.75rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 1px;">Security Key Verification</span>
         <button class="modal-close" id="btn-close-activation-otp">&times;</button>
       </div>
 
-      <div class="modal-body" style="padding: 1rem 1.75rem 1.75rem;">
+      <div class="modal-body activation-otp-modal-body">
         <div class="activation-otp-card">
           <div class="otp-shield-badge">
             🔐
@@ -941,7 +947,7 @@
           </h3>
           <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0 0 1.25rem 0;">
             A 6-digit activation key code has been sent to your student email:
-            <br><strong id="act-otp-email-display" style="color: var(--primary); font-size: 0.9rem;">your-email@leadcity.edu.ng</strong>
+            <br><strong id="act-otp-email-display" style="color: var(--primary); font-size: 0.9rem;">—</strong>
           </p>
 
           <div id="act-otp-error-msg" style="display: none; background: var(--danger-bg); color: var(--danger); font-size: 0.82rem; padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2); margin-bottom: 1rem; font-weight: 600;"></div>
@@ -949,20 +955,20 @@
           <form id="form-verify-activation-otp">
             <!-- 6-digit segmented input cards -->
             <div class="act-otp-inputs" id="act-otp-inputs-row">
-              <input type="text" class="act-otp-digit" maxlength="1" pattern="\d" inputmode="numeric" data-idx="0" autofocus required autocomplete="off">
-              <input type="text" class="act-otp-digit" maxlength="1" pattern="\d" inputmode="numeric" data-idx="1" required autocomplete="off">
-              <input type="text" class="act-otp-digit" maxlength="1" pattern="\d" inputmode="numeric" data-idx="2" required autocomplete="off">
-              <input type="text" class="act-otp-digit" maxlength="1" pattern="\d" inputmode="numeric" data-idx="3" required autocomplete="off">
-              <input type="text" class="act-otp-digit" maxlength="1" pattern="\d" inputmode="numeric" data-idx="4" required autocomplete="off">
-              <input type="text" class="act-otp-digit" maxlength="1" pattern="\d" inputmode="numeric" data-idx="5" required autocomplete="off">
+              <input type="text" class="act-otp-digit" maxlength="1" pattern="\d" inputmode="numeric" data-idx="0" autofocus required autocomplete="one-time-code">
+              <input type="text" class="act-otp-digit" maxlength="1" pattern="\d" inputmode="numeric" data-idx="1" required autocomplete="one-time-code">
+              <input type="text" class="act-otp-digit" maxlength="1" pattern="\d" inputmode="numeric" data-idx="2" required autocomplete="one-time-code">
+              <input type="text" class="act-otp-digit" maxlength="1" pattern="\d" inputmode="numeric" data-idx="3" required autocomplete="one-time-code">
+              <input type="text" class="act-otp-digit" maxlength="1" pattern="\d" inputmode="numeric" data-idx="4" required autocomplete="one-time-code">
+              <input type="text" class="act-otp-digit" maxlength="1" pattern="\d" inputmode="numeric" data-idx="5" required autocomplete="one-time-code">
             </div>
 
-            <button type="submit" class="btn btn-primary" id="btn-submit-activation-otp" style="width: 100%; justify-content: center; padding: 0.85rem; font-weight: 700; font-size: 0.95rem; background: linear-gradient(135deg, #10b981, #059669); border: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
+            <button type="submit" class="btn btn-primary" id="btn-submit-activation-otp" style="width: 100%; justify-content: center; padding: 0.85rem; font-weight: 700; font-size: 0.95rem; background: linear-gradient(135deg, #10b981, #059669); border: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); min-height: 48px;">
               Verify Code &amp; Activate Dashboard
             </button>
           </form>
 
-          <div style="margin-top: 1.25rem; font-size: 0.84rem; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+          <div style="margin-top: 1.25rem; font-size: 0.84rem; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
             <span>Didn't receive the code?</span>
             <button type="button" id="btn-resend-act-otp" style="background: none; border: none; color: var(--primary); font-weight: 700; cursor: pointer; padding: 0; text-decoration: underline;">
               Resend Code
@@ -1047,7 +1053,7 @@
               <input type="text" class="otp-digit-input" maxlength="1" pattern="\d" inputmode="numeric" required>
               <input type="text" class="otp-digit-input" maxlength="1" pattern="\d" inputmode="numeric" required>
             </div>
-            <input type="hidden" id="otp-code" required>
+            <input type="hidden" id="otp-code">
           </div>
           <button type="submit" class="btn btn-primary" id="btn-verify-otp" style="width: 100%; justify-content: center; padding: 0.85rem; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);">Verify Account</button>
           <div style="text-align: center; margin-top: 1rem;">
@@ -1077,7 +1083,7 @@
           <div style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.88rem;">
             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 0.5rem;">
               <span style="color: var(--text-muted); font-weight: 500;">Slip Reference:</span>
-              <strong id="slip-ref" style="font-family: monospace; color: var(--text-dark);">REF-XXXXXXXX</strong>
+              <strong id="slip-ref" style="font-family: monospace; color: var(--text-dark);">—</strong>
             </div>
             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 0.5rem;">
               <span style="color: var(--text-muted); font-weight: 500;">Status:</span>

@@ -135,6 +135,17 @@ function populateUserUI() {
   if (greetingEl) greetingEl.textContent = getGreeting() + ',';
   if (nameEl) nameEl.textContent = name.split(' ')[0];
 
+  // Checkout modal student details
+  const matricVal = u.matricNumber || u.matric || '—';
+  const checkoutName = document.getElementById('checkout-student-name');
+  const checkoutMatric = document.getElementById('checkout-student-matric');
+  const checkoutEmail = document.getElementById('checkout-student-email');
+  const actOtpEmail = document.getElementById('act-otp-email-display');
+  if (checkoutName) checkoutName.textContent = name;
+  if (checkoutMatric) checkoutMatric.textContent = matricVal;
+  if (checkoutEmail) checkoutEmail.textContent = u.email || u.contact || '—';
+  if (actOtpEmail) actOtpEmail.textContent = u.email || u.contact || '—';
+
   // Profile view
   populateProfileView();
 
@@ -185,12 +196,82 @@ function populateProfileView() {
 }
 
 // =====================================================
+// FAST SMOOTH LOADING & ANIMATION HELPERS
+// =====================================================
+function setTopLoader(percent) {
+  let loader = document.getElementById('db-top-loader');
+  if (!loader) {
+    loader = document.createElement('div');
+    loader.id = 'db-top-loader';
+    loader.className = 'db-top-loader';
+    document.body.appendChild(loader);
+  }
+  loader.classList.add('active');
+  loader.style.width = `${percent}%`;
+  if (percent >= 100) {
+    setTimeout(() => {
+      loader.classList.remove('active');
+      setTimeout(() => { loader.style.width = '0%'; }, 300);
+    }, 250);
+  }
+}
+
+let counterTimers = {};
+function animateCounter(id, targetValue) {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  if (counterTimers[id]) {
+    clearInterval(counterTimers[id]);
+  }
+
+  const target = parseInt(targetValue, 10) || 0;
+  let current = parseInt(el.textContent, 10);
+  if (isNaN(current)) current = 0;
+
+  if (current === target) {
+    el.textContent = target;
+    return;
+  }
+
+  const diff = target - current;
+  const step = diff > 0 ? 1 : -1;
+  const duration = 400; // ms
+  const intervalTime = Math.max(16, Math.abs(Math.floor(duration / Math.abs(diff))));
+
+  counterTimers[id] = setInterval(() => {
+    current += step;
+    el.textContent = current;
+    if (current === target) {
+      clearInterval(counterTimers[id]);
+      delete counterTimers[id];
+    }
+  }, intervalTime);
+}
+
+// =====================================================
 // LOAD DATA
 // =====================================================
 function showSkeletons() {
   const browseGrid = document.getElementById('db-browse-grid');
   const myReportsGrid = document.getElementById('db-my-reports-grid');
   const recentList = document.getElementById('db-recent-reports-list');
+
+  // Stat skeleton cards
+  ['my-stat-total', 'my-stat-lost', 'my-stat-returned', 'my-stat-campus'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el.dataset.loaded) {
+      el.innerHTML = '<span class="db-skeleton-pill"></span>';
+    }
+  });
+
+  // Activity counts
+  ['count-found', 'count-lost', 'count-returned'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el.dataset.loaded) {
+      el.innerHTML = '<span class="db-skeleton-pill mini"></span>';
+    }
+  });
   
   const skeletonCardHTML = `
     <div class="item-card skeleton-card" style="pointer-events: none;">
@@ -233,18 +314,23 @@ function showSkeletons() {
   }
 }
 
-async function loadData() {
+async function loadData(showLoader = true) {
   try {
+    if (showLoader) setTopLoader(25);
     showSkeletons();
+    if (showLoader) setTopLoader(50);
     await fetchItems();
+    if (showLoader) setTopLoader(80);
     computeMyItems();
     renderOverview();
     renderMyReportsGrid();
     renderBrowseGrid();
     updateActivityBars();
     renderNotifications();
+    if (showLoader) setTopLoader(100);
   } catch (err) {
     console.error('loadData error:', err);
+    if (showLoader) setTopLoader(100);
   }
 }
 
@@ -287,6 +373,11 @@ function renderOverview() {
   const myReturned = state.myItems.filter(i => i.status === 'returned').length;
   const campusAll  = state.items.length;
 
+  ['my-stat-total', 'my-stat-lost', 'my-stat-returned', 'my-stat-campus', 'profile-mini-reports', 'profile-mini-returned', 'profile-mini-active'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.dataset.loaded = 'true';
+  });
+
   animateCounter('my-stat-total',    myTotal);
   animateCounter('my-stat-lost',     myLost);
   animateCounter('my-stat-returned', myReturned);
@@ -310,6 +401,7 @@ function renderOverview() {
   }
 
   renderRecentReportsList();
+  updateActivityBars();
 }
 
 function renderRecentReportsList() {
@@ -371,7 +463,10 @@ function setBar(barId, pct, countId, count) {
   const bar = document.getElementById(barId);
   const cnt = document.getElementById(countId);
   if (bar) setTimeout(() => { bar.style.width = `${Math.round(pct)}%`; }, 100);
-  if (cnt) cnt.textContent = count;
+  if (cnt) {
+    cnt.dataset.loaded = 'true';
+    cnt.textContent = count;
+  }
 }
 
 // =====================================================
@@ -472,7 +567,7 @@ function buildItemCard(item) {
   }
 
   const badgeText  = item.status === 'returned' ? 'Returned' : (item.type === 'found' ? 'Found' : 'Lost');
-  const badgeClass = item.status === 'returned' ? 'badge-found' : (item.type === 'found' ? 'badge-found' : 'badge-lost');
+  const badgeClass = item.status === 'returned' ? 'badge-returned' : (item.type === 'found' ? 'badge-found' : 'badge-lost');
 
   let matchBadge = '';
   if (item.status === 'active') {
@@ -1045,16 +1140,22 @@ function openDetailModal(itemId) {
       document.getElementById('qr-label-category').textContent = item.category;
       document.getElementById('qr-label-location').textContent = item.location;
       const canvas = document.getElementById('qr-canvas');
-      const origin = window.location.origin !== 'null' ? window.location.origin : 'https://lcufindme.edu.ng';
-      let path = window.location.pathname;
-      if (path.endsWith('dashboard.html') || path.endsWith('index.html')) {
-        path = path.substring(0, path.lastIndexOf('/')) + '/slip.html';
-      } else if (path.endsWith('/')) {
-        path += 'slip.html';
+      const idVal = item._id || item.id;
+      let itemUrl = '';
+      if (window.location.protocol === 'file:') {
+        itemUrl = window.location.href.replace(/dashboard\.html.*$/, `slip.html?item=${idVal}`);
       } else {
-        path = '/slip.html';
+        const origin = window.location.origin !== 'null' ? window.location.origin : 'https://lcufindme.edu.ng';
+        let path = window.location.pathname;
+        if (path.endsWith('dashboard.html') || path.endsWith('index.html')) {
+          path = path.substring(0, path.lastIndexOf('/')) + '/slip.html';
+        } else if (path.endsWith('/')) {
+          path += 'slip.html';
+        } else {
+          path = path.substring(0, path.lastIndexOf('/') + 1) + 'slip.html';
+        }
+        itemUrl = `${origin}${path}?item=${idVal}`;
       }
-      const itemUrl = `${origin}${path}?item=${item._id || item.id}`;
       if (window.QRCode) window.QRCode.draw(itemUrl, canvas, { size: 120, margin: 5, color: '#0f172a' });
       toggleModal('modal-qr', true);
     });
@@ -1468,11 +1569,14 @@ function setupReportModal() {
       const submitBtn = document.getElementById('btn-submit-report');
       if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting...'; }
 
+      const dateVal = document.getElementById('report-date').value;
+      const timeVal = document.getElementById('report-time') ? document.getElementById('report-time').value : '';
       const data = {
         title:           document.getElementById('report-title').value.trim(),
         category:        document.getElementById('report-category').value,
         location:        document.getElementById('report-location').value.trim(),
-        date:            document.getElementById('report-date').value,
+        date:            dateVal,
+        time:            timeVal,
         reporterName:    document.getElementById('report-reporter').value.trim(),
         reporterContact: document.getElementById('report-contact').value.trim(),
         description:     document.getElementById('report-description').value.trim(),
@@ -1541,6 +1645,13 @@ function openReportModal() {
   const today = new Date().toISOString().split('T')[0];
   const dateEl = document.getElementById('report-date');
   if (dateEl) dateEl.value = today;
+  const timeEl = document.getElementById('report-time');
+  if (timeEl) {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const mins = String(now.getMinutes()).padStart(2, '0');
+    timeEl.value = `${hours}:${mins}`;
+  }
   if (state.currentUser) {
     const reporterEl = document.getElementById('report-reporter');
     const contactEl  = document.getElementById('report-contact');
@@ -1848,40 +1959,6 @@ function setupOtpModal() {
 // =====================================================
 const notifications = JSON.parse(localStorage.getItem('lcu_findme_notifs') || '[]');
 
-function setupNotifications() {
-  const bell   = document.getElementById('db-notif-btn');
-  const panel  = document.getElementById('db-notif-panel');
-  const clear  = document.getElementById('db-clear-notifs');
-
-  if (bell && panel) {
-    bell.addEventListener('click', e => {
-      e.stopPropagation();
-      panel.classList.toggle('open');
-      notifications.forEach(n => n.read = true);
-      saveNotifs();
-      renderNotifications();
-    });
-  }
-
-  if (clear) {
-    clear.addEventListener('click', () => {
-      notifications.length = 0;
-      saveNotifs();
-      renderNotifications();
-      if (panel) panel.classList.remove('open');
-    });
-  }
-
-  document.addEventListener('click', e => {
-    if (panel && !panel.contains(e.target) && e.target !== bell) {
-      panel.classList.remove('open');
-    }
-  });
-
-  fetchNotificationsFromServer();
-  setInterval(fetchNotificationsFromServer, 15000);
-}
-
 async function fetchNotificationsFromServer() {
   if (!state.currentUser) return;
   try {
@@ -2110,6 +2187,10 @@ function setupNotifications() {
     if (notifPanel) notifPanel.classList.add('open');
     if (notifBackdrop) notifBackdrop.classList.add('open');
     document.body.style.overflow = 'hidden';
+    // Mark all as read when opening
+    notifications.forEach(n => n.read = true);
+    saveNotifs();
+    renderNotifications();
   };
 
   const closeDrawer = () => {
@@ -2132,10 +2213,10 @@ function setupNotifications() {
 
   if (clearBtn) {
     clearBtn.addEventListener('click', () => {
-      const listEl = document.getElementById('db-notif-list');
-      if (listEl) listEl.innerHTML = '<div class="db-notif-empty">No notifications yet.</div>';
-      const dot = document.getElementById('db-notif-dot');
-      if (dot) dot.style.display = 'none';
+      notifications.length = 0;
+      saveNotifs();
+      renderNotifications();
+      closeDrawer();
       showToast('Notifications cleared.');
     });
   }
@@ -2145,35 +2226,10 @@ function setupNotifications() {
   const btnExportCSV     = document.getElementById('btn-export-csv');
   if (btnExportHistory) btnExportHistory.addEventListener('click', downloadReportHistory);
   if (btnExportCSV)     btnExportCSV.addEventListener('click', exportReportHistoryCSV);
-}
 
-function renderNotifications() {
-  const listEl = document.getElementById('db-notif-list');
-  const dot = document.getElementById('db-notif-dot');
-  if (!listEl) return;
-
-  if (!state.myItems || state.myItems.length === 0) {
-    listEl.innerHTML = '<div class="db-notif-empty">No notifications yet.</div>';
-    if (dot) dot.style.display = 'none';
-    return;
-  }
-
-  if (dot) dot.style.display = 'block';
-
-  const html = state.myItems.map(item => `
-    <div class="db-notif-item">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.35rem;">
-        <strong style="font-size:0.9rem; color:var(--primary);">${item.title}</strong>
-        <span style="font-size:0.75rem; color:var(--text-muted);">${formatDate(item.date)}</span>
-      </div>
-      <p style="font-size:0.82rem; color:var(--text-dark); margin:0 0 0.4rem 0;">${item.description || 'Report submitted.'}</p>
-      <div style="font-size:0.75rem; font-weight:600; color: ${item.status === 'returned' ? 'var(--success)' : 'var(--warning)'};">
-        Status: ${item.status === 'returned' ? 'Returned to Owner ✓' : 'Active Listing ⏳'}
-      </div>
-    </div>
-  `).join('');
-
-  listEl.innerHTML = html;
+  // Start polling for server notifications
+  fetchNotificationsFromServer();
+  setInterval(fetchNotificationsFromServer, 15000);
 }
 
 function downloadReportHistory() {
@@ -2250,7 +2306,7 @@ function downloadReportHistory() {
 
       <div class="header">
         <div class="header-logo">
-          <img src="${window.location.origin}/logo.png" onerror="this.style.display='none'" />
+          <img src="logo.png" onerror="this.style.display='none'" />
           <div>
             <h1 class="header-title">LEAD CITY UNIVERSITY</h1>
             <p class="header-sub">Official Lost & Found Student Report History</p>
@@ -2326,14 +2382,16 @@ function exportReportHistoryCSV() {
     `"${(item.reporterName || '').replace(/"/g, '""')}"`
   ]);
 
-  const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-  const encodedUri = encodeURI(csvContent);
+  const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
-  link.setAttribute('href', encodedUri);
+  link.setAttribute('href', url);
   link.setAttribute('download', `LCU_Lost_Found_Reports_${new Date().toISOString().split('T')[0]}.csv`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  URL.revokeObjectURL(url);
   showToast('CSV History downloaded successfully.');
 }
 
@@ -2470,6 +2528,53 @@ function setupActivationPaymentModal() {
     });
   }
 
+  // Format Card Number (adds space every 4 digits)
+  const cardInput = document.getElementById('pay-card-number');
+  if (cardInput) {
+    cardInput.addEventListener('input', (e) => {
+      let value = e.target.value.replace(/\D/g, '').slice(0, 16);
+      let formatted = value.match(/.{1,4}/g)?.join(' ') || value;
+      e.target.value = formatted;
+    });
+  }
+
+  // Format Expiry Date (MM/YY)
+  const expiryInput = document.getElementById('pay-card-expiry');
+  if (expiryInput) {
+    expiryInput.addEventListener('input', (e) => {
+      let value = e.target.value.replace(/\D/g, '').slice(0, 4);
+      if (value.length >= 3) {
+        e.target.value = `${value.slice(0, 2)}/${value.slice(2)}`;
+      } else {
+        e.target.value = value;
+      }
+    });
+  }
+
+  // Format CVV (Max 4 digits numeric)
+  const cvvInput = document.getElementById('pay-card-cvv');
+  if (cvvInput) {
+    cvvInput.addEventListener('input', (e) => {
+      e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+    });
+  }
+
+  // Copy Account Number button
+  const btnCopyAcc = document.getElementById('btn-copy-acc-num');
+  const accNumEl = document.getElementById('transfer-acc-num');
+  if (btnCopyAcc && accNumEl) {
+    btnCopyAcc.addEventListener('click', () => {
+      const text = accNumEl.textContent.trim();
+      navigator.clipboard.writeText(text).then(() => {
+        btnCopyAcc.textContent = 'Copied! ✓';
+        showToast('Account number copied to clipboard! 📋', 'success');
+        setTimeout(() => { btnCopyAcc.textContent = 'Copy'; }, 2000);
+      }).catch(() => {
+        showToast(`Account: ${text}`, 'info');
+      });
+    });
+  }
+
   // Form submission
   const form = document.getElementById('form-activation-payment');
   const submitBtn = document.getElementById('btn-submit-activation-payment');
@@ -2484,7 +2589,7 @@ function setupActivationPaymentModal() {
 
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.6s linear infinite;margin-right:8px;vertical-align:middle;"></span> Processing Authorization...';
+        submitBtn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.6s linear infinite;margin-right:8px;vertical-align:middle;"></span> Authorizing...';
       }
 
       try {
