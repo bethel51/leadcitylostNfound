@@ -2423,25 +2423,23 @@
 }
 
 /* =====================================================
-   MOBILE BOTTOM NAVIGATION BAR (PWA Native-Feel)
+   FLOATING PILL MOBILE BOTTOM NAVIGATION
    ===================================================== */
+
+/* Outer wrapper — full-width transparent strip at the bottom */
 .db-mobile-bottom-nav {
   display: none;
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 64px;
-  background-color: var(--card-bg);
-  border-top: 1px solid var(--border-color);
-  box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
+  /* enough height to accommodate the lifted FAB + safe area */
+  height: calc(80px + env(safe-area-inset-bottom, 0px));
   z-index: 300;
-  align-items: center;
-  justify-content: space-around;
-  padding: 0 0.5rem;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none; /* let clicks pass through the transparent surround */
+  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
 }
 
 @media (max-width: 991px) {
@@ -2449,92 +2447,203 @@
     display: flex;
   }
   .db-main {
-    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
   }
 }
 
+/* The actual floating pill */
+.db-mob-nav-pill {
+  pointer-events: all;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0;
+  width: calc(100% - 32px);
+  max-width: 480px;
+  height: 62px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 28px;
+  box-shadow:
+    0 8px 32px rgba(15, 23, 42, 0.14),
+    0 2px 8px  rgba(15, 23, 42, 0.08),
+    0 0 0 1px rgba(255,255,255,0.06) inset;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 0 10px;
+  position: relative;
+  overflow: visible;
+}
+
+/* Each regular nav item button */
 .db-mob-nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 3px;
+  flex: 1;
   background: none;
   border: none;
   cursor: pointer;
   color: var(--text-muted);
-  font-size: 0.6rem;
-  font-weight: 600;
+  font-size: 0.58rem;
+  font-weight: 700;
   font-family: 'Outfit', sans-serif;
-  padding: 0.35rem 0.85rem;
-  border-radius: 12px;
-  transition: color 0.2s ease, background 0.2s ease;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 6px 4px;
+  border-radius: 20px;
+  transition: color 0.2s ease;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  min-width: 54px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
+  position: relative;
+  min-width: 0;
+}
+
+/* Icon wrapper — holds the svg + active dot */
+.db-mob-nav-icon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 32px;
+  border-radius: 14px;
+  transition: background 0.22s ease, transform 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .db-mob-nav-item svg {
-  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.2s ease;
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  flex-shrink: 0;
 }
 
-.db-mob-nav-item:active svg {
-  transform: scale(0.88);
+/* Active indicator dot */
+.db-mob-active-dot {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%) scale(0);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--primary);
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease;
+  opacity: 0;
 }
 
+/* Active state */
 .db-mob-nav-item.active {
   color: var(--primary);
 }
-
-.db-mob-nav-item.active svg {
-  color: var(--primary);
+.db-mob-nav-item.active .db-mob-nav-icon-wrap {
+  background: rgba(37, 99, 235, 0.1);
   transform: translateY(-2px);
 }
+.db-mob-nav-item.active svg {
+  color: var(--primary);
+}
+.db-mob-nav-item.active .db-mob-active-dot {
+  transform: translateX(-50%) scale(1);
+  opacity: 1;
+}
 
+/* Press feedback */
+.db-mob-nav-item:active .db-mob-nav-icon-wrap {
+  transform: scale(0.88) translateY(-1px);
+}
+
+/* Notification badge on Reports icon */
 .db-mob-badge {
   position: absolute;
-  top: -4px;
-  right: -6px;
+  top: -3px;
+  right: -5px;
   background: var(--danger);
   color: white;
-  font-size: 0.58rem;
+  font-size: 0.55rem;
   font-weight: 800;
   padding: 1px 4px;
   border-radius: 10px;
   border: 1.5px solid var(--card-bg);
-  min-width: 16px;
+  min-width: 15px;
   text-align: center;
   line-height: 1.3;
 }
 
-/* Center FAB (Floating Action Button) */
+/* ── Centre FAB wrapper ───────────────────────────────── */
+.db-mob-fab-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+  /* lift the FAB above the pill */
+  margin-top: -38px;
+  pointer-events: all;
+}
+
+/* FAB label below the button */
+.db-mob-fab-label {
+  font-size: 0.58rem;
+  font-weight: 700;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-top: 2px;
+  line-height: 1;
+}
+
+/* The circular FAB button itself */
 .db-mob-center-fab {
-  width: 52px;
-  height: 52px;
+  width: 54px;
+  height: 54px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary), var(--accent));
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
   color: white;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4), 0 2px 8px rgba(37, 99, 235, 0.3);
+  box-shadow:
+    0 8px 24px rgba(37, 99, 235, 0.45),
+    0 2px 8px  rgba(37, 99, 235, 0.25),
+    0 0 0 3px var(--card-bg);  /* white ring that separates it from the pill */
   transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s ease;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  margin-top: -20px;
-  flex-shrink: 0;
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  flex-shrink: 0;
 }
 
 .db-mob-center-fab:active {
-  transform: scale(0.92);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+  transform: scale(0.9);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4), 0 0 0 3px var(--card-bg);
 }
+
+/* Dark mode pill tweaks */
+.dark-theme .db-mob-nav-pill {
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.45),
+    0 2px 8px  rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255,255,255,0.05) inset;
+}
+.dark-theme .db-mob-nav-item.active .db-mob-nav-icon-wrap {
+  background: rgba(96, 165, 250, 0.15);
+}
+.dark-theme .db-mob-active-dot {
+  background: var(--accent);
+}
+.dark-theme .db-mob-nav-item.active {
+  color: var(--accent);
+}
+.dark-theme .db-mob-nav-item.active svg {
+  color: var(--accent);
+}
+
+
 
 /* =====================================================
    COMPREHENSIVE MOBILE SWEEP — 768px
@@ -2915,17 +3024,29 @@
     height: 34px;
   }
   .db-mobile-bottom-nav {
-    height: 58px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+  .db-mob-nav-pill {
+    width: calc(100% - 24px);
+    height: 56px;
+    border-radius: 24px;
+    padding: 0 6px;
   }
   .db-mob-nav-item {
-    min-width: 48px;
-    padding: 0.25rem 0.45rem;
-    font-size: 0.55rem;
+    font-size: 0.52rem;
+    padding: 4px 2px;
+  }
+  .db-mob-nav-icon-wrap {
+    width: 32px;
+    height: 28px;
   }
   .db-mob-center-fab {
-    width: 46px;
-    height: 46px;
-    margin-top: -16px;
+    width: 48px;
+    height: 48px;
+    margin-top: -34px;
+  }
+  .db-mob-fab-label {
+    font-size: 0.52rem;
   }
   .act-otp-digit {
     height: 42px;
