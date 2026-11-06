@@ -399,16 +399,23 @@ router.post('/initiate-activation-payment', protect, async (req, res) => {
       success: true,
       message: 'Activation transaction initialized.',
       paymentDetails: {
+        merchant_code: process.env.INTERSWITCH_MERCHANT_CODE || 'MX216776',
         merchantCode: process.env.INTERSWITCH_MERCHANT_CODE || 'MX216776',
+        pay_item_id: process.env.INTERSWITCH_PAYMENT_ITEM_ID || 'Default_Payable_MX216776',
         payItemID: process.env.INTERSWITCH_PAYMENT_ITEM_ID || 'Default_Payable_MX216776',
         customerEmail: user.email,
         customerName: user.name,
         customerID: user.matricNumber || user.email,
+        cust_email: user.email,
+        cust_name: user.name,
+        cust_id: user.matricNumber || user.email,
         amount: ACTIVATION_AMOUNT_KOBO,
         amountNaira: ACTIVATION_AMOUNT_NAIRA,
         currency: 566, // Nigerian Naira
+        txn_ref: paymentRef,
         txnRef: paymentRef,
-        siteRedirectURL: req.headers.origin || 'https://leadcitylostnfound.onrender.com'
+        site_redirect_url: req.headers.origin || 'https://leadcitylostnfound-byfi.onrender.com',
+        siteRedirectURL: req.headers.origin || 'https://leadcitylostnfound-byfi.onrender.com'
       }
     });
   } catch (error) {

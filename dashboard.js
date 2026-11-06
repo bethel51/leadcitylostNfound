@@ -2642,45 +2642,63 @@ async function executeInterswitchActivation(triggerBtn) {
 
     if (res.ok && data.paymentDetails) {
       const details = data.paymentDetails;
-      const hasInlineCheckout = typeof window.webpayCheckout === 'function' || typeof window.Interswitch === 'function';
+      const redirectUrl = window.location.href || 'https://leadcitylostnfound-byfi.onrender.com';
 
-      if (hasInlineCheckout) {
-        const paymentConfig = {
-          merchantCode: details.merchantCode,
-          payItemID: details.payItemID,
-          customerEmail: details.customerEmail,
-          customerName: details.customerName,
-          customerID: details.customerID,
-          amount: details.amount, // in kobo
-          currency: details.currency, // 566 = NGN
-          txnRef: details.txnRef,
-          onComplete: async function (response) {
-            console.log('Interswitch payment callback:', response);
-            await handleInterswitchCompletion(response, details.txnRef);
-          },
-          onClose: function () {
-            if (triggerBtn) {
-              triggerBtn.disabled = false;
-              if (originalBtnHtml) triggerBtn.innerHTML = originalBtnHtml;
-            }
-            showToast('Payment window closed. Please complete payment to activate your account.', 'warning');
-          }
-        };
-
-        if (typeof window.webpayCheckout === 'function') {
-          window.webpayCheckout(paymentConfig);
-        } else if (typeof window.Interswitch === 'function') {
-          new window.Interswitch(paymentConfig);
+      const paymentConfig = {
+        merchant_code: String(details.merchant_code || details.merchantCode || 'MX216776'),
+        merchantCode: String(details.merchant_code || details.merchantCode || 'MX216776'),
+        pay_item_id: String(details.pay_item_id || details.payItemID || 'Default_Payable_MX216776'),
+        payItemID: String(details.pay_item_id || details.payItemID || 'Default_Payable_MX216776'),
+        txn_ref: String(details.txn_ref || details.txnRef),
+        txnRef: String(details.txn_ref || details.txnRef),
+        amount: Number(details.amount) || 300000, // in kobo
+        currency: Number(details.currency) || 566, // Nigerian Naira
+        site_redirect_url: redirectUrl,
+        siteRedirectURL: redirectUrl,
+        cust_name: details.cust_name || details.customerName || (state.currentUser ? state.currentUser.name : 'Student'),
+        customerName: details.cust_name || details.customerName || (state.currentUser ? state.currentUser.name : 'Student'),
+        cust_email: details.cust_email || details.customerEmail || (state.currentUser ? state.currentUser.email : ''),
+        customerEmail: details.cust_email || details.customerEmail || (state.currentUser ? state.currentUser.email : ''),
+        cust_id: details.cust_id || details.customerID || (state.currentUser ? (state.currentUser.matricNumber || state.currentUser.email) : 'LCU-STUDENT'),
+        customerID: details.cust_id || details.customerID || (state.currentUser ? (state.currentUser.matricNumber || state.currentUser.email) : 'LCU-STUDENT'),
+        onComplete: async function (response) {
+          console.log('Interswitch payment callback:', response);
+          await handleInterswitchCompletion(response, details.txn_ref || details.txnRef);
         }
-      } else {
+      };
+
+      let inlineLaunched = false;
+      if (typeof window.webpayCheckout === 'function') {
+        try {
+          window.webpayCheckout(paymentConfig);
+          inlineLaunched = true;
+
+          // Detect when user closes the Interswitch checkout modal
+          const observer = new MutationObserver(() => {
+            if (!document.getElementById('webpay-checkout-container')) {
+              if (triggerBtn) {
+                triggerBtn.disabled = false;
+                if (originalBtnHtml) triggerBtn.innerHTML = originalBtnHtml;
+              }
+              observer.disconnect();
+            }
+          });
+          observer.observe(document.body, { childList: true });
+        } catch (sdkErr) {
+          console.warn('Interswitch inline SDK launch failed:', sdkErr);
+          inlineLaunched = false;
+        }
+      }
+
+      if (!inlineLaunched) {
         // Fallback: Show payment checkout modal or direct confirmation
         openActivationPaymentModal();
         const confirmed = confirm(
-          `Proceed to complete ₦3,000 account activation payment for ${details.customerName}?\n\nGateway: Interswitch / Quickteller\nMerchant: MX216776\nReference: ${details.txnRef}`
+          `Proceed to complete ₦3,000 account activation payment for ${details.customerName || 'Student'}?\n\nGateway: Interswitch / Quickteller\nMerchant: MX216776\nReference: ${details.txnRef || details.txn_ref}`
         );
 
         if (confirmed) {
-          await handleInterswitchCompletion({ responseCode: '00', txn_ref: details.txnRef }, details.txnRef);
+          await handleInterswitchCompletion({ responseCode: '00', txn_ref: details.txnRef || details.txn_ref }, details.txnRef || details.txn_ref);
         } else {
           if (triggerBtn) {
             triggerBtn.disabled = false;
@@ -2697,7 +2715,7 @@ async function executeInterswitchActivation(triggerBtn) {
     }
   } catch (err) {
     console.error('Payment initiation error:', err);
-    showToast('Connection error connecting to payment gateway.', 'error');
+    showToast(err.message || 'Connection error connecting to payment gateway.', 'error');
     if (triggerBtn) {
       triggerBtn.disabled = false;
       if (originalBtnHtml) triggerBtn.innerHTML = originalBtnHtml;
