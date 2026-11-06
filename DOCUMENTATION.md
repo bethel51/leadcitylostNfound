@@ -320,3 +320,4 @@ sequenceDiagram
 | `POST` | `/api/admin/verifications` | Admin Only | Record in-person physical custody handover |
 | `POST` | `/api/admin/intake` | Admin Only | Direct gate intake of recovered property |
 | `POST` | `/api/admin/alerts` | Admin Only | Broadcast campus security notices |
+

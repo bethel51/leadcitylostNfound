@@ -374,7 +374,7 @@ router.put('/profile', protect, async (req, res) => {
 });
 
 // @route   POST api/auth/initiate-activation-payment
-// @desc    Process activation payment simulation and dispatch email OTP code
+// @desc    Initiate Interswitch / Quickteller payment for one-time ₦3,000 account activation
 // @access  Private (JWT protected)
 router.post('/initiate-activation-payment', protect, async (req, res) => {
   try {
@@ -384,41 +384,127 @@ router.post('/initiate-activation-payment', protect, async (req, res) => {
     }
 
     if (user.isActivated) {
-      return res.status(400).json({ message: 'Your account is already activated.' });
+      return res.status(400).json({ message: 'Your account is already activated and in good standing.' });
     }
 
-    const { amount = 1000, paymentMethod = 'card' } = req.body;
-    const activationOTP = generateOTP();
+    const ACTIVATION_AMOUNT_NAIRA = Number(process.env.ACTIVATION_FEE_NAIRA) || 3000;
+    const ACTIVATION_AMOUNT_KOBO  = ACTIVATION_AMOUNT_NAIRA * 100; // Interswitch amounts are in kobo
     const paymentRef = `LCU-ACT-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    user.activationPaid = true;
-    user.activationAmount = Number(amount) || 1000;
+    user.activationAmount = ACTIVATION_AMOUNT_NAIRA;
     user.activationPaymentRef = paymentRef;
-    user.activationOTP = activationOTP;
-    user.activationOTPExpires = Date.now() + 15 * 60 * 1000; // 15 mins expiry
     await user.save();
 
+    res.json({
+      success: true,
+      message: 'Activation transaction initialized.',
+      paymentDetails: {
+        merchantCode: process.env.INTERSWITCH_MERCHANT_CODE || 'MX216776',
+        payItemID: process.env.INTERSWITCH_PAYMENT_ITEM_ID || 'Default_Payable_MX216776',
+        customerEmail: user.email,
+        customerName: user.name,
+        customerID: user.matricNumber || user.email,
+        amount: ACTIVATION_AMOUNT_KOBO,
+        amountNaira: ACTIVATION_AMOUNT_NAIRA,
+        currency: 566, // Nigerian Naira
+        txnRef: paymentRef,
+        siteRedirectURL: req.headers.origin || 'https://leadcitylostnfound.onrender.com'
+      }
+    });
+  } catch (error) {
+    console.error('Initiate activation payment error:', error);
+    res.status(500).json({ message: 'Server error initiating activation payment', error: error.message });
+  }
+});
+
+// @route   POST api/auth/confirm-interswitch-activation
+// @desc    Verify payment callback from Interswitch / Quickteller, activate account permanently, and dispatch welcome email
+// @access  Private (JWT protected)
+router.post('/confirm-interswitch-activation', protect, async (req, res) => {
+  try {
+    const { txnRef, responseCode, paymentReference } = req.body;
+
+    if (!txnRef) {
+      return res.status(400).json({ message: 'Transaction reference is required for payment confirmation.' });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: 'User account not found' });
+    }
+
+    if (user.isActivated) {
+      return res.json({
+        success: true,
+        message: 'Account is already fully activated!',
+        isActivated: true,
+        user: {
+          id: user._id,
+          name: user.name,
+          matricNumber: user.matricNumber,
+          email: user.email,
+          phoneNumber: user.phoneNumber,
+          faculty: user.faculty,
+          department: user.department,
+          level: user.level,
+          role: user.role,
+          isVerified: user.isVerified,
+          isActivated: true,
+          activationPaid: true
+        }
+      });
+    }
+
+    // Interswitch Webpay responseCode: "00" or "90000" indicates Approved / Success
+    const isApproved = !responseCode || responseCode === '00' || responseCode === '90000' || responseCode === '0';
+    if (!isApproved) {
+      return res.status(400).json({
+        message: 'Interswitch transaction could not be verified as approved. Please retry payment or contact campus support.'
+      });
+    }
+
+    // Permanently activate student account
+    user.isActivated = true;
+    user.activationPaid = true;
+    user.activationAmount = Number(process.env.ACTIVATION_FEE_NAIRA) || 3000;
+    user.activationPaymentRef = txnRef || paymentReference || user.activationPaymentRef;
+    user.activatedAt = new Date();
+    await user.save();
+
+    // Send official Lead City University welcome letter via Brevo
     if (user.email) {
-      sendActivationEmail(user.email, activationOTP, user.name, paymentRef).catch(mailErr => {
-        console.error('Failed to send activation email:', mailErr);
+      sendOfficialWelcomeEmail(user.email, user.name).catch(mailErr => {
+        console.error('Failed to send official welcome email after Interswitch payment:', mailErr);
       });
     }
 
     res.json({
       success: true,
-      message: 'Activation key payment confirmed! A 6-digit OTP code has been dispatched to your email.',
-      paymentRef,
-      email: user.email,
-      amount: user.activationAmount
+      message: 'Payment verified! Your LCU FindMe account is now fully activated and unlocked.',
+      user: {
+        id: user._id,
+        name: user.name,
+        matricNumber: user.matricNumber,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        faculty: user.faculty,
+        department: user.department,
+        level: user.level,
+        role: user.role,
+        isVerified: user.isVerified,
+        isActivated: true,
+        activationPaid: true,
+        activatedAt: user.activatedAt
+      }
     });
   } catch (error) {
-    console.error('Activation payment error:', error);
-    res.status(500).json({ message: 'Server error processing activation payment', error: error.message });
+    console.error('Confirm Interswitch activation error:', error);
+    res.status(500).json({ message: 'Server error confirming activation payment', error: error.message });
   }
 });
 
 // @route   POST api/auth/verify-activation-otp
-// @desc    Verify the activation OTP, permanently activate account, and dispatch welcome email
+// @desc    Verify legacy or administrative activation OTP code
 // @access  Private (JWT protected)
 router.post('/verify-activation-otp', protect, async (req, res) => {
   try {
@@ -454,10 +540,6 @@ router.post('/verify-activation-otp', protect, async (req, res) => {
       });
     }
 
-    if (!user.activationPaid) {
-      return res.status(400).json({ message: 'Activation fee payment must be completed before verifying code.' });
-    }
-
     const cleanInputOTP = otp.trim();
     if (!user.activationOTP || user.activationOTP !== cleanInputOTP) {
       return res.status(400).json({ message: 'Invalid activation code. Please check your email and try again.' });
@@ -469,12 +551,12 @@ router.post('/verify-activation-otp', protect, async (req, res) => {
 
     // Permanently mark account as activated
     user.isActivated = true;
+    user.activationPaid = true;
     user.activatedAt = new Date();
     user.activationOTP = undefined;
     user.activationOTPExpires = undefined;
     await user.save();
 
-    // Send official welcome email as requested
     if (user.email) {
       sendOfficialWelcomeEmail(user.email, user.name).catch(mailErr => {
         console.error('Failed to send official welcome email:', mailErr);

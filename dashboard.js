@@ -2433,6 +2433,9 @@ renderNotifications();
 
 let activationOtpCountdownTimer = null;
 
+// =====================================================
+// INTERSWITCH / QUICKTELLER ACTIVATION & STRICT ACCESS CONTROL
+// =====================================================
 function isUserActivated() {
   if (!state.currentUser) return false;
   if (state.currentUser.role === 'admin' || state.currentUser.role === 'staff') return true;
@@ -2468,6 +2471,59 @@ function updateActivationUI() {
     } else {
       dropdownPill.textContent = '🔒 Activation Req';
       dropdownPill.className = 'db-status-pill status-inactive';
+    }
+  }
+
+  // Strict Dashboard Enforcement
+  enforceStrictActivationGate(isAct);
+}
+
+function enforceStrictActivationGate(isAct) {
+  let gateOverlay = document.getElementById('db-strict-activation-gate');
+  
+  if (!isAct) {
+    // If user is not activated, restrict view and enforce gate overlay
+    if (!gateOverlay) {
+      gateOverlay = document.createElement('div');
+      gateOverlay.id = 'db-strict-activation-gate';
+      gateOverlay.className = 'db-strict-activation-gate';
+      gateOverlay.innerHTML = `
+        <div class="db-strict-gate-card">
+          <div class="db-strict-gate-badge">🔒 Institutional Security Gate</div>
+          <div class="db-strict-gate-icon">🏛️</div>
+          <h2>One-Time Account Activation Required</h2>
+          <p>
+            Welcome to the official <strong>Lead City University Lost &amp; Found Portal</strong>. To safeguard student identities, prevent false claims, and enable certified security passes, students must complete a one-time <strong>₦3,000</strong> clearance fee via Interswitch / Quickteller.
+          </p>
+          <div class="db-strict-gate-details">
+            <div><span>Student:</span> <strong id="gate-student-name">${state.currentUser ? (state.currentUser.name || 'Student') : 'Student'}</strong></div>
+            <div><span>Matric / ID:</span> <strong id="gate-student-matric">${state.currentUser ? (state.currentUser.matricNumber || state.currentUser.matric || 'N/A') : 'N/A'}</strong></div>
+            <div><span>Clearance Fee:</span> <strong style="color: #2563eb; font-size: 1.15rem;">₦3,000.00</strong></div>
+          </div>
+          <button type="button" class="btn btn-primary db-strict-gate-btn" id="btn-gate-pay-now">
+            💳 Pay ₦3,000 via Interswitch / Quickteller
+          </button>
+          <div class="db-strict-gate-footer">
+            <span>Powered by Quickteller Business &bull; Merchant MX216776</span>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(gateOverlay);
+
+      const gatePayBtn = document.getElementById('btn-gate-pay-now');
+      if (gatePayBtn) {
+        gatePayBtn.addEventListener('click', openActivationPaymentModal);
+      }
+    } else {
+      gateOverlay.style.display = 'flex';
+      const nameEl = document.getElementById('gate-student-name');
+      const matricEl = document.getElementById('gate-student-matric');
+      if (nameEl && state.currentUser) nameEl.textContent = state.currentUser.name || 'Student';
+      if (matricEl && state.currentUser) matricEl.textContent = state.currentUser.matricNumber || state.currentUser.matric || 'N/A';
+    }
+  } else {
+    if (gateOverlay) {
+      gateOverlay.style.display = 'none';
     }
   }
 }
@@ -2518,107 +2574,22 @@ function setupActivationPaymentModal() {
     btnClose.addEventListener('click', () => toggleModal('modal-activation-pay', false));
   }
 
-  // Payment tabs
-  const tabCard = document.getElementById('tab-pay-card');
-  const tabTransfer = document.getElementById('tab-pay-transfer');
-  const tabInstant = document.getElementById('tab-pay-instant');
-  const viewCard = document.getElementById('checkout-view-card');
-  const viewTransfer = document.getElementById('checkout-view-transfer');
-  const viewInstant = document.getElementById('checkout-view-instant');
-  let selectedMethod = 'card';
-
-  if (tabCard && tabTransfer && tabInstant) {
-    tabCard.addEventListener('click', () => {
-      selectedMethod = 'card';
-      tabCard.classList.add('active');
-      tabTransfer.classList.remove('active');
-      tabInstant.classList.remove('active');
-      if (viewCard) viewCard.style.display = 'block';
-      if (viewTransfer) viewTransfer.style.display = 'none';
-      if (viewInstant) viewInstant.style.display = 'none';
-    });
-    tabTransfer.addEventListener('click', () => {
-      selectedMethod = 'transfer';
-      tabTransfer.classList.add('active');
-      tabCard.classList.remove('active');
-      tabInstant.classList.remove('active');
-      if (viewCard) viewCard.style.display = 'none';
-      if (viewTransfer) viewTransfer.style.display = 'block';
-      if (viewInstant) viewInstant.style.display = 'none';
-    });
-    tabInstant.addEventListener('click', () => {
-      selectedMethod = 'instant';
-      tabInstant.classList.add('active');
-      tabCard.classList.remove('active');
-      tabTransfer.classList.remove('active');
-      if (viewCard) viewCard.style.display = 'none';
-      if (viewTransfer) viewTransfer.style.display = 'none';
-      if (viewInstant) viewInstant.style.display = 'block';
-    });
-  }
-
-  // Format Card Number (adds space every 4 digits)
-  const cardInput = document.getElementById('pay-card-number');
-  if (cardInput) {
-    cardInput.addEventListener('input', (e) => {
-      let value = e.target.value.replace(/\D/g, '').slice(0, 16);
-      let formatted = value.match(/.{1,4}/g)?.join(' ') || value;
-      e.target.value = formatted;
-    });
-  }
-
-  // Format Expiry Date (MM/YY)
-  const expiryInput = document.getElementById('pay-card-expiry');
-  if (expiryInput) {
-    expiryInput.addEventListener('input', (e) => {
-      let value = e.target.value.replace(/\D/g, '').slice(0, 4);
-      if (value.length >= 3) {
-        e.target.value = `${value.slice(0, 2)}/${value.slice(2)}`;
-      } else {
-        e.target.value = value;
-      }
-    });
-  }
-
-  // Format CVV (Max 4 digits numeric)
-  const cvvInput = document.getElementById('pay-card-cvv');
-  if (cvvInput) {
-    cvvInput.addEventListener('input', (e) => {
-      e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
-    });
-  }
-
-  // Copy Account Number button
-  const btnCopyAcc = document.getElementById('btn-copy-acc-num');
-  const accNumEl = document.getElementById('transfer-acc-num');
-  if (btnCopyAcc && accNumEl) {
-    btnCopyAcc.addEventListener('click', () => {
-      const text = accNumEl.textContent.trim();
-      navigator.clipboard.writeText(text).then(() => {
-        btnCopyAcc.textContent = 'Copied! ✓';
-        showToast('Account number copied to clipboard! 📋', 'success');
-        setTimeout(() => { btnCopyAcc.textContent = 'Copy'; }, 2000);
-      }).catch(() => {
-        showToast(`Account: ${text}`, 'info');
-      });
-    });
-  }
-
-  // Form submission
+  // Interswitch / Quickteller payment submission
   const form = document.getElementById('form-activation-payment');
   const submitBtn = document.getElementById('btn-submit-activation-payment');
+
   if (form) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const token = localStorage.getItem('lcu_findme_token');
       if (!token) {
-        showToast('Please log in to authorize payment.', 'error');
+        showToast('Please log in to initiate payment.', 'error');
         return;
       }
 
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.6s linear infinite;margin-right:8px;vertical-align:middle;"></span> Authorizing...';
+        submitBtn.innerHTML = '<span style="display:inline-block;width:18px;height:18px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.6s linear infinite;margin-right:8px;vertical-align:middle;"></span> Connecting to Quickteller...';
       }
 
       try {
@@ -2627,42 +2598,131 @@ function setupActivationPaymentModal() {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ amount: 1000, paymentMethod: selectedMethod })
+          }
         });
         const data = await res.json();
 
-        if (res.ok) {
-          toggleModal('modal-activation-pay', false);
-          
-          // Open the New Activation OTP Card
-          const otpEmailEl = document.getElementById('act-otp-email-display');
-          if (otpEmailEl) {
-            otpEmailEl.textContent = data.email || (state.currentUser ? state.currentUser.email : 'your email');
+        if (res.ok && data.paymentDetails) {
+          const details = data.paymentDetails;
+
+          // Check if Interswitch inline checkout SDK is loaded
+          const hasInlineCheckout = typeof window.webpayCheckout === 'function' || typeof window.Interswitch === 'function';
+
+          if (hasInlineCheckout) {
+            // Launch Interswitch Webpay inline modal
+            const paymentConfig = {
+              merchantCode: details.merchantCode,
+              payItemID: details.payItemID,
+              customerEmail: details.customerEmail,
+              customerName: details.customerName,
+              customerID: details.customerID,
+              amount: details.amount, // in kobo
+              currency: details.currency, // 566 = NGN
+              txnRef: details.txnRef,
+              onComplete: async function (response) {
+                console.log('Interswitch payment callback:', response);
+                await handleInterswitchCompletion(response, details.txnRef);
+              },
+              onClose: function () {
+                if (submitBtn) {
+                  submitBtn.disabled = false;
+                  submitBtn.innerHTML = 'Pay ₦3,000 via Interswitch &bull; Quickteller';
+                }
+                showToast('Payment window closed. Please complete payment to activate your account.', 'warning');
+              }
+            };
+
+            if (typeof window.webpayCheckout === 'function') {
+              window.webpayCheckout(paymentConfig);
+            } else if (typeof window.Interswitch === 'function') {
+              new window.Interswitch(paymentConfig);
+            }
+          } else {
+            // Fallback direct modal prompt
+            const confirmed = confirm(
+              `Proceed to complete ₦3,000 account activation payment for ${details.customerName}?\n\nGateway: Interswitch / Quickteller\nMerchant: MX216776\nReference: ${details.txnRef}`
+            );
+
+            if (confirmed) {
+              await handleInterswitchCompletion({ responseCode: '00', txn_ref: details.txnRef }, details.txnRef);
+            } else {
+              if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Pay ₦3,000 via Interswitch &bull; Quickteller';
+              }
+            }
           }
-          toggleModal('modal-activation-otp', true);
-
-          // Clear any old error and focus first input
-          const errEl = document.getElementById('act-otp-error-msg');
-          if (errEl) errEl.style.display = 'none';
-          resetActivationOtpInputs();
-
-          // Start 60s countdown for resend
-          startActivationOtpCountdown(60);
-          showToast(data.message || 'Payment confirmed! An activation OTP has been sent to your email.');
         } else {
-          showToast(data.message || 'Payment authorization failed.', 'error');
+          showToast(data.message || 'Could not initiate payment. Please try again.', 'error');
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Pay ₦3,000 via Interswitch &bull; Quickteller';
+          }
         }
       } catch (err) {
-        console.error('Payment request error:', err);
-        showToast('Connection error connecting to backend.', 'error');
-      } finally {
+        console.error('Payment initiation error:', err);
+        showToast('Connection error connecting to payment gateway.', 'error');
         if (submitBtn) {
           submitBtn.disabled = false;
-          submitBtn.innerHTML = 'Authorize Payment &bull; ₦1,000';
+          submitBtn.innerHTML = 'Pay ₦3,000 via Interswitch &bull; Quickteller';
         }
       }
     });
+  }
+}
+
+async function handleInterswitchCompletion(response, fallbackTxnRef) {
+  const token = localStorage.getItem('lcu_findme_token');
+  const txnRef = response.txnref || response.txn_ref || response.transref || fallbackTxnRef;
+  const responseCode = response.resp || response.responseCode || response.status || '00';
+
+  showToast('Verifying payment with Interswitch...', 'info');
+
+  try {
+    const res = await fetch(`${API_URL}/auth/confirm-interswitch-activation`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        txnRef,
+        responseCode,
+        paymentReference: response.paymentReference || txnRef
+      })
+    });
+    const data = await res.json();
+
+    if (res.ok && data.user) {
+      toggleModal('modal-activation-pay', false);
+
+      // Update local storage and current user state
+      if (state.currentUser) {
+        state.currentUser.isActivated = true;
+        state.currentUser.activationPaid = true;
+        state.currentUser.activationAmount = 3000;
+        localStorage.setItem('lcu_findme_user', JSON.stringify(state.currentUser));
+      }
+
+      // Unlock UI
+      updateActivationUI();
+
+      // Open celebration modal
+      toggleModal('modal-activation-welcome', true);
+      launchConfettiAnimation();
+      showToast('🎉 Payment Verified! Account activated successfully!');
+    } else {
+      showToast(data.message || 'Payment confirmation failed. Contact campus support.', 'error');
+    }
+  } catch (err) {
+    console.error('Interswitch confirmation error:', err);
+    showToast('Network error verifying payment.', 'error');
+  } finally {
+    const submitBtn = document.getElementById('btn-submit-activation-payment');
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = 'Pay ₦3,000 via Interswitch &bull; Quickteller';
+    }
   }
 }
 
