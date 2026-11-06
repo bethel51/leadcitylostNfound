@@ -52,7 +52,11 @@ router.get('/notifications', protect, async (req, res) => {
 
     // 1. Check if any of the user's reports got marked as returned recently
     const myReturnedItems = await Item.find({
-      reporterName: req.user.name,
+      $or: [
+        { reporterUserId: req.user._id },
+        { reporterMatric: { $regex: new RegExp('^' + req.user.matricNumber + '$', 'i') } },
+        { reporterEmail: { $regex: new RegExp('^' + req.user.email + '$', 'i') } }
+      ],
       status: 'returned',
       updatedAt: { $gte: oneHourAgo }
     });
@@ -66,13 +70,21 @@ router.get('/notifications', protect, async (req, res) => {
     });
 
     // 2. Check for newly reported items in the same categories that the user reported
-    const myReports = await Item.find({ reporterName: req.user.name });
+    const myReports = await Item.find({
+      $or: [
+        { reporterUserId: req.user._id },
+        { reporterMatric: { $regex: new RegExp('^' + req.user.matricNumber + '$', 'i') } },
+        { reporterEmail: { $regex: new RegExp('^' + req.user.email + '$', 'i') } }
+      ]
+    });
     const categoriesOfInterest = [...new Set(myReports.map(item => item.category))];
 
     if (categoriesOfInterest.length > 0) {
       const recentMatches = await Item.find({
         category: { $in: categoriesOfInterest },
-        reporterName: { $ne: req.user.name },
+        reporterUserId: { $ne: req.user._id },
+        reporterEmail: { $ne: req.user.email },
+        reporterMatric: { $ne: req.user.matricNumber },
         createdAt: { $gte: oneHourAgo }
       }).limit(5);
 
@@ -154,11 +166,12 @@ router.post('/', protect, async (req, res) => {
       location,
       date,
       description,
-      reporterName,
-      reporterContact,
+      reporterUserId: req.user ? req.user._id : null,
+      reporterName: req.user ? (req.user.name || reporterName) : reporterName,
+      reporterContact: (req.user && req.user.phoneNumber) ? req.user.phoneNumber : reporterContact,
       image,
-      reporterEmail: reporterEmail || (req.user ? req.user.email : '') || '',
-      reporterMatric: reporterMatric || (req.user ? req.user.matricNumber : '') || '',
+      reporterEmail: (req.user && req.user.email) ? req.user.email : (reporterEmail || ''),
+      reporterMatric: (req.user && req.user.matricNumber) ? req.user.matricNumber : (reporterMatric || ''),
       reporterFaculty: req.user ? (req.user.faculty || '') : '',
       reporterDept: req.user ? (req.user.department || '') : '',
       reporterLevel: req.user ? (req.user.level || '') : ''
@@ -386,13 +399,16 @@ router.delete('/:id', protect, async (req, res) => {
     // Allow if admin
     const isAdmin = req.user && req.user.role === 'admin';
 
-    // Allow if the logged-in user is the original reporter (match by email or matric)
+    // Allow if the logged-in user is the original reporter (match by reporterUserId, email or matric)
+    const userId     = req.user._id ? req.user._id.toString() : '';
+    const itemUserId = item.reporterUserId ? item.reporterUserId.toString() : '';
     const userEmail  = (req.user.email || '').trim().toLowerCase();
     const userMatric = (req.user.matricNumber || '').trim().toLowerCase();
     const itemEmail  = (item.reporterEmail || '').trim().toLowerCase();
     const itemMatric = (item.reporterMatric || '').trim().toLowerCase();
 
-    const isOwner = (userEmail && itemEmail && userEmail === itemEmail) ||
+    const isOwner = (userId && itemUserId && userId === itemUserId) ||
+                    (userEmail && itemEmail && userEmail === itemEmail) ||
                     (userMatric && itemMatric && userMatric === itemMatric);
 
     if (!isAdmin && !isOwner) {

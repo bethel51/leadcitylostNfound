@@ -44,7 +44,19 @@ function checkAuth() {
     window.location.href = 'index.html?login=required';
     return false;
   }
-  state.currentUser = JSON.parse(savedUser);
+  try {
+    state.currentUser = JSON.parse(savedUser);
+    // Role protection: admin accounts belong in the admin security operations portal
+    if (state.currentUser.role === 'admin') {
+      window.location.href = 'admin.html';
+      return false;
+    }
+  } catch (e) {
+    localStorage.removeItem('lcu_findme_token');
+    localStorage.removeItem('lcu_findme_user');
+    window.location.href = 'index.html?login=required';
+    return false;
+  }
   return true;
 }
 
@@ -347,18 +359,28 @@ async function fetchItems() {
 
 function computeMyItems() {
   if (!state.currentUser) { state.myItems = []; return; }
+  const uId = state.currentUser.id || state.currentUser._id ? String(state.currentUser.id || state.currentUser._id).trim() : '';
   const uName = (state.currentUser.name || '').trim().toLowerCase();
   const uEmail = (state.currentUser.email || '').trim().toLowerCase();
   const uMatric = (state.currentUser.matricNumber || state.currentUser.matric || '').trim().toLowerCase();
 
   state.myItems = state.items.filter(i => {
-    const rName = (i.reporterName || '').trim().toLowerCase();
+    // 1. Strict primary check by unique Database User ID
+    const rUserId = i.reporterUserId ? String(i.reporterUserId).trim() : '';
+    if (uId && rUserId && uId === rUserId) return true;
+
+    // 2. Strict unique account identifiers (Email & Matric)
     const rEmail = (i.reporterEmail || '').trim().toLowerCase();
     const rMatric = (i.reporterMatric || '').trim().toLowerCase();
 
     if (uEmail && rEmail && uEmail === rEmail) return true;
     if (uMatric && rMatric && uMatric === rMatric) return true;
-    if (uName && rName && uName === rName) return true;
+
+    // Only fallback to name if matric or email also matches or item has no specific email/matric
+    // and the item explicitly lacks a different user's email/matric
+    if (uName && (i.reporterName || '').trim().toLowerCase() === uName) {
+      if (!rEmail && !rMatric) return true;
+    }
     return false;
   });
 }
@@ -638,10 +660,13 @@ function setupNavigation() {
   logoutBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       state.currentUser = null;
+      state.myItems = [];
+      state.items = [];
       localStorage.removeItem('lcu_findme_token');
       localStorage.removeItem('lcu_findme_user');
+      localStorage.removeItem('lcu_findme_notifs');
       showToast('You have securely logged out.');
-      setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+      setTimeout(() => { window.location.href = 'index.html'; }, 800);
     });
   });
 
@@ -1986,10 +2011,24 @@ function setupOtpModal() {
 // =====================================================
 // NOTIFICATIONS
 // =====================================================
-const notifications = JSON.parse(localStorage.getItem('lcu_findme_notifs') || '[]');
+function getUserNotifsStorageKey() {
+  const uId = state.currentUser ? (state.currentUser.id || state.currentUser._id || state.currentUser.matricNumber || state.currentUser.email || 'guest') : 'guest';
+  return `lcu_findme_notifs_${uId}`;
+}
+
+function getStoredNotifications() {
+  try {
+    return JSON.parse(localStorage.getItem(getUserNotifsStorageKey()) || '[]');
+  } catch (e) {
+    return [];
+  }
+}
+
+let notifications = [];
 
 async function fetchNotificationsFromServer() {
   if (!state.currentUser) return;
+  notifications = getStoredNotifications();
   try {
     const token = localStorage.getItem('lcu_findme_token');
     const res = await fetch(`${API_URL}/items/notifications`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -2004,6 +2043,7 @@ async function fetchNotificationsFromServer() {
       });
       if (notifications.length > 20) notifications.length = 20;
       if (hasNew) { saveNotifs(); renderNotifications(); showToast(dbNotifs[0].message, 'info'); }
+      else { renderNotifications(); }
     }
   } catch (err) {
     console.error('Notification error:', err);
@@ -2011,7 +2051,7 @@ async function fetchNotificationsFromServer() {
 }
 
 function saveNotifs() {
-  localStorage.setItem('lcu_findme_notifs', JSON.stringify(notifications));
+  localStorage.setItem(getUserNotifsStorageKey(), JSON.stringify(notifications));
 }
 
 function renderNotifications() {

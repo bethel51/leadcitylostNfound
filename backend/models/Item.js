@@ -45,6 +45,11 @@ const ItemSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  reporterUserId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
   reporterName: {
     type: String,
     required: true
