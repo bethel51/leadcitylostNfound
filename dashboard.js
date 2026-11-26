@@ -80,6 +80,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupActivationPaymentModal();
   setupActivationOtpCard();
   setupActivationWelcomeModal();
+  setupInfoAndHelpModals();
 
   await refreshUserProfile();
   await loadData();
@@ -2229,6 +2230,48 @@ function timeAgo(isoStr) {
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
   return `${Math.floor(diff / 86400)}d ago`;
+}
+
+function setupInfoAndHelpModals() {
+  const btnInfo = document.getElementById('btn-sidebar-info');
+  const btnHelp = document.getElementById('btn-sidebar-help');
+  const closeInfo = document.getElementById('btn-close-info');
+  const closeHelp = document.getElementById('btn-close-help');
+
+  if (btnInfo) btnInfo.addEventListener('click', () => toggleModal('modal-info-center', true));
+  if (btnHelp) btnHelp.addEventListener('click', () => toggleModal('modal-help-support', true));
+  if (closeInfo) closeInfo.addEventListener('click', () => toggleModal('modal-info-center', false));
+  if (closeHelp) closeHelp.addEventListener('click', () => toggleModal('modal-help-support', false));
+
+  // Tabs inside Info Center in dashboard
+  document.querySelectorAll('#modal-info-center .info-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#modal-info-center .info-tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#modal-info-center .info-pane').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      const targetPane = document.getElementById(btn.dataset.pane);
+      if (targetPane) targetPane.classList.add('active');
+    });
+  });
+
+  // Accordion in Help & Support in dashboard
+  document.querySelectorAll('#modal-help-support .faq-question').forEach(qBtn => {
+    qBtn.addEventListener('click', () => {
+      const parent = qBtn.closest('.faq-item');
+      if (parent) parent.classList.toggle('open');
+    });
+  });
+
+  // Support inquiry submission in dashboard
+  const formSupport = document.getElementById('db-form-support-inquiry');
+  if (formSupport) {
+    formSupport.addEventListener('submit', (e) => {
+      e.preventDefault();
+      toggleModal('modal-help-support', false);
+      showToast('Support ticket dispatched to Security Operations Desk. We will reach you shortly!', 'success');
+      formSupport.reset();
+    });
+  }
 }
 
 function toggleModal(modalId, show = true) {

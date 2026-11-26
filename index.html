@@ -32,7 +32,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="LCU FindMe">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=2.3">
   <script>
     (function () {
       if (sessionStorage.getItem('lcu_findme_intro_dismissed') === 'true') {
@@ -495,12 +495,289 @@
     </div>
   </div>
 
+  <!-- MODAL: Information Center -->
+  <div class="modal-backdrop" id="modal-info-center">
+    <div class="modal-container modal-lg-container">
+      <div class="modal-header">
+        <div style="display: flex; flex-direction: column;">
+          <h3 class="modal-title" style="display: flex; align-items: center; gap: 0.5rem;">
+            🏛️ Campus Information Center
+          </h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">
+            Lead City University Security Directorate &bull; Official Property Recovery Guidelines
+          </p>
+        </div>
+        <button class="modal-close" id="btn-close-info">&times;</button>
+      </div>
+      <div class="modal-body">
+        
+        <div class="info-hero-banner">
+          <div class="info-hero-icon">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+          </div>
+          <div class="info-hero-text">
+            <h4>Institutional Custody &amp; Safety Network</h4>
+            <p>All items recovered across Lead City University campus are logged, barcoded, and held in secure lockboxes at designated Security Stations under permanent officer custody.</p>
+          </div>
+        </div>
+
+        <div class="info-tabs-bar">
+          <button class="info-tab-btn active" data-pane="info-pane-stations">Security Stations</button>
+          <button class="info-tab-btn" data-pane="info-pane-recovery">Recovery Protocol</button>
+          <button class="info-tab-btn" data-pane="info-pane-proof">Proof &amp; ID Standards</button>
+          <button class="info-tab-btn" data-pane="info-pane-policy">Custody Policies</button>
+        </div>
+
+        <div class="info-pane active" id="info-pane-stations">
+          <div class="station-card-grid">
+            <div class="station-card">
+              <h5>📍 Senate Security Post A</h5>
+              <p>Main Command &amp; Central Intake Vault. Holds electronic devices, passports, national IDs, and laptops.</p>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span class="station-pill">Open 24/7</span>
+                <span style="font-size:0.75rem; color:var(--primary); font-weight:700;">Ext. 201</span>
+              </div>
+            </div>
+
+            <div class="station-card">
+              <h5>📍 University Library Desk</h5>
+              <p>Ground floor reception lost &amp; found desk. Holds textbooks, study materials, notebooks, calculators, and chargers.</p>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span class="station-pill">8:00 AM – 8:00 PM</span>
+                <span style="font-size:0.75rem; color:var(--primary); font-weight:700;">Ext. 114</span>
+              </div>
+            </div>
+
+            <div class="station-card">
+              <h5>📍 Student Affairs Hub</h5>
+              <p>Opposite University Cafeteria. Official verification desk for student ID cards, keys, and personal accessories.</p>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span class="station-pill">8:30 AM – 5:00 PM</span>
+                <span style="font-size:0.75rem; color:var(--primary); font-weight:700;">Ext. 305</span>
+              </div>
+            </div>
+
+            <div class="station-card">
+              <h5>📍 Sports &amp; Hostels Checkpoint</h5>
+              <p>Gate Guard House at Hostels Alpha/Omega. Safe intake bin for sporting gear, apparel, and gym bags.</p>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span class="station-pill">Open 24/7</span>
+                <span style="font-size:0.75rem; color:var(--primary); font-weight:700;">Gate Guard 2</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-pane" id="info-pane-recovery">
+          <div class="guideline-step">
+            <div class="guideline-num">1</div>
+            <div class="guideline-body">
+              <h5>Instant System Intake</h5>
+              <p>When an item is found anywhere on campus, it is turned in to the nearest Security Desk or reported on LCU FindMe. Security records its intake bin tag.</p>
+            </div>
+          </div>
+
+          <div class="guideline-step">
+            <div class="guideline-num">2</div>
+            <div class="guideline-body">
+              <h5>Automated Cross-Match Notification</h5>
+              <p>Our token-based search algorithm scans active student lost reports. If category, title, and keywords match, an automated email and in-portal alert is dispatched.</p>
+            </div>
+          </div>
+
+          <div class="guideline-step">
+            <div class="guideline-num">3</div>
+            <div class="guideline-body">
+              <h5>Claim Submission &amp; Officer Verification</h5>
+              <p>The owner submits an ownership claim providing specific confidential identifiers (passcode, IMEI, markings, receipt). Duty officers cross-verify before approval.</p>
+            </div>
+          </div>
+
+          <div class="guideline-step">
+            <div class="guideline-num">4</div>
+            <div class="guideline-body">
+              <h5>Digital Slip &amp; Certified Handover</h5>
+              <p>Upon verification approval, an official QR-coded Handover Slip is generated. The student collects the item with physical student ID and signs the permanent custody ledger.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-pane" id="info-pane-proof">
+          <div style="display:flex; flex-direction:column; gap:0.75rem; font-size:0.85rem; color:var(--text-muted); line-height:1.5;">
+            <div style="background:var(--bg-secondary); padding:0.85rem; border-radius:var(--radius-sm); border-left:3px solid #10b981;">
+              <strong style="color:var(--text-dark); display:block; margin-bottom:0.25rem;">📱 Phones, Laptops &amp; Tablets:</strong>
+              Demonstrate unlock passcode in person, show matching iCloud/Google account, or provide serial/IMEI matching purchase receipt or carrier box.
+            </div>
+            <div style="background:var(--bg-secondary); padding:0.85rem; border-radius:var(--radius-sm); border-left:3px solid #3b82f6;">
+              <strong style="color:var(--text-dark); display:block; margin-bottom:0.25rem;">💳 Wallets, ATM Cards &amp; IDs:</strong>
+              Name must match student portal credentials and government/school ID. Physical presentation of matching LCU Student ID card is mandatory.
+            </div>
+            <div style="background:var(--bg-secondary); padding:0.85rem; border-radius:var(--radius-sm); border-left:3px solid #f59e0b;">
+              <strong style="color:var(--text-dark); display:block; margin-bottom:0.25rem;">🔑 Keys, Bags &amp; Accessories:</strong>
+              Accurately describe key count, distinctive keychains, internal bag contents, brands, or unique blemishes before physical inspection.
+            </div>
+          </div>
+        </div>
+
+        <div class="info-pane" id="info-pane-policy">
+          <ul style="padding-left:1.25rem; font-size:0.84rem; color:var(--text-muted); line-height:1.65; margin:0;">
+            <li><strong>90-Day Retention Schedule:</strong> Unclaimed items are securely held in custody for 90 days following institutional protocol before student body donation or auction.</li>
+            <li><strong>Zero Unauthorized Release:</strong> Security personnel are strictly prohibited from handing over any item without an approved digital claim record.</li>
+            <li><strong>Permanent Chain-of-Custody Ledger:</strong> Every handover generates an immutable ledger timestamp containing officer name, claimant matriculation number, and proof notes.</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Help & Support -->
+  <div class="modal-backdrop" id="modal-help-support">
+    <div class="modal-container modal-lg-container">
+      <div class="modal-header">
+        <div style="display: flex; flex-direction: column;">
+          <h3 class="modal-title" style="display: flex; align-items: center; gap: 0.5rem;">
+            🤝 Help &amp; Student Support Desk
+          </h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">
+            24/7 Assistance &bull; FAQ Answers &bull; Direct Inquiry Support
+          </p>
+        </div>
+        <button class="modal-close" id="btn-close-help">&times;</button>
+      </div>
+      <div class="modal-body">
+        
+        <div class="support-actions-row">
+          <a href="tel:+2348030005282" class="support-contact-btn">
+            <div class="support-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+            </div>
+            <div>
+              <span class="support-btn-title">Emergency Hotline</span>
+              <span class="support-btn-sub">+234 803 000 5282</span>
+            </div>
+          </a>
+
+          <a href="https://wa.me/2349162789976?text=Hello%20LCU%20FindMe%20Security%20Support%2C%20I%20need%20assistance%20with%20my%20account%20or%20item." target="_blank" rel="noopener noreferrer" class="support-contact-btn">
+            <div class="support-icon" style="background: linear-gradient(135deg, #25d366, #128c7e);">
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+            </div>
+            <div>
+              <span class="support-btn-title">WhatsApp Duty Desk</span>
+              <span class="support-btn-sub">Instant live chat</span>
+            </div>
+          </a>
+
+          <a href="mailto:security@lcu.edu.ng?subject=LCU%20FindMe%20Inquiry" class="support-contact-btn">
+            <div class="support-icon" style="background: linear-gradient(135deg, #1a56db, #38bdf8);">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            </div>
+            <div>
+              <span class="support-btn-title">Official Email</span>
+              <span class="support-btn-sub">security@lcu.edu.ng</span>
+            </div>
+          </a>
+        </div>
+
+        <h4 style="margin: 0 0 0.85rem 0; font-size: 1rem; color: var(--text-dark); display: flex; align-items: center; gap: 0.4rem;">
+          ❓ Frequently Asked Questions
+        </h4>
+
+        <div class="faq-accordion">
+          <div class="faq-item">
+            <button class="faq-question" type="button">
+              <span>How do I report an item I lost on campus?</span>
+              <span class="faq-arrow">▼</span>
+            </button>
+            <div class="faq-answer">
+              Log into your portal dashboard, click the prominent "+ Report Item" button, choose "Lost", pick the relevant category, describe unique identifiers (color, case, serial #), and specify the exact campus location.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" type="button">
+              <span>Why is there a one-time ₦3,000 security activation fee?</span>
+              <span class="faq-arrow">▼</span>
+            </button>
+            <div class="faq-answer">
+              The ₦3,000 institutional clearance fee eliminates bot accounts, spam listings, and fraudulent claims. It verifies authentic student identity via Interswitch/Quickteller and supports physical custody security vaults and certified verification slips.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" type="button">
+              <span>How do I claim an item found by someone else?</span>
+              <span class="faq-arrow">▼</span>
+            </button>
+            <div class="faq-answer">
+              Browse the campus directory, click on the item card, review the public photo, and click "Submit Claim &amp; Verify". Provide secret proof of ownership (e.g. unlock passcode, serial number, contents). Duty officers review and approve it.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" type="button">
+              <span>What if my payment went through but account isn't activated?</span>
+              <span class="faq-arrow">▼</span>
+            </button>
+            <div class="faq-answer">
+              Interswitch automatically reconciles transactions in seconds. If your network dropped during payment, simply click "I Already Paid / Enter Code" on your dashboard and enter your transaction reference or activation key.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" type="button">
+              <span>Where do I go to physically collect my verified item?</span>
+              <span class="faq-arrow">▼</span>
+            </button>
+            <div class="faq-answer">
+              Take your official digital QR verification slip and your valid Lead City University Student ID card to Senate Security Post A (Command Desk). The duty officer will scan your code and hand over your property.
+            </div>
+          </div>
+        </div>
+
+        <h4 style="margin: 1.25rem 0 0.85rem 0; font-size: 1rem; color: var(--text-dark); display: flex; align-items: center; gap: 0.4rem;">
+          ✉️ Send a Support Message to Security Desk
+        </h4>
+
+        <form id="form-support-inquiry" style="display:flex; flex-direction:column; gap:0.85rem;">
+          <div class="form-row">
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" for="support-name">Your Name</label>
+              <input type="text" class="form-control" id="support-name" placeholder="Full Name" required>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" for="support-email">Your Email Address</label>
+              <input type="email" class="form-control" id="support-email" placeholder="student@lcu.edu.ng" required>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label" for="support-category">Issue Category</label>
+            <select class="form-control" id="support-category" required>
+              <option value="general" selected>General Question / Portal Help</option>
+              <option value="activation">Account Activation &amp; Payment</option>
+              <option value="claim">Claim Dispute / Verification Review</option>
+              <option value="urgent">Urgent Misplaced Sensitive Item (Passports/Laptops)</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label" for="support-message">Message Details</label>
+            <textarea class="form-control" id="support-message" rows="3" placeholder="Explain your inquiry in detail..." required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary" id="btn-submit-support" style="width:100%; justify-content:center; padding:0.85rem;">
+            Submit Support Inquiry
+          </button>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST NOTIFICATION -->
   <div class="toast toast-success" id="toast-notification">
     <div class="toast-icon">✓</div>
     <div class="toast-content" id="toast-message">Action completed successfully!</div>
   </div>
 
-  <script src="app.js?v=2.2"></script>
+  <script src="app.js?v=2.3"></script>
 </body>
 </html>

@@ -359,6 +359,49 @@ function setupEventListeners() {
   if (tabLogin) tabLogin.addEventListener('click', () => openAuthModal('login'));
   if (tabSignup) tabSignup.addEventListener('click', () => openAuthModal('signup'));
 
+  // ── Info Center & Help/Support Modal Handlers ───────────────────
+  const openInfoCenter = (e) => { if (e) e.preventDefault(); toggleModal('modal-info-center', true); };
+  const openHelpSupport = (e) => { if (e) e.preventDefault(); toggleModal('modal-help-support', true); };
+
+  document.getElementById('link-info-center')?.addEventListener('click', openInfoCenter);
+  document.getElementById('link-security-office')?.addEventListener('click', openInfoCenter);
+  document.getElementById('link-student-affairs')?.addEventListener('click', openInfoCenter);
+  document.getElementById('link-help-support')?.addEventListener('click', openHelpSupport);
+
+  document.getElementById('btn-close-info')?.addEventListener('click', () => toggleModal('modal-info-center', false));
+  document.getElementById('btn-close-help')?.addEventListener('click', () => toggleModal('modal-help-support', false));
+
+  // Tabs inside Info Center
+  document.querySelectorAll('#modal-info-center .info-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#modal-info-center .info-tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#modal-info-center .info-pane').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      const targetPane = document.getElementById(btn.dataset.pane);
+      if (targetPane) targetPane.classList.add('active');
+    });
+  });
+
+  // Accordion in Help & Support
+  document.querySelectorAll('#modal-help-support .faq-question').forEach(qBtn => {
+    qBtn.addEventListener('click', () => {
+      const parent = qBtn.closest('.faq-item');
+      if (parent) parent.classList.toggle('open');
+    });
+  });
+
+  // Support inquiry submission
+  const formSupport = document.getElementById('form-support-inquiry');
+  if (formSupport) {
+    formSupport.addEventListener('submit', (e) => {
+      e.preventDefault();
+      toggleModal('modal-help-support', false);
+      showToast('Support ticket dispatched to Security Operations Desk. We will reach you shortly!', 'success');
+      formSupport.reset();
+    });
+  }
+  // ─────────────────────────────────────────────────────────────────
+
 
   const loginUser = (user, token) => {
     state.currentUser = user;
