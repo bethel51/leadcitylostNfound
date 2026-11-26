@@ -397,7 +397,13 @@ function setupEventListeners() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ identifier, password })
         });
-        const data = await res.json();
+        
+        let data;
+        try {
+          data = await res.json();
+        } catch (jsonErr) {
+          data = { message: 'Unexpected server response (' + res.status + ')' };
+        }
         
         if (res.ok) {
           loginUser(data.user, data.token);
@@ -412,7 +418,8 @@ function setupEventListeners() {
           showToast(data.message || 'Login failed', 'error');
         }
       } catch (err) {
-        showToast('Unable to connect to server. Please try again.', 'error');
+        console.error('Login error:', err);
+        showToast('Unable to connect to server: ' + (err.message || 'Network error'), 'error');
       } finally {
         if (loginBtn) {
           loginBtn.disabled = false;
@@ -498,7 +505,13 @@ function setupEventListeners() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        const data = await res.json();
+        
+        let data;
+        try {
+          data = await res.json();
+        } catch (jsonErr) {
+          data = { message: 'Unexpected server response (' + res.status + ')' };
+        }
         
         if (res.ok) {
           state.pendingVerifEmail = emailVal;
@@ -512,7 +525,8 @@ function setupEventListeners() {
           showToast(data.message || 'Account registration failed.', 'error');
         }
       } catch (err) {
-        showToast('Unable to connect to server. Please try again.', 'error');
+        console.error('Registration error:', err);
+        showToast('Unable to connect to server: ' + (err.message || 'Network error'), 'error');
       } finally {
         if (signupBtn) {
           signupBtn.disabled = false;

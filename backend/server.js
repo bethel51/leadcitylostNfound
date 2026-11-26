@@ -13,16 +13,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: [
-    'https://lcufindme.space',
-    'https://www.lcufindme.space',
-    'https://leadcitylostnfound.onrender.com',
-    'http://127.0.0.1:5000',
-    'http://localhost:5000',
-    'http://127.0.0.1:5500',
-    'http://localhost:3000',
-    'null' // allow file:// protocol (opened locally)
-  ],
+  origin: true,
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' })); // Increased limit to support base64 profile/item photo data
