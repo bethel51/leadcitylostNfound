@@ -200,7 +200,7 @@ router.post('/verify-otp', async (req, res) => {
 // @access  Public
 router.post('/login', async (req, res) => {
   try {
-    const { identifier, password } = req.body; 
+    const { identifier, password } = req.body;
     const trimmedIdentifier = identifier ? identifier.trim().toLowerCase() : '';
 
     // Find user by matricNumber or email
@@ -218,7 +218,7 @@ router.post('/login', async (req, res) => {
         const verificationOTP = generateOTP();
         user.emailVerificationOTP = verificationOTP;
         await user.save();
-        
+
         sendVerificationEmail(user.email, verificationOTP).catch(mailErr => {
           console.error('Resending verification email failed:', mailErr);
         });
@@ -388,7 +388,7 @@ router.post('/initiate-activation-payment', protect, async (req, res) => {
     }
 
     const ACTIVATION_AMOUNT_NAIRA = Number(process.env.ACTIVATION_FEE_NAIRA) || 3000;
-    const ACTIVATION_AMOUNT_KOBO  = ACTIVATION_AMOUNT_NAIRA * 100; // Interswitch amounts are in kobo
+    const ACTIVATION_AMOUNT_KOBO = ACTIVATION_AMOUNT_NAIRA * 100; // Interswitch amounts are in kobo
     const paymentRef = `LCU-ACT-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
     user.activationAmount = ACTIVATION_AMOUNT_NAIRA;
@@ -572,7 +572,7 @@ router.post('/verify-activation-otp', protect, async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Welcome to the official lost and found platform widely for leadcity university students!',
+      message: 'Welcome to the Official LCU FindMe Platform — Lead City University Lost & Found Portal!',
       user: {
         id: user._id,
         name: user.name,

@@ -1206,7 +1206,7 @@ function openDetailModal(itemId) {
       if (window.location.protocol === 'file:') {
         itemUrl = window.location.href.replace(/dashboard\.html.*$/, `slip.html?item=${idVal}`);
       } else {
-        const origin = window.location.origin !== 'null' ? window.location.origin : 'https://lcufindme.edu.ng';
+        const origin = window.location.origin !== 'null' ? window.location.origin : 'https://lcufindme.space';
         let path = window.location.pathname;
         if (path.endsWith('dashboard.html') || path.endsWith('index.html')) {
           path = path.substring(0, path.lastIndexOf('/')) + '/slip.html';

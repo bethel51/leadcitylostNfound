@@ -24,7 +24,7 @@ const sendBroadcastEmail = async ({ to, name, title, message, priority }) => {
       <h2 style="color:#0f2b5c;font-size:1.15rem;margin:0 0 10px;">${title}</h2>
       <p style="color:#334155;line-height:1.65;font-size:0.95rem;">${message}</p>
       <div style="text-align:center;margin:28px 0;">
-        <a href="https://leadcitylostnfound-byfi.onrender.com/dashboard.html" style="display:inline-block;padding:11px 28px;font-weight:700;font-size:0.9rem;color:#ffffff;background:linear-gradient(135deg,#0f2b5c,#1a56db);text-decoration:none;border-radius:8px;">Go To Portal Dashboard</a>
+        <a href="https://lcufindme.space/dashboard.html" style="display:inline-block;padding:11px 28px;font-weight:700;font-size:0.9rem;color:#ffffff;background:linear-gradient(135deg,#0f2b5c,#1a56db);text-decoration:none;border-radius:8px;">Go To Portal Dashboard</a>
       </div>
       <hr style="border:0;border-top:1px solid #e2e8f0;margin:24px 0 14px;">
       <p style="text-align:center;font-size:0.78rem;color:#94a3b8;margin:0;">&copy; 2026 Lead City University &bull; Campus Security Command</p>
