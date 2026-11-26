@@ -5,33 +5,7 @@
 
 const API_URL = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' || window.location.protocol === 'file:'
   ? 'http://127.0.0.1:5000/api'
-  : 'https://leadcitylostnfound-byfi.onrender.com/api';
-
-// ── Backend Wake-Up Ping (Render free tier cold-start fix) ──────────────────
-let _backendReady = false;
-(function pingBackend() {
-  fetch(`${API_URL}/items?type=all&category=all`, { method: 'GET' })
-    .then(() => { _backendReady = true; })
-    .catch(() => { /* silent wake-up ping */ });
-})();
-
-async function fetchWithWakeup(url, options = {}, retries = 3, delayMs = 6000) {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const res = await fetch(url, options);
-      _backendReady = true;
-      return res;
-    } catch (err) {
-      if (i < retries - 1) {
-        if (i === 0) showToast('⏳ Server is waking up, please wait…', 'warning');
-        await new Promise(r => setTimeout(r, delayMs));
-      } else {
-        throw err;
-      }
-    }
-  }
-}
-// ────────────────────────────────────────────────────────────────────────────
+  : 'https://leadcitylostnfound.onrender.com/api';
 
 // ---- State ----
 let state = {

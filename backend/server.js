@@ -16,10 +16,11 @@ app.use(cors({
   origin: [
     'https://lcufindme.space',
     'https://www.lcufindme.space',
-    'https://leadcitylostnfound-byfi.onrender.com',
+    'https://leadcitylostnfound.onrender.com',
     'http://127.0.0.1:5000',
     'http://localhost:5000',
-    'http://127.0.0.1:3000',
+    'http://127.0.0.1:5500',
+    'http://localhost:3000',
     'null' // allow file:// protocol (opened locally)
   ],
   credentials: true
