@@ -1,10 +1,9 @@
 {
+  "python.defaultInterpreterPath": "C:\\Users\\HP\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
   "python.analysis.exclude": [
-    "c:/__pyrefly_virtual__/**",
-    "**/*.py"
+    "c:/__pyrefly_virtual__/**"
   ],
   "python.analysis.ignore": [
     "c:/__pyrefly_virtual__/**"
-  ],
-  "python.linting.enabled": false
+  ]
 }
