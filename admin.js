@@ -6,7 +6,9 @@ const API_URL = window.location.hostname === '127.0.0.1' ||
   window.location.hostname === 'localhost' ||
   window.location.protocol === 'file:'
   ? 'http://127.0.0.1:5000/api'
-  : 'https://leadcitylostnfound.onrender.com/api';
+  : (window.location.origin.includes('lcufindme.space') || window.location.origin.includes('onrender.com')
+      ? `${window.location.origin}/api`
+      : 'https://lcufindme.space/api');
 
 const VERIF_LOG_KEY = 'lcu_findme_verif_log';
 

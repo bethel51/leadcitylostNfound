@@ -414,8 +414,8 @@ router.post('/initiate-activation-payment', protect, async (req, res) => {
         currency: 566, // Nigerian Naira
         txn_ref: paymentRef,
         txnRef: paymentRef,
-        site_redirect_url: req.headers.origin || 'https://leadcitylostnfound-byfi.onrender.com',
-        siteRedirectURL: req.headers.origin || 'https://leadcitylostnfound-byfi.onrender.com'
+        site_redirect_url: req.headers.origin || 'https://lcufindme.space',
+        siteRedirectURL: req.headers.origin || 'https://lcufindme.space'
       }
     });
   } catch (error) {

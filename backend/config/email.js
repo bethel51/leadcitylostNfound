@@ -129,7 +129,7 @@ const sendWelcomeEmail = async (email, name) => {
       <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 20px 0;">
         <h4 style="margin: 0 0 10px 0; color: #0f2b5c; font-size: 0.92rem;">How to Activate Your Account:</h4>
         <ol style="margin: 0; padding-left: 20px; font-size: 0.88rem; color: #475569; line-height: 1.6;">
-          <li>Log in to your dashboard at <a href="https://leadcitylostnfound.onrender.com" style="color: #1a56db; font-weight: 600;">leadcitylostnfound.onrender.com</a>.</li>
+          <li>Log in to your dashboard at <a href="https://lcufindme.space" style="color: #1a56db; font-weight: 600;">lcufindme.space</a>.</li>
           <li>Click the <strong>"Pay &#8358;3,000 via Interswitch / Quickteller"</strong> button on your dashboard security gate.</li>
           <li>Complete your transaction using your Debit Card or Bank Transfer.</li>
           <li>Once paid, your account is <strong>permanently unlocked</strong> to log lost items, browse campus listings, and process recovery claims!</li>
@@ -137,7 +137,7 @@ const sendWelcomeEmail = async (email, name) => {
       </div>
 
       <div style="text-align: center; margin: 25px 0;">
-        <a href="https://leadcitylostnfound.onrender.com" style="display: inline-block; padding: 12px 32px; font-weight: 700; font-size: 0.95rem; color: #ffffff; background: #0f2b5c; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 10px rgba(15, 43, 92, 0.25);">Login &amp; Activate Account</a>
+        <a href="https://lcufindme.space" style="display: inline-block; padding: 12px 32px; font-weight: 700; font-size: 0.95rem; color: #ffffff; background: #0f2b5c; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 10px rgba(15, 43, 92, 0.25);">Login &amp; Activate Account</a>
       </div>
 
       <p style="font-size: 0.82rem; color: #64748b; line-height: 1.5; text-align: center;">
@@ -151,7 +151,7 @@ const sendWelcomeEmail = async (email, name) => {
     </div>
   `;
 
-  const text = `LEAD CITY UNIVERSITY - LCU FindMe Portal\n\nWelcome to LCU FindMe, ${name}!\n\nYour student account has been successfully registered.\n\nACTION REQUIRED: ONE-TIME ACCOUNT ACTIVATION\nTo safeguard student identities, prevent false claims, and enable certified security passes, you must complete a one-time ₦3,000 security clearance fee via Interswitch / Quickteller before you can make or log reports.\n\nHOW TO ACTIVATE:\n1. Log in to your portal: https://leadcitylostnfound.onrender.com\n2. Complete the ₦3,000 clearance payment via Interswitch / Quickteller.\n3. Once confirmed, full access to report items and verify claims is permanently unlocked.\n\n© 2026 Lead City University Security Directorate`;
+  const text = `LEAD CITY UNIVERSITY - LCU FindMe Portal\n\nWelcome to LCU FindMe, ${name}!\n\nYour student account has been successfully registered.\n\nACTION REQUIRED: ONE-TIME ACCOUNT ACTIVATION\nTo safeguard student identities, prevent false claims, and enable certified security passes, you must complete a one-time ₦3,000 security clearance fee via Interswitch / Quickteller before you can make or log reports.\n\nHOW TO ACTIVATE:\n1. Log in to your portal: https://lcufindme.space\n2. Complete the ₦3,000 clearance payment via Interswitch / Quickteller.\n3. Once confirmed, full access to report items and verify claims is permanently unlocked.\n\n© 2026 Lead City University Security Directorate`;
 
   await sendEmail({ to: email, subject: 'Welcome to LCU FindMe — Action Required: Account Activation', html, text });
 };
@@ -225,7 +225,7 @@ const sendOfficialWelcomeEmail = async (email, name = 'Student') => {
       </div>
 
       <div style="text-align: center; margin: 30px 0;">
-        <a href="https://leadcitylostnfound.onrender.com/dashboard.html" style="display: inline-block; padding: 12px 32px; font-weight: 700; font-size: 0.95rem; color: #ffffff; background: linear-gradient(135deg, #0f2b5c, #1a56db); text-decoration: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(26, 86, 219, 0.3);">Go To Your Dashboard</a>
+        <a href="https://lcufindme.space/dashboard.html" style="display: inline-block; padding: 12px 32px; font-weight: 700; font-size: 0.95rem; color: #ffffff; background: linear-gradient(135deg, #0f2b5c, #1a56db); text-decoration: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(26, 86, 219, 0.3);">Go To Your Dashboard</a>
       </div>
 
       <p style="font-size: 0.85rem; color: #64748b; line-height: 1.5;">
@@ -239,7 +239,7 @@ const sendOfficialWelcomeEmail = async (email, name = 'Student') => {
     </div>
   `;
 
-  const text = `Welcome to the official lost and found platform widely for Lead City University students!\n\nHello ${name},\n\nYour account has been fully activated. You can now report items, verify claims, and access full portal services.\n\nAccess Dashboard: https://leadcitylostnfound.onrender.com/dashboard.html\n\n© 2026 Lead City University Security Directorate`;
+  const text = `Welcome to the official lost and found platform widely for Lead City University students!\n\nHello ${name},\n\nYour account has been fully activated. You can now report items, verify claims, and access full portal services.\n\nAccess Dashboard: https://lcufindme.space/dashboard.html\n\n© 2026 Lead City University Security Directorate`;
 
   await sendEmail({ to: email, subject: 'Welcome to the Official LCU Lost & Found Platform!', html, text });
 };

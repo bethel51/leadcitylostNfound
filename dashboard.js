@@ -5,7 +5,9 @@
 
 const API_URL = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' || window.location.protocol === 'file:'
   ? 'http://127.0.0.1:5000/api'
-  : 'https://leadcitylostnfound.onrender.com/api';
+  : (window.location.origin.includes('lcufindme.space') || window.location.origin.includes('onrender.com')
+      ? `${window.location.origin}/api`
+      : 'https://lcufindme.space/api');
 
 // ---- State ----
 let state = {
@@ -2685,7 +2687,7 @@ async function executeInterswitchActivation(triggerBtn) {
 
     if (res.ok && data.paymentDetails) {
       const details = data.paymentDetails;
-      const redirectUrl = window.location.href || 'https://leadcitylostnfound-byfi.onrender.com';
+      const redirectUrl = window.location.href || 'https://lcufindme.space';
 
       const paymentConfig = {
         merchant_code: String(details.merchant_code || details.merchantCode || 'MX216776'),
