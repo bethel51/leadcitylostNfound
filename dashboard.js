@@ -5,9 +5,7 @@
 
 const API_URL = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' || window.location.protocol === 'file:'
   ? 'http://127.0.0.1:5000/api'
-  : (window.location.origin.includes('lcufindme.space') || window.location.origin.includes('onrender.com')
-      ? `${window.location.origin}/api`
-      : 'https://lcufindme.space/api');
+  : 'https://leadcitylostnfound-byfi.onrender.com/api';
 
 // ---- State ----
 let state = {
@@ -194,14 +192,14 @@ function populateProfileView() {
 
   // Profile info grid
   const fields = {
-    'pinfo-name':    name,
-    'pinfo-email':   u.email || u.contact || '—',
-    'pinfo-matric':  matric,
-    'pinfo-phone':   u.phoneNumber || u.phone || '—',
+    'pinfo-name': name,
+    'pinfo-email': u.email || u.contact || '—',
+    'pinfo-matric': matric,
+    'pinfo-phone': u.phoneNumber || u.phone || '—',
     'pinfo-faculty': u.faculty || '—',
-    'pinfo-dept':    u.department || u.dept || '—',
-    'pinfo-level':   u.level ? `${u.level} Level` : '—',
-    'pinfo-role':    role
+    'pinfo-dept': u.department || u.dept || '—',
+    'pinfo-level': u.level ? `${u.level} Level` : '—',
+    'pinfo-role': role
   };
   for (const [id, val] of Object.entries(fields)) {
     const el = document.getElementById(id);
@@ -286,7 +284,7 @@ function showSkeletons() {
       el.innerHTML = '<span class="db-skeleton-pill mini"></span>';
     }
   });
-  
+
   const skeletonCardHTML = `
     <div class="item-card skeleton-card" style="pointer-events: none;">
       <div class="card-image-area skeleton" style="height: 160px; border-radius: var(--radius-lg) var(--radius-lg) 0 0;"></div>
@@ -305,7 +303,7 @@ function showSkeletons() {
       </div>
     </div>
   `;
-  
+
   const skeletonRowHTML = `
     <div class="db-report-row skeleton-row" style="pointer-events: none; display: flex; align-items: center; gap: 1rem; padding: 0.75rem;">
       <div class="db-report-icon skeleton" style="width: 36px; height: 36px; border-radius: var(--radius-md); flex-shrink: 0; background: none;"></div>
@@ -316,7 +314,7 @@ function showSkeletons() {
       <div class="skeleton" style="height: 20px; width: 60px; border-radius: 20px;"></div>
     </div>
   `;
-  
+
   if (browseGrid) {
     browseGrid.innerHTML = skeletonCardHTML.repeat(3);
   }
@@ -351,7 +349,7 @@ async function loadData(showLoader = true) {
 async function fetchItems() {
   try {
     const token = localStorage.getItem('lcu_findme_token');
-    
+
     // 1. Fetch public campus listings
     const res = await fetch(`${API_URL}/items`);
     if (res.ok) {
@@ -408,25 +406,25 @@ function computeMyItems() {
 // =====================================================
 function renderOverview() {
   computeMyItems();
-  const myTotal    = state.myItems.length;
-  const myLost     = state.myItems.filter(i => i.type === 'lost' && i.status !== 'returned').length;
+  const myTotal = state.myItems.length;
+  const myLost = state.myItems.filter(i => i.type === 'lost' && i.status !== 'returned').length;
   const myReturned = state.myItems.filter(i => i.status === 'returned').length;
-  const campusAll  = state.items.length;
+  const campusAll = state.items.length;
 
   ['my-stat-total', 'my-stat-lost', 'my-stat-returned', 'my-stat-campus', 'profile-mini-reports', 'profile-mini-returned', 'profile-mini-active'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.dataset.loaded = 'true';
   });
 
-  animateCounter('my-stat-total',    myTotal);
-  animateCounter('my-stat-lost',     myLost);
+  animateCounter('my-stat-total', myTotal);
+  animateCounter('my-stat-lost', myLost);
   animateCounter('my-stat-returned', myReturned);
-  animateCounter('my-stat-campus',   campusAll);
+  animateCounter('my-stat-campus', campusAll);
 
   // Mini stats in profile card
-  animateCounter('profile-mini-reports',  myTotal);
+  animateCounter('profile-mini-reports', myTotal);
   animateCounter('profile-mini-returned', myReturned);
-  animateCounter('profile-mini-active',   state.myItems.filter(i => i.status !== 'returned').length);
+  animateCounter('profile-mini-active', state.myItems.filter(i => i.status !== 'returned').length);
 
   // My Reports badge in sidebar
   const badge = document.getElementById('my-reports-badge');
@@ -487,15 +485,15 @@ function renderRecentReportsList() {
 }
 
 function updateActivityBars() {
-  const total    = state.items.length || 1; // avoid division by zero
-  const found    = state.items.filter(i => i.type === 'found').length;
-  const lost     = state.items.filter(i => i.type === 'lost').length;
+  const total = state.items.length || 1; // avoid division by zero
+  const found = state.items.filter(i => i.type === 'found').length;
+  const lost = state.items.filter(i => i.type === 'lost').length;
   const returned = state.items.filter(i => i.status === 'returned').length;
 
   const max = Math.max(found, lost, returned, 1);
 
-  setBar('bar-found',    (found / max) * 100,    'count-found',    found);
-  setBar('bar-lost',     (lost / max) * 100,     'count-lost',     lost);
+  setBar('bar-found', (found / max) * 100, 'count-found', found);
+  setBar('bar-lost', (lost / max) * 100, 'count-lost', lost);
   setBar('bar-returned', (returned / max) * 100, 'count-returned', returned);
 }
 
@@ -563,7 +561,7 @@ function renderBrowseGrid() {
   }
   if (state.filters.search && state.filters.search.trim()) {
     const q = state.filters.search.trim().toLowerCase();
-    filtered = filtered.filter(i => 
+    filtered = filtered.filter(i =>
       (i.title && i.title.toLowerCase().includes(q)) ||
       (i.description && i.description.toLowerCase().includes(q)) ||
       (i.location && i.location.toLowerCase().includes(q)) ||
@@ -606,7 +604,7 @@ function buildItemCard(item) {
     imageHTML = `<div class="placeholder-illustration">${icon}<div class="placeholder-text">${item.category}</div></div>`;
   }
 
-  const badgeText  = item.status === 'returned' ? 'Returned' : (item.type === 'found' ? 'Found' : 'Lost');
+  const badgeText = item.status === 'returned' ? 'Returned' : (item.type === 'found' ? 'Found' : 'Lost');
   const badgeClass = item.status === 'returned' ? 'badge-returned' : (item.type === 'found' ? 'badge-found' : 'badge-lost');
 
   let matchBadge = '';
@@ -706,7 +704,7 @@ function setupNavigation() {
   document.querySelectorAll('.db-stat-clickable[data-stat-nav]').forEach(card => {
     card.addEventListener('click', () => {
       const targetView = card.dataset.statNav;
-      const filter     = card.dataset.statFilter || null;
+      const filter = card.dataset.statFilter || null;
       switchView(targetView);
       // If a filter was specified, apply it after the view renders
       if (filter && targetView === 'my-reports') {
@@ -789,7 +787,7 @@ function setupNavigation() {
 
   // Browse: Search
   const searchInput = document.getElementById('db-search-input');
-  const searchBtn   = document.getElementById('db-search-btn');
+  const searchBtn = document.getElementById('db-search-btn');
   if (searchBtn) {
     searchBtn.addEventListener('click', () => {
       state.filters.search = searchInput ? searchInput.value : '';
@@ -835,10 +833,10 @@ function setupNavigation() {
 
 // ---- Switch view ----
 const viewTitles = {
-  home:        'Overview',
+  home: 'Overview',
   'my-reports': 'My Reports',
-  browse:      'Browse Listings',
-  profile:     'My Profile'
+  browse: 'Browse Listings',
+  profile: 'My Profile'
 };
 
 function switchView(viewName) {
@@ -880,8 +878,8 @@ function switchView(viewName) {
 // =====================================================
 function setupSidebar() {
   const hamburger = document.getElementById('db-hamburger');
-  const sidebar   = document.getElementById('db-sidebar');
-  const overlay   = document.getElementById('db-overlay');
+  const sidebar = document.getElementById('db-sidebar');
+  const overlay = document.getElementById('db-overlay');
 
   if (hamburger && sidebar) {
     hamburger.addEventListener('click', () => {
@@ -1001,7 +999,7 @@ function openDetailModal(itemId) {
   if (!item) return;
 
   const detailBody = document.getElementById('detail-body');
-  const titleEl    = document.getElementById('detail-title');
+  const titleEl = document.getElementById('detail-title');
   if (titleEl) titleEl.textContent = item.title;
   if (!detailBody) return;
 
@@ -1043,12 +1041,12 @@ function openDetailModal(itemId) {
   if (item.type === 'found') {
     const isReturned = item.status === 'returned';
     const hasClaims = item.verificationClaims && item.verificationClaims.length > 0;
-    
+
     let step1Class = 'completed';
     let step2Class = isReturned ? 'completed' : 'active';
     let step3Class = isReturned ? 'completed' : (hasClaims ? 'active' : '');
     let step4Class = isReturned ? 'completed' : '';
-    
+
     let progressWidth = '33%';
     if (isReturned) {
       step2Class = 'completed';
@@ -1060,7 +1058,7 @@ function openDetailModal(itemId) {
       step3Class = 'active';
       progressWidth = '66%';
     }
-    
+
     timelineHTML = `
       <div class="status-timeline" style="grid-column: 1 / -1;">
         <div class="timeline-progress-bar" style="width: ${progressWidth}"></div>
@@ -1084,18 +1082,18 @@ function openDetailModal(itemId) {
     `;
   } else {
     const isReturned = item.status === 'returned';
-    
+
     let step1Class = 'completed';
     let step2Class = isReturned ? 'completed' : 'active';
     let step3Class = isReturned ? 'completed' : '';
-    
+
     let progressWidth = '50%';
     if (isReturned) {
       step2Class = 'completed';
       step3Class = 'completed';
       progressWidth = '100%';
     }
-    
+
     timelineHTML = `
       <div class="status-timeline" style="grid-column: 1 / -1;">
         <div class="timeline-progress-bar" style="width: ${progressWidth}"></div>
@@ -1118,9 +1116,9 @@ function openDetailModal(itemId) {
   // Check if the logged-in user is the owner of this report
   const isOwner = (() => {
     if (!state.currentUser) return false;
-    const uEmail  = (state.currentUser.email || '').trim().toLowerCase();
+    const uEmail = (state.currentUser.email || '').trim().toLowerCase();
     const uMatric = (state.currentUser.matricNumber || state.currentUser.matric || '').trim().toLowerCase();
-    const rEmail  = (item.reporterEmail || '').trim().toLowerCase();
+    const rEmail = (item.reporterEmail || '').trim().toLowerCase();
     const rMatric = (item.reporterMatric || '').trim().toLowerCase();
     if (uEmail && rEmail && uEmail === rEmail) return true;
     if (uMatric && rMatric && uMatric === rMatric) return true;
@@ -1198,8 +1196,8 @@ function openDetailModal(itemId) {
   const btnQR = document.getElementById('btn-generate-tag-qr');
   if (btnQR) {
     btnQR.addEventListener('click', () => {
-      document.getElementById('qr-label-title').textContent    = item.title;
-      document.getElementById('qr-label-id').textContent       = item._id || item.id;
+      document.getElementById('qr-label-title').textContent = item.title;
+      document.getElementById('qr-label-id').textContent = item._id || item.id;
       document.getElementById('qr-label-category').textContent = item.category;
       document.getElementById('qr-label-location').textContent = item.location;
       const canvas = document.getElementById('qr-canvas');
@@ -1235,7 +1233,7 @@ function openDetailModal(itemId) {
       }
       const section = document.getElementById('claim-verification-section');
       if (!section) return;
-      const defName   = state.currentUser ? (state.currentUser.name || '') : '';
+      const defName = state.currentUser ? (state.currentUser.name || '') : '';
       const defMatric = state.currentUser ? (state.currentUser.matricNumber || state.currentUser.email || '') : '';
       section.innerHTML = `
         <div class="verification-title" style="margin-bottom:.5rem">📍 LCU In-Person Claim Verification</div>
@@ -1263,9 +1261,9 @@ function openDetailModal(itemId) {
         e.preventDefault();
         const submitBtn = document.getElementById('btn-submit-claim-form');
         if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting...'; }
-        const claimantName   = document.getElementById('claim-claimant-name').value.trim();
+        const claimantName = document.getElementById('claim-claimant-name').value.trim();
         const claimantMatric = document.getElementById('claim-claimant-matric').value.trim();
-        const claimDetails   = document.getElementById('claim-claimant-details').value.trim();
+        const claimDetails = document.getElementById('claim-claimant-details').value.trim();
         try {
           const token = localStorage.getItem('lcu_findme_token');
           const res = await fetch(`${API_URL}/items/${item._id || item.id}/claim`, {
@@ -1298,8 +1296,8 @@ function openDetailModal(itemId) {
 // =====================================================
 function openAmbassadorInstructionModal(item, claimantName, claimantMatric) {
   const modalName = document.getElementById('ambassador-item-name');
-  const modalRef  = document.getElementById('ambassador-ref-code');
-  
+  const modalRef = document.getElementById('ambassador-ref-code');
+
   if (modalName) {
     modalName.innerHTML = `Your verification request for <strong>"${item.title || 'Misplaced Item'}"</strong> has been logged &amp; forwarded to Admin Security.`;
   }
@@ -1512,8 +1510,8 @@ let selectedReportType = 'lost';
 function setReportType(type) {
   selectedReportType = type === 'found' ? 'found' : 'lost';
   const typeFound = document.getElementById('type-select-found');
-  const typeLost  = document.getElementById('type-select-lost');
-  const titleEl   = document.getElementById('report-modal-title');
+  const typeLost = document.getElementById('type-select-lost');
+  const titleEl = document.getElementById('report-modal-title');
   if (typeFound && typeLost) {
     if (selectedReportType === 'found') {
       typeFound.classList.add('active');
@@ -1532,13 +1530,13 @@ function setupReportModal() {
   if (btnClose) btnClose.addEventListener('click', () => toggleModal('modal-report', false));
 
   const typeFound = document.getElementById('type-select-found');
-  const typeLost  = document.getElementById('type-select-lost');
+  const typeLost = document.getElementById('type-select-lost');
   if (typeFound) typeFound.addEventListener('click', () => setReportType('found'));
-  if (typeLost)  typeLost.addEventListener('click', () => setReportType('lost'));
+  if (typeLost) typeLost.addEventListener('click', () => setReportType('lost'));
 
   // Map Toggle
   const mapToggleBtn = document.getElementById('btn-toggle-map');
-  const mapContainer  = document.getElementById('map-container');
+  const mapContainer = document.getElementById('map-container');
   if (mapToggleBtn && mapContainer) {
     mapToggleBtn.addEventListener('click', () => {
       const hidden = mapContainer.style.display === 'none';
@@ -1551,7 +1549,7 @@ function setupReportModal() {
   document.querySelectorAll('.map-building').forEach(b => {
     b.addEventListener('click', () => {
       const name = b.dataset.name;
-      const loc  = document.getElementById('report-location');
+      const loc = document.getElementById('report-location');
       if (loc) loc.value = name;
       showToast(`Selected "${name}" on map.`);
       document.querySelectorAll('.map-building rect').forEach(r => r.setAttribute('fill', '#eff6ff'));
@@ -1561,10 +1559,10 @@ function setupReportModal() {
 
   // File Upload
   const uploadZone = document.getElementById('upload-zone');
-  const fileInput  = document.getElementById('file-input');
+  const fileInput = document.getElementById('file-input');
   const previewContainer = document.getElementById('preview-container');
   const previewImage = document.getElementById('preview-image');
-  const btnRemove  = document.getElementById('btn-remove-preview');
+  const btnRemove = document.getElementById('btn-remove-preview');
 
   if (uploadZone && fileInput) {
     uploadZone.addEventListener('click', () => fileInput.click());
@@ -1620,7 +1618,7 @@ function setupReportModal() {
     setTimeout(() => {
       showToast('✨ OCR scan successful. Autopopulating details.', 'success');
       const titleInput = document.getElementById('report-title');
-      const descTA     = document.getElementById('report-description');
+      const descTA = document.getElementById('report-description');
       if (titleInput && !titleInput.value.trim()) titleInput.value = 'Student ID Card - Oluwaseun Alabi';
       if (descTA) {
         let cur = descTA.value;
@@ -1641,18 +1639,18 @@ function setupReportModal() {
       const dateVal = document.getElementById('report-date').value;
       const timeVal = document.getElementById('report-time') ? document.getElementById('report-time').value : '';
       const data = {
-        title:           document.getElementById('report-title').value.trim(),
-        category:        document.getElementById('report-category').value,
-        location:        document.getElementById('report-location').value.trim(),
-        date:            dateVal,
-        time:            timeVal,
-        reporterName:    document.getElementById('report-reporter').value.trim(),
+        title: document.getElementById('report-title').value.trim(),
+        category: document.getElementById('report-category').value,
+        location: document.getElementById('report-location').value.trim(),
+        date: dateVal,
+        time: timeVal,
+        reporterName: document.getElementById('report-reporter').value.trim(),
         reporterContact: document.getElementById('report-contact').value.trim(),
-        description:     document.getElementById('report-description').value.trim(),
-        type:            selectedReportType,
-        image:           state.tempUploadedImage,
-        reporterEmail:   state.currentUser ? (state.currentUser.email || '') : '',
-        reporterMatric:  state.currentUser ? (state.currentUser.matricNumber || state.currentUser.matric || '') : ''
+        description: document.getElementById('report-description').value.trim(),
+        type: selectedReportType,
+        image: state.tempUploadedImage,
+        reporterEmail: state.currentUser ? (state.currentUser.email || '') : '',
+        reporterMatric: state.currentUser ? (state.currentUser.matricNumber || state.currentUser.matric || '') : ''
       };
 
       try {
@@ -1718,7 +1716,7 @@ function openReportModal(preferredType = null) {
   if (form) form.reset();
   state.tempUploadedImage = null;
   const preview = document.getElementById('preview-container');
-  const zone    = document.getElementById('upload-zone');
+  const zone = document.getElementById('upload-zone');
   if (preview) preview.style.display = 'none';
   if (zone) zone.style.display = 'block';
 
@@ -1738,9 +1736,9 @@ function openReportModal(preferredType = null) {
   }
   if (state.currentUser) {
     const reporterEl = document.getElementById('report-reporter');
-    const contactEl  = document.getElementById('report-contact');
+    const contactEl = document.getElementById('report-contact');
     if (reporterEl) reporterEl.value = state.currentUser.name || '';
-    if (contactEl)  contactEl.value  = state.currentUser.phoneNumber || state.currentUser.phone || '';
+    if (contactEl) contactEl.value = state.currentUser.phoneNumber || state.currentUser.phone || '';
   }
   toggleModal('modal-report', true);
 }
@@ -1769,21 +1767,21 @@ function toggleProfileEditMode(show) {
   if (isProfileEditing) {
     if (!state.currentUser) return;
     const u = state.currentUser;
-    const nameEl    = document.getElementById('inline-edit-name');
-    const emailEl   = document.getElementById('inline-edit-email');
-    const matricEl  = document.getElementById('inline-edit-matric');
-    const phoneEl   = document.getElementById('inline-edit-phone');
+    const nameEl = document.getElementById('inline-edit-name');
+    const emailEl = document.getElementById('inline-edit-email');
+    const matricEl = document.getElementById('inline-edit-matric');
+    const phoneEl = document.getElementById('inline-edit-phone');
     const facultyEl = document.getElementById('inline-edit-faculty');
-    const deptEl    = document.getElementById('inline-edit-dept');
-    const levelEl   = document.getElementById('inline-edit-level');
+    const deptEl = document.getElementById('inline-edit-dept');
+    const levelEl = document.getElementById('inline-edit-level');
 
-    if (nameEl)    nameEl.value    = u.name || '';
-    if (emailEl)   emailEl.value   = u.email || u.contact || '';
-    if (matricEl)  matricEl.value  = u.matricNumber || u.matric || '';
-    if (phoneEl)   phoneEl.value   = u.phoneNumber || u.phone || '';
+    if (nameEl) nameEl.value = u.name || '';
+    if (emailEl) emailEl.value = u.email || u.contact || '';
+    if (matricEl) matricEl.value = u.matricNumber || u.matric || '';
+    if (phoneEl) phoneEl.value = u.phoneNumber || u.phone || '';
     if (facultyEl) facultyEl.value = u.faculty || '';
-    if (deptEl)    deptEl.value    = u.department || u.dept || '';
-    if (levelEl)   levelEl.value   = u.level || '';
+    if (deptEl) deptEl.value = u.department || u.dept || '';
+    if (levelEl) levelEl.value = u.level || '';
 
     if (displayCard) displayCard.style.display = 'none';
     if (editCard) editCard.style.display = 'block';
@@ -1834,13 +1832,13 @@ function setupEditProfile() {
       if (submitBtn) submitBtn.disabled = true;
       if (submitText) submitText.textContent = 'Saving...';
 
-      const nameVal    = document.getElementById('inline-edit-name').value.trim();
-      const emailVal   = document.getElementById('inline-edit-email').value.trim();
-      const matricVal  = document.getElementById('inline-edit-matric').value.trim();
-      const phoneVal   = document.getElementById('inline-edit-phone').value.trim();
+      const nameVal = document.getElementById('inline-edit-name').value.trim();
+      const emailVal = document.getElementById('inline-edit-email').value.trim();
+      const matricVal = document.getElementById('inline-edit-matric').value.trim();
+      const phoneVal = document.getElementById('inline-edit-phone').value.trim();
       const facultyVal = document.getElementById('inline-edit-faculty').value.trim();
-      const deptVal    = document.getElementById('inline-edit-dept').value.trim();
-      const levelVal   = document.getElementById('inline-edit-level').value.trim();
+      const deptVal = document.getElementById('inline-edit-dept').value.trim();
+      const levelVal = document.getElementById('inline-edit-level').value.trim();
 
       const payload = {
         name: nameVal,
@@ -1947,7 +1945,7 @@ function setupOtpModal() {
   const btnClose = document.getElementById('btn-close-otp');
   if (btnClose) btnClose.addEventListener('click', () => toggleModal('modal-otp', false));
 
-  const otpInputs     = document.querySelectorAll('.otp-digit-input');
+  const otpInputs = document.querySelectorAll('.otp-digit-input');
   const hiddenOtpCode = document.getElementById('otp-code');
   if (otpInputs.length && hiddenOtpCode) {
     const updateHidden = () => {
@@ -1987,14 +1985,14 @@ function setupOtpModal() {
   if (formOtp) {
     formOtp.addEventListener('submit', async e => {
       e.preventDefault();
-      const otp    = document.getElementById('otp-code').value.trim();
-      const email  = state.pendingVerifEmail;
+      const otp = document.getElementById('otp-code').value.trim();
+      const email = state.pendingVerifEmail;
       const errMsg = document.getElementById('otp-error-msg');
-      const btn    = document.getElementById('btn-verify-otp');
+      const btn = document.getElementById('btn-verify-otp');
       if (!email) { if (errMsg) { errMsg.textContent = 'Session expired. Please try again.'; errMsg.style.display = 'block'; } return; }
       if (btn) { btn.disabled = true; btn.textContent = 'Verifying...'; }
       try {
-        const res  = await fetch(`${API_URL}/auth/verify-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, otp }) });
+        const res = await fetch(`${API_URL}/auth/verify-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, otp }) });
         const data = await res.json();
         if (res.ok) {
           toggleModal('modal-otp', false);
@@ -2086,7 +2084,7 @@ function saveNotifs() {
 
 function renderNotifications() {
   const list = document.getElementById('db-notif-list');
-  const dot  = document.getElementById('db-notif-dot');
+  const dot = document.getElementById('db-notif-dot');
   if (!list) return;
 
   const unread = notifications.filter(n => !n.read).length;
@@ -2132,11 +2130,11 @@ async function checkUrlParams() {
   if (!itemId) return;
 
   const btnCloseSlip = document.getElementById('btn-close-slip');
-  const btnDismiss   = document.getElementById('btn-dismiss-slip');
-  const btnPrint     = document.getElementById('btn-print-slip');
+  const btnDismiss = document.getElementById('btn-dismiss-slip');
+  const btnPrint = document.getElementById('btn-print-slip');
 
   if (btnCloseSlip) btnCloseSlip.addEventListener('click', () => toggleModal('modal-verify-slip', false));
-  if (btnDismiss)   btnDismiss.addEventListener('click',   () => toggleModal('modal-verify-slip', false));
+  if (btnDismiss) btnDismiss.addEventListener('click', () => toggleModal('modal-verify-slip', false));
 
   if (btnPrint) {
     btnPrint.addEventListener('click', () => {
@@ -2159,11 +2157,11 @@ async function checkUrlParams() {
     if (!res.ok) { showToast('Could not retrieve item details.', 'error'); return; }
     const item = await res.json();
 
-    document.getElementById('slip-ref').textContent      = `REF-${(item._id || '').slice(-8).toUpperCase()}`;
-    document.getElementById('slip-title').textContent    = item.title;
+    document.getElementById('slip-ref').textContent = `REF-${(item._id || '').slice(-8).toUpperCase()}`;
+    document.getElementById('slip-title').textContent = item.title;
     document.getElementById('slip-category').textContent = item.category;
     document.getElementById('slip-location').textContent = item.location;
-    document.getElementById('slip-date').textContent     = formatDate(item.date);
+    document.getElementById('slip-date').textContent = formatDate(item.date);
     const statusEl = document.getElementById('slip-status');
     if (statusEl) { statusEl.textContent = (item.status || 'FOUND').toUpperCase(); statusEl.className = `status-badge ${item.status === 'returned' ? 'status-returned' : 'status-active'}`; }
 
@@ -2175,11 +2173,11 @@ async function checkUrlParams() {
       repListEl.innerHTML = [
         ['Name', item.reporterName || 'Anonymous'],
         ['Contact', item.reporterContact || 'Not Provided'],
-        item.reporterEmail  ? ['Email', item.reporterEmail]   : null,
+        item.reporterEmail ? ['Email', item.reporterEmail] : null,
         item.reporterMatric ? ['Matric/Staff ID', item.reporterMatric] : null,
         item.reporterFaculty ? ['Faculty', item.reporterFaculty] : null,
-        item.reporterDept   ? ['Department', item.reporterDept] : null,
-        item.reporterLevel  ? ['Level', `${item.reporterLevel} Level`] : null
+        item.reporterDept ? ['Department', item.reporterDept] : null,
+        item.reporterLevel ? ['Level', `${item.reporterLevel} Level`] : null
       ].filter(Boolean).map(([k, v]) => `
         <div style="display:flex;justify-content:space-between">
           <span style="color:var(--text-muted);font-weight:500">${k}:</span>
@@ -2188,7 +2186,7 @@ async function checkUrlParams() {
     }
 
     const accepted = item.verificationClaims && item.verificationClaims.find(c => c.status === 'accepted' || c.resolved);
-    const claimBoxEl  = document.getElementById('modal-slip-claimant-box');
+    const claimBoxEl = document.getElementById('modal-slip-claimant-box');
     const claimListEl = document.getElementById('modal-slip-claimant-list');
     if (accepted && claimBoxEl && claimListEl) {
       claimBoxEl.style.display = 'block';
@@ -2198,7 +2196,7 @@ async function checkUrlParams() {
         accepted.claimantPhone ? ['Phone', accepted.claimantPhone] : null,
         accepted.claimantEmail ? ['Email', accepted.claimantEmail] : null,
         accepted.claimantFaculty ? ['Faculty', accepted.claimantFaculty] : null,
-        accepted.claimantDept  ? ['Department', accepted.claimantDept] : null,
+        accepted.claimantDept ? ['Department', accepted.claimantDept] : null,
         accepted.claimantLevel ? ['Level', `${accepted.claimantLevel} Level`] : null
       ].filter(Boolean).map(([k, v]) => `
         <div style="display:flex;justify-content:space-between">
@@ -2227,8 +2225,8 @@ function formatDate(dateStr) {
 
 function timeAgo(isoStr) {
   const diff = Math.floor((Date.now() - new Date(isoStr)) / 1000);
-  if (diff < 60)    return 'Just now';
-  if (diff < 3600)  return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 60) return 'Just now';
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
   return `${Math.floor(diff / 86400)}d ago`;
 }
@@ -2253,16 +2251,16 @@ function toggleModal(modalId, show = true) {
 }
 
 function showToast(message, type = 'success') {
-  const toast  = document.getElementById('toast-notification');
-  const msgEl  = document.getElementById('toast-message');
+  const toast = document.getElementById('toast-notification');
+  const msgEl = document.getElementById('toast-message');
   const iconEl = toast ? toast.querySelector('.toast-icon') : null;
   if (!toast || !msgEl) return;
   msgEl.textContent = message;
   const icons = {
     success: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
-    error:   `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`,
+    error: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`,
     warning: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`,
-    info:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`
+    info: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`
   };
   if (iconEl) iconEl.innerHTML = icons[type] || icons.success;
   toast.classList.remove('active');
@@ -2322,9 +2320,9 @@ function setupNotifications() {
 
   // Export buttons in My Reports
   const btnExportHistory = document.getElementById('btn-export-history');
-  const btnExportCSV     = document.getElementById('btn-export-csv');
+  const btnExportCSV = document.getElementById('btn-export-csv');
   if (btnExportHistory) btnExportHistory.addEventListener('click', downloadReportHistory);
-  if (btnExportCSV)     btnExportCSV.addEventListener('click', exportReportHistoryCSV);
+  if (btnExportCSV) btnExportCSV.addEventListener('click', exportReportHistoryCSV);
 
   // Start polling for server notifications
   fetchNotificationsFromServer();
@@ -2351,7 +2349,7 @@ function downloadReportHistory() {
   const reportRows = state.myItems.map((item, idx) => {
     const itemDate = formatDate(item.date);
     const itemTime = item.time ? ` at ${item.time}` : '';
-    const statusBadge = item.status === 'returned' 
+    const statusBadge = item.status === 'returned'
       ? '<span style="color:#10b981;font-weight:bold;">Returned</span>'
       : '<span style="color:#f59e0b;font-weight:bold;">Active / Pending</span>';
     return `
@@ -2561,7 +2559,7 @@ function logoutUser() {
 
 function enforceStrictActivationGate(isAct) {
   let gateOverlay = document.getElementById('db-strict-activation-gate');
-  
+
   if (!isAct) {
     // If user is not activated, restrict view and enforce gate overlay
     if (!gateOverlay) {

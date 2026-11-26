@@ -12,7 +12,18 @@ connectDB();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: [
+    'https://lcufindme.space',
+    'https://www.lcufindme.space',
+    'https://leadcitylostnfound-byfi.onrender.com',
+    'http://127.0.0.1:5000',
+    'http://localhost:5000',
+    'http://127.0.0.1:3000',
+    'null' // allow file:// protocol (opened locally)
+  ],
+  credentials: true
+}));
 app.use(express.json({ limit: '10mb' })); // Increased limit to support base64 profile/item photo data
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
