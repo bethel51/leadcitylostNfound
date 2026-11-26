@@ -9,3 +9,8 @@ backend/.env
 # OS Files
 .DS_Store
 Thumbs.db
+
+# Presentations & Pitch Documents (Local Only)
+*.pptx
+*.pdf
+presentation/
