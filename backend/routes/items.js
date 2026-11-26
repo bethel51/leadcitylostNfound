@@ -28,8 +28,8 @@ router.get('/', async (req, res) => {
       ];
     }
 
-    // Sort active first, then newest first
-    const items = await Item.find(query);
+    // Sort active first, then newest first (do not leak sensitive verification claims to public browse)
+    const items = await Item.find(query).select('-verificationClaims');
     items.sort((a, b) => {
       if (a.status === 'returned' && b.status !== 'returned') return 1;
       if (a.status !== 'returned' && b.status === 'returned') return -1;
@@ -39,6 +39,31 @@ router.get('/', async (req, res) => {
     res.json(items);
   } catch (error) {
     res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+});
+
+// @route   GET api/items/my
+// @desc    Get all reports submitted by the authenticated user (strict user isolation gate)
+// @access  Protected
+router.get('/my', protect, async (req, res) => {
+  try {
+    const query = {
+      $or: [
+        { reporterUserId: req.user._id }
+      ]
+    };
+    if (req.user.email) {
+      query.$or.push({ reporterEmail: { $regex: new RegExp('^' + req.user.email + '$', 'i') } });
+    }
+    if (req.user.matricNumber) {
+      query.$or.push({ reporterMatric: { $regex: new RegExp('^' + req.user.matricNumber + '$', 'i') } });
+    }
+
+    const items = await Item.find(query);
+    items.sort((a, b) => new Date(b.date) - new Date(a.date));
+    res.json(items);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error fetching user reports', error: error.message });
   }
 });
 

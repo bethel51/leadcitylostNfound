@@ -348,12 +348,28 @@ async function loadData(showLoader = true) {
 
 async function fetchItems() {
   try {
+    const token = localStorage.getItem('lcu_findme_token');
+    
+    // 1. Fetch public campus listings
     const res = await fetch(`${API_URL}/items`);
     if (res.ok) {
       state.items = await res.json();
     }
+
+    // 2. Fetch authenticated user's isolated reports directly from backend gate
+    if (token) {
+      const resMy = await fetch(`${API_URL}/items/my`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (resMy.ok) {
+        state.myItems = await resMy.json();
+        return;
+      }
+    }
+    computeMyItems();
   } catch (err) {
     console.error('fetchItems error:', err);
+    computeMyItems();
   }
 }
 
@@ -1489,7 +1505,25 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
 // =====================================================
 // REPORT MODAL
 // =====================================================
-let selectedReportType = 'found';
+let selectedReportType = 'lost';
+
+function setReportType(type) {
+  selectedReportType = type === 'found' ? 'found' : 'lost';
+  const typeFound = document.getElementById('type-select-found');
+  const typeLost  = document.getElementById('type-select-lost');
+  const titleEl   = document.getElementById('report-modal-title');
+  if (typeFound && typeLost) {
+    if (selectedReportType === 'found') {
+      typeFound.classList.add('active');
+      typeLost.classList.remove('active');
+      if (titleEl) titleEl.textContent = 'Report Found Item';
+    } else {
+      typeLost.classList.add('active');
+      typeFound.classList.remove('active');
+      if (titleEl) titleEl.textContent = 'Report Lost Item';
+    }
+  }
+}
 
 function setupReportModal() {
   const btnClose = document.getElementById('btn-close-report');
@@ -1497,20 +1531,8 @@ function setupReportModal() {
 
   const typeFound = document.getElementById('type-select-found');
   const typeLost  = document.getElementById('type-select-lost');
-  if (typeFound && typeLost) {
-    typeFound.addEventListener('click', () => {
-      selectedReportType = 'found';
-      typeFound.classList.add('active');
-      typeLost.classList.remove('active');
-      document.getElementById('report-modal-title').textContent = 'Report Found Item';
-    });
-    typeLost.addEventListener('click', () => {
-      selectedReportType = 'lost';
-      typeLost.classList.add('active');
-      typeFound.classList.remove('active');
-      document.getElementById('report-modal-title').textContent = 'Report Lost Item';
-    });
-  }
+  if (typeFound) typeFound.addEventListener('click', () => setReportType('found'));
+  if (typeLost)  typeLost.addEventListener('click', () => setReportType('lost'));
 
   // Map Toggle
   const mapToggleBtn = document.getElementById('btn-toggle-map');
@@ -1643,6 +1665,16 @@ function setupReportModal() {
           toggleModal('modal-report', false);
           showToast(`Report logged successfully as ${selectedReportType.toUpperCase()}.`);
           await loadData();
+
+          // Immediately switch view to My Reports so user sees their report right away
+          state.myFilter = 'all';
+          document.querySelectorAll('[data-my-filter]').forEach(c => {
+            if (c.dataset.myFilter === 'all') c.classList.add('active');
+            else c.classList.remove('active');
+          });
+          renderMyReportsGrid();
+          switchView('my-reports');
+
           const match = respData.match || findPotentialMatches(respData.item || respData);
           if (match) {
             state.pendingMatchItem = match;
@@ -1674,7 +1706,7 @@ function setupReportModal() {
   }
 }
 
-function openReportModal() {
+function openReportModal(preferredType = null) {
   if (!isUserActivated()) {
     showToast('Account activation required. Please pay the one-time activation key fee to report items.', 'warning');
     openActivationPaymentModal();
@@ -1687,6 +1719,11 @@ function openReportModal() {
   const zone    = document.getElementById('upload-zone');
   if (preview) preview.style.display = 'none';
   if (zone) zone.style.display = 'block';
+
+  // Apply requested or default report type
+  const targetType = (preferredType === 'found' || preferredType === 'lost') ? preferredType : 'lost';
+  setReportType(targetType);
+
   const today = new Date().toISOString().split('T')[0];
   const dateEl = document.getElementById('report-date');
   if (dateEl) dateEl.value = today;
@@ -2584,17 +2621,23 @@ function enforceStrictActivationGate(isAct) {
 
 async function refreshUserProfile() {
   const token = localStorage.getItem('lcu_findme_token');
-  if (!token) return;
+  if (!token) {
+    logoutUser();
+    return;
+  }
   try {
     const res = await fetch(`${API_URL}/auth/me`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (res.ok) {
       const user = await res.json();
-      state.currentUser = { ...state.currentUser, ...user };
+      state.currentUser = user;
       localStorage.setItem('lcu_findme_user', JSON.stringify(state.currentUser));
       populateUserUI();
       updateActivationUI();
+    } else if (res.status === 401 || res.status === 403 || res.status === 404) {
+      // Server rejected user token — immediately wipe session and return to login
+      logoutUser();
     }
   } catch (err) {
     console.warn('Could not refresh user profile from server:', err);
