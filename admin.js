@@ -8,6 +8,31 @@ const API_URL = window.location.hostname === '127.0.0.1' ||
   ? 'http://127.0.0.1:5000/api'
   : 'https://leadcitylostnfound-byfi.onrender.com/api';
 
+// ── Backend Wake-Up Ping (Render free tier cold-start fix) ──────────────────
+let _backendReady = false;
+(function pingBackend() {
+  fetch(`${API_URL}/items?type=all&category=all`, { method: 'GET' })
+    .then(() => { _backendReady = true; })
+    .catch(() => { /* silent wake-up ping */ });
+})();
+
+async function fetchWithWakeup(url, options = {}, retries = 3, delayMs = 6000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await fetch(url, options);
+      _backendReady = true;
+      return res;
+    } catch (err) {
+      if (i < retries - 1) {
+        await new Promise(r => setTimeout(r, delayMs));
+      } else {
+        throw err;
+      }
+    }
+  }
+}
+// ────────────────────────────────────────────────────────────────────────────
+
 const VERIF_LOG_KEY = 'lcu_findme_verif_log';
 
 // Helper: Escape HTML
@@ -185,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Verifying Security Clearance...'; }
 
       try {
-        const res = await fetch(`${API_URL}/auth/login`, {
+        const res = await fetchWithWakeup(`${API_URL}/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ identifier, password })

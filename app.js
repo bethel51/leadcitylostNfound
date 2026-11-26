@@ -9,6 +9,36 @@ let state = {
   pendingVerifEmail: null
 };
 
+// ── Backend Wake-Up Ping (Render free tier cold-start fix) ──────────────────
+// Silently pings the backend as soon as the page loads so Render wakes up
+// before the user tries to log in or register.
+let _backendReady = false;
+(function pingBackend() {
+  fetch(`${API_URL}/items?type=all&category=all`, { method: 'GET' })
+    .then(() => { _backendReady = true; })
+    .catch(() => { /* silent – just waking up the server */ });
+})();
+
+// Retry-aware fetch: if fetch fails and backend isn't ready, wait up to 30s
+async function fetchWithWakeup(url, options = {}, retries = 3, delayMs = 6000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await fetch(url, options);
+      _backendReady = true;
+      return res;
+    } catch (err) {
+      if (i < retries - 1) {
+        // Show "waking up" message on first retry
+        if (i === 0) showToast('⏳ Server is waking up, please wait a moment…', 'warning');
+        await new Promise(r => setTimeout(r, delayMs));
+      } else {
+        throw err; // All retries exhausted
+      }
+    }
+  }
+}
+// ────────────────────────────────────────────────────────────────────────────
+
 // Check if user is logged in on load
 function checkRedirect() {
   const token = localStorage.getItem('lcu_findme_token');
@@ -380,7 +410,7 @@ function setupEventListeners() {
       const password = document.getElementById('login-password').value;
       
       try {
-        const res = await fetch(`${API_URL}/auth/login`, {
+        const res = await fetchWithWakeup(`${API_URL}/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ identifier, password })
@@ -400,7 +430,7 @@ function setupEventListeners() {
           showToast(data.message || 'Login failed', 'error');
         }
       } catch (err) {
-        showToast('Connection error connecting to backend.', 'error');
+        showToast('Connection failed. The server may be starting up — please try again in 30 seconds.', 'error');
       }
     });
   }
@@ -476,7 +506,7 @@ function setupEventListeners() {
       }
 
       try {
-        const res = await fetch(`${API_URL}/auth/register`, {
+        const res = await fetchWithWakeup(`${API_URL}/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -495,7 +525,7 @@ function setupEventListeners() {
           showToast(data.message || 'Account registration failed.', 'error');
         }
       } catch (err) {
-        showToast('Connection error connecting to backend.', 'error');
+        showToast('Connection failed. The server may be starting up — please try again in 30 seconds.', 'error');
       } finally {
         if (signupBtn) {
           signupBtn.disabled = false;
