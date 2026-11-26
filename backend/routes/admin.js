@@ -5,6 +5,57 @@ const User = require('../models/User');
 const VerificationLog = require('../models/VerificationLog');
 const Alert = require('../models/Alert');
 const { protect, adminOnly } = require('../middleware/auth');
+const { sendEmail: _sendEmailRaw } = require('../config/email');
+
+// Helper: send a broadcast email to one recipient
+const sendBroadcastEmail = async ({ to, name, title, message, priority }) => {
+  const priorityColor = priority === 'urgent' ? '#dc2626' : priority === 'important' ? '#d97706' : '#1a56db';
+  const priorityLabel = priority === 'urgent' ? '🚨 URGENT' : priority === 'important' ? '⚠️ IMPORTANT' : 'ℹ️ NOTICE';
+  const html = `
+    <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:auto;padding:28px 22px;border:1.5px solid #e2e8f0;border-radius:12px;background:#ffffff;">
+      <div style="text-align:center;border-bottom:2px solid #0f2b5c;padding-bottom:14px;margin-bottom:18px;">
+        <h1 style="color:#0f2b5c;margin:0;font-size:1.4rem;">LEAD CITY UNIVERSITY</h1>
+        <p style="color:#d4af37;font-weight:700;margin:4px 0 0;font-size:0.82rem;text-transform:uppercase;letter-spacing:1.2px;">Campus Security Broadcast — LCU FindMe Portal</p>
+      </div>
+      <div style="background:${priorityColor}10;border-left:4px solid ${priorityColor};padding:10px 14px;border-radius:4px;margin-bottom:18px;">
+        <strong style="color:${priorityColor};font-size:0.85rem;">${priorityLabel}</strong>
+      </div>
+      <p style="font-size:0.95rem;color:#1e293b;">Hello <strong>${name || 'Student'}</strong>,</p>
+      <h2 style="color:#0f2b5c;font-size:1.15rem;margin:0 0 10px;">${title}</h2>
+      <p style="color:#334155;line-height:1.65;font-size:0.95rem;">${message}</p>
+      <div style="text-align:center;margin:28px 0;">
+        <a href="https://leadcitylostnfound-byfi.onrender.com/dashboard.html" style="display:inline-block;padding:11px 28px;font-weight:700;font-size:0.9rem;color:#ffffff;background:linear-gradient(135deg,#0f2b5c,#1a56db);text-decoration:none;border-radius:8px;">Go To Portal Dashboard</a>
+      </div>
+      <hr style="border:0;border-top:1px solid #e2e8f0;margin:24px 0 14px;">
+      <p style="text-align:center;font-size:0.78rem;color:#94a3b8;margin:0;">&copy; 2026 Lead City University &bull; Campus Security Command</p>
+    </div>
+  `;
+  const text = `${priorityLabel} — ${title}\n\nHello ${name || 'Student'},\n\n${message}\n\n© 2026 Lead City University Campus Security Command`;
+  // Use the low-level sendEmail helper from email.js
+  const https = require('https');
+  const payload = JSON.stringify({
+    sender: { name: process.env.SMTP_FROM_NAME || 'LCU FindMe Portal', email: process.env.SMTP_SENDER || '2bethel4u@gmail.com' },
+    to: [{ email: to }],
+    replyTo: { name: process.env.SMTP_FROM_NAME || 'LCU FindMe Portal', email: process.env.SMTP_SENDER || '2bethel4u@gmail.com' },
+    subject: `[Campus Security] ${title}`,
+    htmlContent: html,
+    textContent: text,
+    headers: { 'X-Mailer': 'LCU-FindMe-Portal/1.0', 'Precedence': 'bulk' }
+  });
+  return new Promise((resolve) => {
+    const req = https.request({
+      hostname: 'api.brevo.com', path: '/v3/smtp/email', method: 'POST',
+      headers: { 'accept': 'application/json', 'api-key': process.env.BREVO_API_KEY, 'content-type': 'application/json', 'content-length': Buffer.byteLength(payload) }
+    }, (res) => {
+      let data = '';
+      res.on('data', c => data += c);
+      res.on('end', () => resolve({ status: res.statusCode, body: data }));
+    });
+    req.on('error', (e) => { console.warn('Broadcast email error for', to, ':', e.message); resolve({ error: e.message }); });
+    req.write(payload);
+    req.end();
+  });
+};
 
 // ============================================================
 // 1. DASHBOARD STATS
@@ -370,7 +421,20 @@ router.post('/alerts', protect, adminOnly, async (req, res) => {
       postedBy: req.user.name || 'Campus Security Command'
     });
 
-    res.status(201).json({ success: true, message: 'Broadcast alert created successfully', alert });
+    // ── Bulk-email all registered users (fire-and-forget; non-blocking) ──
+    User.find({}, 'name email').then(users => {
+      if (!users || users.length === 0) return;
+      const tasks = users.map(u =>
+        sendBroadcastEmail({ to: u.email, name: u.name, title: title.trim(), message: message.trim(), priority: priority || 'info' })
+          .catch(err => console.warn(`Broadcast email failed for ${u.email}:`, err.message))
+      );
+      Promise.allSettled(tasks).then(results => {
+        const sent = results.filter(r => r.status === 'fulfilled').length;
+        console.log(`[Broadcast] Alert "${title}" emailed to ${sent}/${users.length} users.`);
+      });
+    }).catch(err => console.warn('[Broadcast] Could not load users for email:', err.message));
+
+    res.status(201).json({ success: true, message: 'Broadcast alert created and email dispatch started.', alert });
   } catch (error) {
     res.status(500).json({ message: 'Server Error', error: error.message });
   }

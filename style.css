@@ -2721,11 +2721,13 @@ nav a.active-admin::after {
   .data-table-wrapper {
     background: transparent;
     box-shadow: none !important;
+    overflow-x: hidden;
   }
   
   .data-table {
     border: none;
     background: transparent;
+    min-width: unset;
   }
   
   .data-table thead {
@@ -2756,6 +2758,8 @@ nav a.active-admin::after {
     padding: 0.65rem 0;
     border-bottom: 1px solid var(--border-color);
     text-align: right;
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
   
   .data-table td:last-child {
@@ -2774,8 +2778,10 @@ nav a.active-admin::after {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     flex-shrink: 0;
+    min-width: 80px;
     margin-right: 1.5rem;
     text-align: left;
+    word-break: break-word;
   }
   
   .data-table td .btn {
@@ -2928,8 +2934,8 @@ nav a.active-admin::after {
   width: 100%;
   height: 50vh;
   background-image: linear-gradient(180deg, rgba(8, 15, 30, 0.72) 0%, rgba(8, 15, 30, 0.45) 100%), url('senate-bg.jpg');
-  background-size: 100vw 100vh;
-  background-position: top center;
+  background-size: cover;
+  background-position: center top;
   background-repeat: no-repeat;
   border-bottom: 2px solid rgba(212, 175, 55, 0.7);
   transition: transform 1.15s cubic-bezier(0.76, 0, 0.24, 1);
@@ -2950,8 +2956,8 @@ nav a.active-admin::after {
   width: 100%;
   height: 50vh;
   background-image: linear-gradient(180deg, rgba(8, 15, 30, 0.45) 0%, rgba(8, 15, 30, 0.82) 100%), url('senate-bg.jpg');
-  background-size: 100vw 100vh;
-  background-position: bottom center;
+  background-size: cover;
+  background-position: center bottom;
   background-repeat: no-repeat;
   border-top: 2px solid rgba(212, 175, 55, 0.7);
   transition: transform 1.15s cubic-bezier(0.76, 0, 0.24, 1);
