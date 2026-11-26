@@ -36,6 +36,15 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="LCU FindMe">
   <link rel="stylesheet" href="style.css">
+  <script>
+    (function () {
+      if (sessionStorage.getItem('lcu_findme_intro_dismissed') === 'true') {
+        document.documentElement.classList.add('intro-already-dismissed');
+      } else {
+        document.documentElement.classList.add('intro-locked');
+      }
+    })();
+  </script>
 </head>
 <body>
 

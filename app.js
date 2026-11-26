@@ -198,6 +198,10 @@ function dismissIntroOverlay(instant = false) {
   const splitOverlay = document.getElementById('intro-split-overlay');
   if (!splitOverlay) return;
   sessionStorage.setItem('lcu_findme_intro_dismissed', 'true');
+  document.documentElement.classList.remove('intro-locked');
+  document.body.classList.remove('intro-locked');
+  window.scrollTo(0, 0);
+
   if (instant) {
     splitOverlay.classList.add('split-open', 'hidden');
   } else {
@@ -216,10 +220,19 @@ function setupEventListeners() {
   
   if (sessionStorage.getItem('lcu_findme_intro_dismissed') === 'true' && splitOverlay) {
     splitOverlay.classList.add('split-open', 'hidden');
-  }
+    document.documentElement.classList.remove('intro-locked');
+    document.body.classList.remove('intro-locked');
+  } else if (splitOverlay) {
+    document.documentElement.classList.add('intro-locked');
+    document.body.classList.add('intro-locked');
 
-  if (splitLogoTrigger && splitOverlay) {
-    splitLogoTrigger.addEventListener('click', () => {
+    // Prevent touch scrolling of background page while intro overlay is active
+    splitOverlay.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+    }, { passive: false });
+
+    // Clicking anywhere on the overlay or the shield triggers smooth slide open
+    splitOverlay.addEventListener('click', () => {
       dismissIntroOverlay(false);
     });
   }
