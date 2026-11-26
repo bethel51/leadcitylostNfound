@@ -103,28 +103,57 @@ const sendResetEmail = async (email, otp) => {
 
 const sendWelcomeEmail = async (email, name) => {
   const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 30px 20px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">
-      <h2 style="color: #1d4ed8; text-align: center; margin-bottom: 20px;">Welcome to LCU FindMe! 🎉</h2>
-      <p style="font-size: 1rem; color: #0f172a; line-height: 1.6;">Hello <strong>${name}</strong>,</p>
-      <p style="font-size: 1rem; color: #334155; line-height: 1.6;">Your account has been successfully created and verified on the <strong>LCU Lost & Found Portal</strong>.</p>
-      <p style="font-size: 1rem; color: #334155; line-height: 1.6;">Here is what you can do on your new dashboard portal:</p>
-      <ul style="font-size: 1rem; color: #334155; line-height: 1.6; padding-left: 20px;">
-        <li>Report misplaced items securely.</li>
-        <li>Browse all campus lost/found listings.</li>
-        <li>Track status of claim items.</li>
-        <li>Update and manage your academic profile credentials.</li>
-      </ul>
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="https://leadcitylostnfound.onrender.com" style="display: inline-block; padding: 12px 30px; font-weight: 600; font-size: 0.95rem; color: #ffffff; background-color: #1d4ed8; text-decoration: none; border-radius: 8px;">Access Your Dashboard</a>
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; max-width: 600px; margin: auto; padding: 30px 24px; border: 1.5px solid #0f2b5c; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 15px rgba(0,0,0,0.06);">
+      <div style="text-align: center; border-bottom: 2px solid #0f2b5c; padding-bottom: 15px; margin-bottom: 20px;">
+        <h1 style="color: #0f2b5c; margin: 0; font-size: 1.5rem; letter-spacing: 0.5px;">LEAD CITY UNIVERSITY</h1>
+        <p style="color: #d4af37; font-weight: 700; margin: 4px 0 0 0; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Official Campus Lost &amp; Found Portal (LCU FindMe)</p>
       </div>
-      <p style="font-size: 0.9rem; color: #64748b; line-height: 1.6;">If you have any questions or require security clearance support, please reach out to the campus Security Office or Student Affairs Division.</p>
-      <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 30px 0;">
-      <p style="text-align: center; font-size: 0.8rem; color: #94a3b8; margin: 0;">&copy; 2026 Lead City University Security Unit</p>
+
+      <h2 style="color: #0f2b5c; text-align: center; margin-bottom: 15px; font-size: 1.35rem;">Welcome to LCU FindMe, ${name}! 🎉</h2>
+      
+      <p style="font-size: 0.95rem; color: #334155; line-height: 1.6;">
+        Your student profile has been registered and verified on the official Lead City University item recovery network.
+      </p>
+
+      <!-- MANDATORY ACTIVATION NOTICE -->
+      <div style="background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%); border-left: 5px solid #d97706; border-radius: 8px; padding: 16px 18px; margin: 20px 0;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+          <span style="font-size: 1.1rem;">🔒</span>
+          <strong style="color: #92400e; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px;">Action Required: One-Time Account Activation</strong>
+        </div>
+        <p style="margin: 0; font-size: 0.9rem; color: #78350f; line-height: 1.55;">
+          To safeguard student identities, prevent false claims, and enable certified campus security passes, <strong>you must complete a one-time &#8358;3,000 security clearance fee via Interswitch / Quickteller</strong> before you can make or log item reports.
+        </p>
+      </div>
+
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 20px 0;">
+        <h4 style="margin: 0 0 10px 0; color: #0f2b5c; font-size: 0.92rem;">How to Activate Your Account:</h4>
+        <ol style="margin: 0; padding-left: 20px; font-size: 0.88rem; color: #475569; line-height: 1.6;">
+          <li>Log in to your dashboard at <a href="https://leadcitylostnfound.onrender.com" style="color: #1a56db; font-weight: 600;">leadcitylostnfound.onrender.com</a>.</li>
+          <li>Click the <strong>"Pay &#8358;3,000 via Interswitch / Quickteller"</strong> button on your dashboard security gate.</li>
+          <li>Complete your transaction using your Debit Card or Bank Transfer.</li>
+          <li>Once paid, your account is <strong>permanently unlocked</strong> to log lost items, browse campus listings, and process recovery claims!</li>
+        </ol>
+      </div>
+
+      <div style="text-align: center; margin: 25px 0;">
+        <a href="https://leadcitylostnfound.onrender.com" style="display: inline-block; padding: 12px 32px; font-weight: 700; font-size: 0.95rem; color: #ffffff; background: #0f2b5c; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 10px rgba(15, 43, 92, 0.25);">Login &amp; Activate Account</a>
+      </div>
+
+      <p style="font-size: 0.82rem; color: #64748b; line-height: 1.5; text-align: center;">
+        Need assistance with payment or campus security clearance? Contact the Directorate of Campus Security or Student Affairs.
+      </p>
+
+      <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 25px 0 15px 0;">
+      <p style="text-align: center; font-size: 0.78rem; color: #94a3b8; margin: 0;">
+        &copy; 2026 Lead City University &bull; Directorate of Campus Security &amp; Information Systems
+      </p>
     </div>
   `;
-  const text = `Welcome to LCU FindMe!\n\nHello ${name},\n\nYour account has been successfully created and verified on the LCU Lost & Found Student Portal.\n\nYou can now report items, browse campus listings, and verify your credentials on the portal.\n\nAccess Your Portal: https://leadcitylostnfound.onrender.com\n\n© 2026 Lead City University Security Unit`;
 
-  await sendEmail({ to: email, subject: 'Welcome to LCU FindMe!', html, text });
+  const text = `LEAD CITY UNIVERSITY - LCU FindMe Portal\n\nWelcome to LCU FindMe, ${name}!\n\nYour student account has been successfully registered.\n\nACTION REQUIRED: ONE-TIME ACCOUNT ACTIVATION\nTo safeguard student identities, prevent false claims, and enable certified security passes, you must complete a one-time ₦3,000 security clearance fee via Interswitch / Quickteller before you can make or log reports.\n\nHOW TO ACTIVATE:\n1. Log in to your portal: https://leadcitylostnfound.onrender.com\n2. Complete the ₦3,000 clearance payment via Interswitch / Quickteller.\n3. Once confirmed, full access to report items and verify claims is permanently unlocked.\n\n© 2026 Lead City University Security Directorate`;
+
+  await sendEmail({ to: email, subject: 'Welcome to LCU FindMe — Action Required: Account Activation', html, text });
 };
 
 const sendActivationEmail = async (email, otp, name = 'Student', refCode = '') => {
