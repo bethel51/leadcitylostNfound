@@ -37,6 +37,7 @@
         <a href="#" id="nav-users">User Directory</a>
         <a href="#" id="nav-verif-log">Custody Ledger <span class="nav-badge" id="verif-log-badge" style="display:none;">0</span></a>
         <a href="#" id="nav-alerts">Campus Alerts</a>
+        <a href="#" id="nav-inquiries">Support Desk <span class="nav-badge-alert" id="inquiries-badge" style="display:none;">0</span></a>
         <a href="index.html" style="color: var(--text-muted);">Public Portal</a>
 
         <!-- Header Quick Action Tools -->
@@ -396,6 +397,49 @@
           <!-- Populated by admin.js -->
         </div>
       </section>
+
+      <!-- ============================================================
+           TAB 6: STUDENT SUPPORT & INQUIRY DESK
+           ============================================================ -->
+      <section class="dashboard-section hidden" id="section-inquiries" style="padding-top: 1rem;">
+        <div class="section-header">
+          <div>
+            <h2>📬 Student Support Inquiries &amp; Messages</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">
+              Review submitted student inquiries, questions, and recovery requests. Official replies are emailed directly to students.
+            </p>
+          </div>
+          <div style="display: flex; gap: 0.6rem; align-items: center;">
+            <select class="admin-select" id="filter-inquiries-status" style="padding: 0.45rem 0.85rem; font-size: 0.82rem;">
+              <option value="all">All Inquiries</option>
+              <option value="pending" selected>Pending Reply</option>
+              <option value="replied">Replied</option>
+            </select>
+            <button class="btn btn-secondary" id="btn-refresh-inquiries" style="padding: 0.45rem 0.85rem; font-size: 0.82rem;">
+              🔄 Refresh
+            </button>
+          </div>
+        </div>
+
+        <div class="data-table-wrapper" style="box-shadow: var(--shadow-premium);">
+          <table class="data-table" id="inquiries-table">
+            <thead>
+              <tr>
+                <th>Date Logged</th>
+                <th>Student / Sender</th>
+                <th>Email / Contact</th>
+                <th>Category</th>
+                <th>Message Snippet</th>
+                <th>Status</th>
+                <th style="text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="inquiries-table-body">
+              <!-- Populated by admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </section>
     </main>
 
     <!-- Footer -->
@@ -668,7 +712,7 @@
           </div>
           <div class="form-group">
             <label class="form-label" for="edit-admin-email">Official Security Email</label>
-            <input type="email" class="form-control" id="edit-admin-email" placeholder="security@lcu.edu.ng">
+            <input type="email" class="form-control" id="edit-admin-email" placeholder="ifeanyichukwubethel1@gmail.com">
           </div>
           <div class="form-group">
             <label class="form-label" for="edit-admin-office">Current Duty Station / Post</label>
@@ -732,6 +776,40 @@
     </div>
   </div>
 
+  <!-- ============================================================
+       MODAL: REPLY TO STUDENT INQUIRY
+       ============================================================ -->
+  <div class="modal-backdrop" id="modal-reply-inquiry">
+    <div class="modal-container" style="max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden;">
+      <div class="modal-header" style="background-color: var(--primary); border-bottom: none;">
+        <h3 class="modal-title" style="color: white;">✉️ Reply to Student Inquiry</h3>
+        <button class="modal-close" id="btn-close-reply-inquiry" style="color: white; font-size: 1.4rem; background: none; border: none; cursor: pointer;">&times;</button>
+      </div>
+      <div class="modal-body" style="overflow-y: auto; padding: 1.5rem; flex: 1;">
+        <div id="reply-inquiry-details" style="background: var(--bg-surface); padding: 1rem 1.25rem; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 1.25rem;">
+          <!-- Populated by admin.js -->
+        </div>
+
+        <form id="form-reply-inquiry">
+          <input type="hidden" id="reply-inquiry-id">
+          <div class="form-group">
+            <label class="form-label" for="reply-inquiry-text">Official Duty Desk / Support Response *</label>
+            <textarea class="form-control" id="reply-inquiry-text" rows="4" placeholder="Type official response or instructions for the student..." required></textarea>
+            <small style="color: var(--text-muted); display: block; margin-top: 4px;">
+              This reply will be emailed immediately to the student and shown on their portal dashboard.
+            </small>
+          </div>
+          <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.25rem;">
+            <button type="button" class="btn btn-secondary" id="btn-cancel-reply-inquiry">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btn-send-inquiry-reply">
+              <span>🚀 Send Reply &amp; Alert Student</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST NOTIFICATION -->
   <div class="toast toast-success" id="toast-notification">
     <div class="toast-icon">✓</div>
@@ -747,6 +825,6 @@
   </style>
 
   <script src="https://unpkg.com/html5-qrcode"></script>
-  <script src="admin.js?v=2.2"></script>
+  <script src="admin.js?v=3.0"></script>
 </body>
 </html>

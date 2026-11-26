@@ -484,7 +484,7 @@ router.post('/intake', protect, adminOnly, async (req, res) => {
       description: `${description.trim()} [Security Intake Bin: ${binTag || 'Security Safe'}]`,
       reporterName: `Security Intake (Finder: ${finderName || 'Anonymous / Turn-in'})`,
       reporterContact: finderContact || 'Campus Security Desk Gate A',
-      reporterEmail: req.user.email || 'security@lcu.edu.ng',
+      reporterEmail: req.user.email || 'ifeanyichukwubethel1@gmail.com',
       reporterMatric: 'STAFF-SECURITY',
       status: 'active',
       image: image || null

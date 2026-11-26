@@ -59,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let adminClaims = [];
   let adminVerifLogs = [];
   let adminAlerts = [];
+  let adminInquiries = [];
   let currentTab = 'dashboard';
   let adminName = localStorage.getItem('lcu_findme_admin_name') || 'CSO Olabisi';
   let adminRank = localStorage.getItem('lcu_findme_admin_rank') || 'Chief Security Officer';
@@ -242,7 +243,8 @@ document.addEventListener('DOMContentLoaded', () => {
     claims:    { section: document.getElementById('section-claims'),    nav: document.getElementById('nav-claims') },
     users:     { section: document.getElementById('section-users'),     nav: document.getElementById('nav-users') },
     log:       { section: document.getElementById('section-verif-log'), nav: document.getElementById('nav-verif-log') },
-    alerts:    { section: document.getElementById('section-alerts'),    nav: document.getElementById('nav-alerts') }
+    alerts:    { section: document.getElementById('section-alerts'),    nav: document.getElementById('nav-alerts') },
+    inquiries: { section: document.getElementById('section-inquiries'), nav: document.getElementById('nav-inquiries') }
   };
 
   function switchTab(tabKey) {
@@ -263,6 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tabKey === 'users') renderUserDirectory();
     if (tabKey === 'log') renderVerifLog();
     if (tabKey === 'alerts') renderAlertsList();
+    if (tabKey === 'inquiries') renderInquiriesTable();
   }
 
   Object.keys(tabs).forEach(key => {
@@ -290,7 +293,8 @@ document.addEventListener('DOMContentLoaded', () => {
       fetchClaims(),
       fetchUsers(),
       fetchVerifications(),
-      fetchAlerts()
+      fetchAlerts(),
+      fetchInquiries()
     ]);
   }
 
@@ -483,6 +487,218 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       console.warn('Error loading alerts:', err);
     }
+  }
+
+  async function fetchInquiries() {
+    try {
+      const token = localStorage.getItem('lcu_findme_token');
+      const res = await fetch(`${API_URL}/support/admin/all`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        adminInquiries = data.data || [];
+        const pendingCount = adminInquiries.filter(i => i.status === 'pending').length;
+        const badge = document.getElementById('inquiries-badge');
+        if (badge) {
+          badge.textContent = pendingCount;
+          badge.style.display = pendingCount > 0 ? 'inline-flex' : 'none';
+        }
+        if (currentTab === 'inquiries') renderInquiriesTable();
+      }
+    } catch (err) {
+      console.warn('Error loading support inquiries:', err);
+    }
+  }
+
+  function renderInquiriesTable() {
+    const tbody = document.getElementById('inquiries-table-body');
+    if (!tbody) return;
+
+    const filterVal = document.getElementById('filter-inquiries-status') ? document.getElementById('filter-inquiries-status').value : 'all';
+
+    let list = adminInquiries;
+    if (filterVal === 'pending') {
+      list = adminInquiries.filter(i => i.status === 'pending');
+    } else if (filterVal === 'replied') {
+      list = adminInquiries.filter(i => i.status === 'replied');
+    }
+
+    if (list.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+            No support inquiries found matching filter (${filterVal}).
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    const categoryBadges = {
+      general: '<span style="background: rgba(37,99,235,0.1); color: #2563eb; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 700;">General</span>',
+      activation: '<span style="background: rgba(217,119,6,0.1); color: #d97706; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 700;">Activation &amp; Pay</span>',
+      claim: '<span style="background: rgba(139,92,246,0.1); color: #8b5cf6; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 700;">Claim Dispute</span>',
+      urgent: '<span style="background: rgba(220,38,38,0.12); color: #dc2626; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 800;">🚨 Urgent Misplaced</span>'
+    };
+
+    tbody.innerHTML = list.map(inq => {
+      const isPending = inq.status === 'pending';
+      const statusBadge = isPending
+        ? '<span style="background: #fef3c7; color: #92400e; padding: 3px 9px; border-radius: 12px; font-size: 0.75rem; font-weight: 700;">⏳ Pending Review</span>'
+        : '<span style="background: #d1fae5; color: #065f46; padding: 3px 9px; border-radius: 12px; font-size: 0.75rem; font-weight: 700;">✅ Replied</span>';
+
+      const shortMsg = inq.message ? (inq.message.length > 55 ? inq.message.slice(0, 55) + '…' : inq.message) : '';
+
+      return `
+        <tr>
+          <td style="font-size: 0.82rem; color: var(--text-muted); white-space: nowrap;">
+            ${formatDateTime(inq.createdAt)}
+          </td>
+          <td>
+            <strong>${inq.name}</strong>
+            ${inq.matricNumber ? `<div style="font-size: 0.74rem; color: var(--text-muted); font-family: monospace;">${inq.matricNumber}</div>` : ''}
+          </td>
+          <td>
+            <a href="mailto:${inq.email}" style="color: var(--primary); text-decoration: none; font-size: 0.85rem;">${inq.email}</a>
+          </td>
+          <td>${categoryBadges[inq.category] || inq.category}</td>
+          <td style="max-width: 260px; font-size: 0.85rem; color: var(--text-dark);" title="${inq.message.replace(/"/g, '&quot;')}">
+            ${shortMsg}
+          </td>
+          <td>${statusBadge}</td>
+          <td style="text-align: right;">
+            <button class="btn btn-secondary btn-reply-inquiry" data-id="${inq._id}" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">
+              ${isPending ? '✍️ Reply' : '👁️ View'}
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    tbody.querySelectorAll('.btn-reply-inquiry').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        openReplyModal(id);
+      });
+    });
+  }
+
+  function openReplyModal(inquiryId) {
+    const inq = adminInquiries.find(i => String(i._id) === String(inquiryId));
+    if (!inq) return;
+
+    const detailsEl = document.getElementById('reply-inquiry-details');
+    const idInput = document.getElementById('reply-inquiry-id');
+    const replyText = document.getElementById('reply-inquiry-text');
+
+    if (idInput) idInput.value = inq._id;
+    if (replyText) replyText.value = inq.adminReply || '';
+
+    const categoryNames = {
+      general: 'General Question / Portal Help',
+      activation: 'Account Activation & Payment',
+      claim: 'Claim Dispute / Verification Review',
+      urgent: 'Urgent Misplaced Sensitive Item (Passports/Laptops)'
+    };
+
+    if (detailsEl) {
+      detailsEl.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+          <div>
+            <strong style="font-size: 1rem; color: var(--text-dark);">${inq.name}</strong>
+            <span style="font-size: 0.82rem; color: var(--text-muted); margin-left: 0.5rem;">(${inq.matricNumber || 'Guest / Student'})</span>
+            <div style="font-size: 0.82rem; color: var(--primary);"><a href="mailto:${inq.email}">${inq.email}</a></div>
+          </div>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">${formatDateTime(inq.createdAt)}</span>
+        </div>
+        <div style="margin-bottom: 0.5rem;">
+          <strong style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted);">Category:</strong>
+          <span style="font-size: 0.85rem; font-weight: 600; color: var(--primary); margin-left: 0.35rem;">${categoryNames[inq.category] || inq.category}</span>
+        </div>
+        <div>
+          <strong style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted);">Student Message:</strong>
+          <div style="background: var(--card-bg); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); margin-top: 0.35rem; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; color: var(--text-dark);">
+            ${inq.message}
+          </div>
+        </div>
+        ${inq.adminReply ? `
+          <div style="margin-top: 0.75rem; padding: 0.75rem; background: #ecfdf5; border-left: 4px solid #10b981; border-radius: 4px;">
+            <strong style="font-size: 0.78rem; color: #065f46; text-transform: uppercase;">Previous Reply sent ${formatDateTime(inq.repliedAt)} by ${inq.repliedBy || 'CSO Desk'}:</strong>
+            <div style="font-size: 0.88rem; color: #064e3b; margin-top: 0.25rem;">${inq.adminReply}</div>
+          </div>
+        ` : ''}
+      `;
+    }
+
+    toggleModal('modal-reply-inquiry', true);
+  }
+
+  // Setup Inquiry Filter & Reply Modal Listeners
+  const filterInqStatus = document.getElementById('filter-inquiries-status');
+  if (filterInqStatus) {
+    filterInqStatus.addEventListener('change', renderInquiriesTable);
+  }
+
+  const btnRefreshInq = document.getElementById('btn-refresh-inquiries');
+  if (btnRefreshInq) {
+    btnRefreshInq.addEventListener('click', async () => {
+      btnRefreshInq.textContent = '⏳ Refreshing...';
+      await fetchInquiries();
+      btnRefreshInq.textContent = '🔄 Refresh';
+      showToast('Support inquiries refreshed.');
+    });
+  }
+
+  const btnCloseReplyInq = document.getElementById('btn-close-reply-inquiry');
+  const btnCancelReplyInq = document.getElementById('btn-cancel-reply-inquiry');
+  [btnCloseReplyInq, btnCancelReplyInq].forEach(btn => {
+    if (btn) btn.addEventListener('click', () => toggleModal('modal-reply-inquiry', false));
+  });
+
+  const formReplyInquiry = document.getElementById('form-reply-inquiry');
+  if (formReplyInquiry) {
+    formReplyInquiry.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const inqId = document.getElementById('reply-inquiry-id').value;
+      const reply = document.getElementById('reply-inquiry-text').value.trim();
+      const submitBtn = document.getElementById('btn-send-inquiry-reply');
+
+      if (!reply) return showToast('Please enter a response message.', 'warning');
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending & Emailing Student...';
+      }
+
+      try {
+        const token = localStorage.getItem('lcu_findme_token');
+        const res = await fetch(`${API_URL}/support/admin/${inqId}/reply`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ reply })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          showToast('Reply dispatched to student email and portal dashboard!', 'success');
+          toggleModal('modal-reply-inquiry', false);
+          await fetchInquiries();
+        } else {
+          showToast(data.message || 'Failed to send reply.', 'error');
+        }
+      } catch (err) {
+        showToast('Error connecting to support API.', 'error');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = '🚀 Send Reply & Alert Student';
+        }
+      }
+    });
   }
 
   // ============================================================
@@ -1689,7 +1905,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (nameInput) nameInput.value = adminName;
       if (rankInput) rankInput.value = adminRank;
-      if (emailInput) emailInput.value = localStorage.getItem('lcu_findme_admin_email') || 'security@lcu.edu.ng';
+      if (emailInput) emailInput.value = localStorage.getItem('lcu_findme_admin_email') || 'ifeanyichukwubethel1@gmail.com';
       if (officeInput) officeInput.value = adminOffice;
 
       const preview = document.getElementById('admin-edit-avatar-preview');

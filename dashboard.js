@@ -841,6 +841,9 @@ const viewTitles = {
 };
 
 function switchView(viewName) {
+  // Automatically close mobile sidebar if open
+  closeSidebar();
+
   // Deactivate all views
   document.querySelectorAll('.db-view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.db-nav-item[data-view]').forEach(n => n.classList.remove('active'));
@@ -881,13 +884,19 @@ function setupSidebar() {
   const hamburger = document.getElementById('db-hamburger');
   const sidebar = document.getElementById('db-sidebar');
   const overlay = document.getElementById('db-overlay');
+  const closeBtn = document.getElementById('btn-close-sidebar');
 
   if (hamburger && sidebar) {
     hamburger.addEventListener('click', () => {
-      hamburger.classList.toggle('open');
-      sidebar.classList.toggle('open');
-      if (overlay) overlay.classList.toggle('visible');
+      const isOpen = sidebar.classList.toggle('open');
+      hamburger.classList.toggle('open', isOpen);
+      if (overlay) overlay.classList.toggle('visible', isOpen);
+      document.body.classList.toggle('sidebar-open', isOpen);
     });
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeSidebar);
   }
 
   if (overlay) {
@@ -902,6 +911,7 @@ function closeSidebar() {
   if (hamburger) hamburger.classList.remove('open');
   if (sidebar) sidebar.classList.remove('open');
   if (overlay) overlay.classList.remove('visible');
+  document.body.classList.remove('sidebar-open');
 }
 
 // =====================================================
@@ -2238,8 +2248,16 @@ function setupInfoAndHelpModals() {
   const closeInfo = document.getElementById('btn-close-info');
   const closeHelp = document.getElementById('btn-close-help');
 
-  if (btnInfo) btnInfo.addEventListener('click', () => toggleModal('modal-info-center', true));
-  if (btnHelp) btnHelp.addEventListener('click', () => toggleModal('modal-help-support', true));
+  if (btnInfo) btnInfo.addEventListener('click', () => {
+    closeSidebar();
+    toggleModal('modal-info-center', true);
+  });
+  if (btnHelp) btnHelp.addEventListener('click', () => {
+    closeSidebar();
+    prefillSupportForm();
+    loadStudentInquiries();
+    toggleModal('modal-help-support', true);
+  });
   if (closeInfo) closeInfo.addEventListener('click', () => toggleModal('modal-info-center', false));
   if (closeHelp) closeHelp.addEventListener('click', () => toggleModal('modal-help-support', false));
 
@@ -2262,15 +2280,156 @@ function setupInfoAndHelpModals() {
     });
   });
 
+  function prefillSupportForm() {
+    if (state.user) {
+      const nameInput = document.getElementById('db-support-name');
+      const emailInput = document.getElementById('db-support-email');
+      if (nameInput && !nameInput.value) nameInput.value = state.user.name || '';
+      if (emailInput && !emailInput.value) emailInput.value = state.user.email || '';
+    }
+  }
+
   // Support inquiry submission in dashboard
   const formSupport = document.getElementById('db-form-support-inquiry');
   if (formSupport) {
-    formSupport.addEventListener('submit', (e) => {
+    formSupport.addEventListener('submit', async (e) => {
       e.preventDefault();
-      toggleModal('modal-help-support', false);
-      showToast('Support ticket dispatched to Security Operations Desk. We will reach you shortly!', 'success');
-      formSupport.reset();
+      const submitBtn = document.getElementById('db-btn-submit-support');
+      const name = document.getElementById('db-support-name').value.trim();
+      const email = document.getElementById('db-support-email').value.trim();
+      const category = document.getElementById('db-support-category').value;
+      const message = document.getElementById('db-support-message').value.trim();
+      const matricNumber = state.user ? state.user.matricNumber : '';
+
+      if (!name || !email || !message) {
+        showToast('Please fill in all inquiry details.', 'warning');
+        return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitting & Dispatching Alert...';
+      }
+
+      try {
+        const token = localStorage.getItem('lcu_findme_token');
+        const res = await fetch(`${API_URL}/support`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ name, email, category, message, matricNumber })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          showToast('Inquiry submitted! Admin & security alerted via email.', 'success');
+          document.getElementById('db-support-message').value = '';
+          await loadStudentInquiries();
+        } else {
+          showToast(data.message || 'Failed to submit inquiry.', 'error');
+        }
+      } catch (err) {
+        showToast('Network error submitting inquiry.', 'error');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit Support Inquiry';
+        }
+      }
     });
+  }
+
+  // Refresh my inquiries button
+  const btnRefresh = document.getElementById('btn-refresh-my-inquiries');
+  if (btnRefresh) {
+    btnRefresh.addEventListener('click', async () => {
+      btnRefresh.textContent = 'Refreshing...';
+      await loadStudentInquiries();
+      btnRefresh.textContent = '🔄 Refresh';
+    });
+  }
+}
+
+async function loadStudentInquiries() {
+  const container = document.getElementById('my-inquiries-list');
+  if (!container) return;
+
+  try {
+    const token = localStorage.getItem('lcu_findme_token');
+    const userEmail = state.user ? state.user.email : '';
+    const res = await fetch(`${API_URL}/support/my${userEmail ? `?email=${encodeURIComponent(userEmail)}` : ''}`, {
+      headers: {
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      }
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      const inquiries = data.data || [];
+
+      if (inquiries.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 1.2rem; color: var(--text-muted); font-size: 0.85rem; background: var(--bg-surface); border-radius: 8px; border: 1px dashed var(--border-color);">
+            No support inquiries submitted yet.
+          </div>
+        `;
+        return;
+      }
+
+      const categoryLabels = {
+        general: 'General Question',
+        activation: 'Account Activation',
+        claim: 'Claim Dispute',
+        urgent: 'Urgent Misplaced Item'
+      };
+
+      container.innerHTML = inquiries.map(inq => {
+        const isPending = inq.status === 'pending';
+        const statusBadge = isPending
+          ? '<span style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 10px; font-size: 0.72rem; font-weight: 700;">⏳ Pending Review</span>'
+          : '<span style="background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 10px; font-size: 0.72rem; font-weight: 700;">✅ Replied by Duty Desk</span>';
+
+        return `
+          <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 1rem; box-shadow: var(--shadow-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.4rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 0.76rem; font-weight: 700; color: var(--primary); text-transform: uppercase;">
+                  ${categoryLabels[inq.category] || inq.category}
+                </span>
+                <span style="font-size: 0.72rem; color: var(--text-muted);">
+                  ${new Date(inq.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+              ${statusBadge}
+            </div>
+
+            <p style="margin: 0; font-size: 0.88rem; color: var(--text-dark); line-height: 1.5; white-space: pre-wrap;">
+              ${inq.message}
+            </p>
+
+            ${inq.adminReply ? `
+              <div style="margin-top: 0.75rem; background: rgba(16, 185, 129, 0.08); border-left: 3px solid #10b981; border-radius: 6px; padding: 0.75rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                  <strong style="font-size: 0.78rem; color: #065f46; display: flex; align-items: center; gap: 4px;">
+                    🛡️ Official Security Response (${inq.repliedBy || 'CSO Desk'}):
+                  </strong>
+                  <span style="font-size: 0.7rem; color: #047857;">
+                    ${new Date(inq.repliedAt || inq.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                  </span>
+                </div>
+                <div style="font-size: 0.86rem; color: #064e3b; line-height: 1.5; white-space: pre-wrap;">
+                  ${inq.adminReply}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+  } catch (err) {
+    console.warn('Error loading student inquiries:', err);
   }
 }
 
@@ -2280,6 +2439,7 @@ function toggleModal(modalId, show = true) {
   if (show) {
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
+    document.body.classList.add('modal-open');
     // Only auto-focus on desktop viewports to avoid mobile virtual keyboard shifts and touch hangs
     if (window.innerWidth > 768) {
       setTimeout(() => {
@@ -2289,7 +2449,10 @@ function toggleModal(modalId, show = true) {
     }
   } else {
     modal.classList.remove('active');
-    document.body.style.overflow = '';
+    if (!document.querySelector('.modal-backdrop.active')) {
+      document.body.style.overflow = '';
+      document.body.classList.remove('modal-open');
+    }
   }
 }
 

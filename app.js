@@ -393,11 +393,47 @@ function setupEventListeners() {
   // Support inquiry submission
   const formSupport = document.getElementById('form-support-inquiry');
   if (formSupport) {
-    formSupport.addEventListener('submit', (e) => {
+    formSupport.addEventListener('submit', async (e) => {
       e.preventDefault();
-      toggleModal('modal-help-support', false);
-      showToast('Support ticket dispatched to Security Operations Desk. We will reach you shortly!', 'success');
-      formSupport.reset();
+      const submitBtn = document.getElementById('btn-submit-support');
+      const name = document.getElementById('support-name').value.trim();
+      const email = document.getElementById('support-email').value.trim();
+      const category = document.getElementById('support-category').value;
+      const message = document.getElementById('support-message').value.trim();
+
+      if (!name || !email || !message) {
+        showToast('Please fill in all inquiry details.', 'warning');
+        return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitting & Dispatching Alert...';
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/support`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, category, message })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          showToast('Inquiry submitted! Campus security has been alerted via email.', 'success');
+          toggleModal('modal-help-support', false);
+          formSupport.reset();
+        } else {
+          showToast(data.message || 'Failed to submit inquiry.', 'error');
+        }
+      } catch (err) {
+        showToast('Network error submitting inquiry.', 'error');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit Support Inquiry';
+        }
+      }
     });
   }
   // ─────────────────────────────────────────────────────────────────

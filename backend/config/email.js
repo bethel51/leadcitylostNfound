@@ -244,11 +244,137 @@ const sendOfficialWelcomeEmail = async (email, name = 'Student') => {
   await sendEmail({ to: email, subject: 'Welcome to the Official LCU Lost & Found Platform!', html, text });
 };
 
+const sendInquiryNotificationToAdmin = async ({ name, email, matricNumber, category, message }) => {
+  const adminEmail = 'ifeanyichukwubethel1@gmail.com';
+  const categoryNames = {
+    general: 'General Question / Portal Help',
+    activation: 'Account Activation & Payment',
+    claim: 'Claim Dispute / Verification Review',
+    urgent: 'Urgent Misplaced Sensitive Item (Passports/Laptops)'
+  };
+  const categoryLabel = categoryNames[category] || category;
+  const isUrgent = category === 'urgent';
+
+  const html = `
+    <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 620px; margin: auto; padding: 28px 24px; border: 1.5px solid ${isUrgent ? '#dc2626' : '#1a56db'}; border-radius: 12px; background: #ffffff; box-shadow: 0 4px 18px rgba(0,0,0,0.06);">
+      <div style="text-align: center; border-bottom: 2px solid #0f2b5c; padding-bottom: 14px; margin-bottom: 20px;">
+        <h1 style="color: #0f2b5c; margin: 0; font-size: 1.45rem;">LEAD CITY UNIVERSITY</h1>
+        <p style="color: #d4af37; font-weight: 700; margin: 4px 0 0 0; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">LCU FindMe • Security &amp; Admin Support Desk</p>
+      </div>
+
+      <div style="background: ${isUrgent ? '#fef2f2' : '#eff6ff'}; border-left: 4px solid ${isUrgent ? '#dc2626' : '#1a56db'}; padding: 12px 16px; border-radius: 6px; margin-bottom: 20px;">
+        <span style="font-size: 0.82rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: ${isUrgent ? '#dc2626' : '#1a56db'};">
+          ${isUrgent ? '🚨 URGENT INQUIRY RECEIVED' : '📬 NEW STUDENT INQUIRY RECEIVED'}
+        </span>
+      </div>
+
+      <h3 style="color: #0f2b5c; margin: 0 0 16px 0; font-size: 1.15rem;">Inquiry From: ${name}</h3>
+
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.9rem;">
+        <tr>
+          <td style="padding: 8px 10px; background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 600; color: #475569; width: 35%;">Sender Name:</td>
+          <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b;">${name}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 10px; background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Email Address:</td>
+          <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1a56db; font-weight: 600;"><a href="mailto:${email}">${email}</a></td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 10px; background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Matric / Reg No:</td>
+          <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #1e293b; font-family: monospace; font-weight: 700;">${matricNumber || 'N/A'}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 10px; background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Category:</td>
+          <td style="padding: 8px 10px; border: 1px solid #e2e8f0; color: #0f2b5c; font-weight: 700;">${categoryLabel}</td>
+        </tr>
+      </table>
+
+      <div style="background: #f1f5f9; border-radius: 8px; padding: 16px; margin-bottom: 22px;">
+        <strong style="color: #334155; font-size: 0.88rem; display: block; margin-bottom: 8px;">Message Content:</strong>
+        <p style="margin: 0; color: #1e293b; font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap;">${message}</p>
+      </div>
+
+      <div style="text-align: center; margin: 25px 0;">
+        <a href="https://lcufindme.space/admin.html" style="display: inline-block; padding: 12px 30px; font-weight: 700; font-size: 0.95rem; color: #ffffff; background: #0f2b5c; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 10px rgba(15, 43, 92, 0.25);">
+          Open Admin Support Console &amp; Reply
+        </a>
+      </div>
+
+      <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 24px 0 14px 0;">
+      <p style="text-align: center; font-size: 0.78rem; color: #94a3b8; margin: 0;">
+        &copy; 2026 Lead City University &bull; Automated Security Support Dispatcher
+      </p>
+    </div>
+  `;
+
+  const text = `LCU FindMe - New Student Inquiry\n\nSender: ${name} (${email})\nMatric: ${matricNumber || 'N/A'}\nCategory: ${categoryLabel}\n\nMessage:\n${message}\n\nReply via Admin Console: https://lcufindme.space/admin.html`;
+
+  await sendEmail({ to: adminEmail, subject: `[LCU FindMe Support] ${isUrgent ? '🚨 URGENT: ' : ''}Inquiry from ${name} (${categoryLabel})`, html, text });
+};
+
+const sendInquiryReplyToUser = async ({ toEmail, name, category, originalMessage, adminReply }) => {
+  const categoryNames = {
+    general: 'General Question / Portal Help',
+    activation: 'Account Activation & Payment',
+    claim: 'Claim Dispute / Verification Review',
+    urgent: 'Urgent Misplaced Sensitive Item (Passports/Laptops)'
+  };
+  const categoryLabel = categoryNames[category] || category;
+
+  const html = `
+    <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 620px; margin: auto; padding: 28px 24px; border: 1.5px solid #10b981; border-radius: 12px; background: #ffffff; box-shadow: 0 4px 18px rgba(0,0,0,0.06);">
+      <div style="text-align: center; border-bottom: 2px solid #0f2b5c; padding-bottom: 14px; margin-bottom: 20px;">
+        <h1 style="color: #0f2b5c; margin: 0; font-size: 1.45rem;">LEAD CITY UNIVERSITY</h1>
+        <p style="color: #d4af37; font-weight: 700; margin: 4px 0 0 0; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">LCU FindMe • Security Support Desk Response</p>
+      </div>
+
+      <p style="font-size: 1rem; color: #1e293b;">Hello <strong>${name || 'Student'}</strong>,</p>
+      <p style="font-size: 0.95rem; color: #334155; line-height: 1.6;">
+        The Lead City University Security &amp; Portal Help Desk has reviewed and replied to your inquiry regarding <strong>${categoryLabel}</strong>:
+      </p>
+
+      <div style="background: #f0fdf4; border-left: 5px solid #10b981; border-radius: 8px; padding: 18px; margin: 20px 0;">
+        <div style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: #047857; margin-bottom: 8px;">
+          🛡️ Campus Security Officer Response:
+        </div>
+        <p style="margin: 0; color: #064e3b; font-size: 0.98rem; font-weight: 500; line-height: 1.65; white-space: pre-wrap;">${adminReply}</p>
+      </div>
+
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; margin-bottom: 22px;">
+        <span style="font-size: 0.8rem; color: #64748b; font-weight: 600; text-transform: uppercase; display: block; margin-bottom: 6px;">Your Original Inquiry:</span>
+        <p style="margin: 0; color: #475569; font-size: 0.88rem; line-height: 1.5; font-style: italic;">&ldquo;${originalMessage}&rdquo;</p>
+      </div>
+
+      <div style="text-align: center; margin: 25px 0;">
+        <a href="https://lcufindme.space/dashboard.html" style="display: inline-block; padding: 12px 30px; font-weight: 700; font-size: 0.95rem; color: #ffffff; background: linear-gradient(135deg, #0f2b5c, #1a56db); text-decoration: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(26, 86, 219, 0.25);">
+          View On Your Student Dashboard
+        </a>
+      </div>
+
+      <p style="font-size: 0.82rem; color: #64748b; text-align: center; line-height: 1.5;">
+        Need further assistance? You can reply directly to this email or visit Senate Security Post A.
+      </p>
+
+      <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 24px 0 14px 0;">
+      <p style="text-align: center; font-size: 0.78rem; color: #94a3b8; margin: 0;">
+        &copy; 2026 Lead City University &bull; Directorate of Campus Security (Official Contact: ifeanyichukwubethel1@gmail.com)
+      </p>
+    </div>
+  `;
+
+  const text = `LCU FindMe Support Desk - Response to Your Inquiry\n\nHello ${name || 'Student'},\n\nOfficer Response:\n${adminReply}\n\nYour Original Message:\n${originalMessage}\n\nCheck Dashboard: https://lcufindme.space/dashboard.html\n\n© 2026 Lead City University Security Directorate`;
+
+  await sendEmail({ to: toEmail, subject: `[LCU FindMe] Response to your Inquiry: ${categoryLabel}`, html, text });
+};
+
 module.exports = { 
   sendVerificationEmail, 
   sendResetEmail, 
   sendWelcomeEmail, 
   sendActivationEmail, 
-  sendOfficialWelcomeEmail 
+  sendOfficialWelcomeEmail,
+  sendInquiryNotificationToAdmin,
+  sendInquiryReplyToUser
 };
+
 
