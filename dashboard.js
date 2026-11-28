@@ -2582,7 +2582,8 @@ function downloadReportHistory() {
     <head>
       <title>LCU Lost & Found - Report History Slip</title>
       <style>
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; color: #0f172a; margin: 0; padding: 40px; background: #fff; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; color: #0f172a; margin: 0; padding: 40px; background: #fff; letter-spacing: -0.01em; -webkit-font-smoothing: antialiased; }
         .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #1a56db; padding-bottom: 20px; margin-bottom: 30px; }
         .header-logo { display: flex; align-items: center; gap: 15px; }
         .header-logo img { width: 65px; height: 65px; object-fit: contain; }

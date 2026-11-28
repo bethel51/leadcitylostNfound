@@ -1,11 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Outfit:wght@500;600;700;800&display=swap');
+
 /* ---- Dashboard Body / Layout ---- */
 .db-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: var(--bg-secondary);
+  color: var(--text-dark);
+  line-height: 1.6;
+  letter-spacing: -0.012em;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 /* =====================================================
@@ -198,7 +206,7 @@
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 .db-logo-label {
@@ -210,7 +218,7 @@
   font-size: 1.15rem;
   font-weight: 800;
   color: var(--primary);
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 .db-logo-sub {
@@ -234,7 +242,7 @@
   border-radius: 50%;
   background: linear-gradient(135deg, var(--primary), var(--accent));
   color: white;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 800;
   font-size: 1rem;
   display: flex;
@@ -256,7 +264,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 .db-sidebar-role {
@@ -543,7 +551,7 @@
   border-radius: 50%;
   background: linear-gradient(135deg, var(--primary), var(--accent));
   color: white;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 800;
   font-size: 0.9rem;
   display: flex;
@@ -591,7 +599,7 @@
   border-radius: 50%;
   background: linear-gradient(135deg, var(--primary), var(--accent));
   color: white;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 800;
   font-size: 0.9rem;
   display: flex;
@@ -607,7 +615,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 .db-dropdown-role {
@@ -659,7 +667,7 @@
   background: var(--danger-bg, rgba(239, 68, 68, 0.08));
   color: var(--danger, #ef4444);
   border: 1.5px solid rgba(239, 68, 68, 0.3);
-  font-family: 'Outfit', 'Inter', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 700;
   font-size: 0.82rem;
   cursor: pointer;
@@ -808,7 +816,7 @@
 }
 
 .db-view-title {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 1.6rem;
   font-weight: 800;
   color: var(--secondary);
@@ -896,7 +904,7 @@
 }
 
 .db-welcome-name {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 1.85rem;
   font-weight: 800;
   color: white;
@@ -1035,7 +1043,7 @@
 .db-stat-purple .db-stat-icon { background: var(--primary-light); color: var(--primary); }
 
 .db-stat-value {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 1.8rem;
   font-weight: 800;
   color: var(--text-dark);
@@ -1087,7 +1095,7 @@
 }
 
 .db-card-title {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 1rem;
   font-weight: 700;
   color: var(--secondary);
@@ -1210,7 +1218,7 @@
   border: none;
   cursor: pointer;
   margin-top: 0.5rem;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 600;
   transition: var(--transition-smooth);
   display: inline-flex;
@@ -1531,7 +1539,7 @@
   border-radius: 50%;
   background: linear-gradient(135deg, var(--primary), var(--accent));
   color: white;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 800;
   font-size: 2rem;
   display: flex;
@@ -1554,7 +1562,7 @@
 }
 
 .db-profile-name {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 1.2rem;
   font-weight: 800;
   color: var(--text-dark);
@@ -1595,7 +1603,7 @@
 }
 
 .db-profile-mini-val {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 1.35rem;
   font-weight: 800;
   color: var(--primary);
@@ -1892,7 +1900,7 @@
 
 .db-welcome-name {
   color: #ffffff !important;
-  font-family: 'Outfit', sans-serif !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
   letter-spacing: -0.5px;
 }
 
@@ -2013,7 +2021,7 @@
 }
 
 .db-activation-title {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 1.45rem;
   font-weight: 800;
   color: #ffffff;
@@ -2171,7 +2179,7 @@
   font-size: 2.25rem;
   font-weight: 800;
   color: #0f2b5c;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   letter-spacing: -0.5px;
 }
 .dark-theme .checkout-amount-val {
@@ -2372,7 +2380,7 @@
   text-align: center;
   font-size: clamp(1.25rem, 5vw, 1.7rem);
   font-weight: 800;
-  font-family: 'Outfit', monospace;
+  font-family: 'Plus Jakarta Sans', monospace;
   color: var(--text-dark);
   background: var(--bg-primary);
   border: 2px solid var(--border-color);
@@ -2426,7 +2434,7 @@
 }
 
 .celebration-title {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 1.45rem;
   font-weight: 800;
   color: var(--secondary);
@@ -2546,7 +2554,7 @@ body.modal-open .db-mobile-bottom-nav {
   color: var(--text-muted);
   font-size: 0.64rem;
   font-weight: 600;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   letter-spacing: 0.02em;
   padding: 4px 2px;
   border-radius: 18px;
@@ -2622,7 +2630,7 @@ body.modal-open .db-mobile-bottom-nav {
 .db-mob-fab-label {
   font-size: 0.58rem;
   font-weight: 800;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--primary);
@@ -3152,7 +3160,7 @@ body.modal-open .db-mobile-bottom-nav {
 
 .pwa-banner-text strong {
   display: block;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 0.95rem;
   font-weight: 800;
   color: white;
@@ -3169,7 +3177,7 @@ body.modal-open .db-mobile-bottom-nav {
   border: none;
   border-radius: 10px;
   padding: 0.5rem 1rem;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 800;
   font-size: 0.82rem;
   cursor: pointer;
@@ -3295,7 +3303,7 @@ body.modal-open .db-mobile-bottom-nav {
 }
 
 .db-strict-gate-card h2 {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 1.35rem;
   font-weight: 800;
   color: var(--secondary, #0f172a);

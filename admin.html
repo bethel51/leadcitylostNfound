@@ -7,7 +7,10 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=3.1">
 </head>
 <body>
   <div class="app-container">
@@ -345,15 +348,15 @@
         <div class="log-stats-grid">
           <div class="stat-card" style="padding: 1rem; text-align: left;">
             <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 0.25rem;">Total Handovers</div>
-            <div style="font-size: 1.75rem; font-weight: 800; color: var(--primary); font-family: 'Outfit', sans-serif;" id="log-stat-total">0</div>
+            <div style="font-size: 1.75rem; font-weight: 800; color: var(--primary); font-family: 'Plus Jakarta Sans', sans-serif;" id="log-stat-total">0</div>
           </div>
           <div class="stat-card" style="padding: 1rem; text-align: left;">
             <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 0.25rem;">Today's Handovers</div>
-            <div style="font-size: 1.75rem; font-weight: 800; color: var(--success); font-family: 'Outfit', sans-serif;" id="log-stat-today">0</div>
+            <div style="font-size: 1.75rem; font-weight: 800; color: var(--success); font-family: 'Plus Jakarta Sans', sans-serif;" id="log-stat-today">0</div>
           </div>
           <div class="stat-card" style="padding: 1rem; text-align: left;">
             <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 0.25rem;">Station / Duty Post</div>
-            <div style="font-size: 1.1rem; font-weight: 700; color: var(--secondary); font-family: 'Outfit', sans-serif;" id="log-stat-officer">Gate A Desk</div>
+            <div style="font-size: 1.1rem; font-weight: 700; color: var(--secondary); font-family: 'Plus Jakarta Sans', sans-serif;" id="log-stat-officer">Gate A Desk</div>
           </div>
         </div>
 
@@ -690,9 +693,9 @@
   <div class="modal-backdrop" id="modal-edit-admin-profile">
     <div class="modal-container" style="max-width: 480px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden;">
       <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); flex-shrink: 0;">
-        <div id="admin-edit-avatar-preview" style="width: 42px; height: 42px; background: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 800; color: var(--primary); font-family: 'Outfit', sans-serif; flex-shrink: 0;">O</div>
+        <div id="admin-edit-avatar-preview" style="width: 42px; height: 42px; background: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 800; color: var(--primary); font-family: 'Plus Jakarta Sans', sans-serif; flex-shrink: 0;">O</div>
         <div style="flex: 1;">
-          <h3 style="margin: 0; font-size: 1.05rem; font-family: 'Outfit', sans-serif; color: var(--secondary);">Security Officer Profile</h3>
+          <h3 style="margin: 0; font-size: 1.05rem; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--secondary);">Security Officer Profile</h3>
           <p style="margin: 0; font-size: 0.75rem; color: var(--text-muted);">LCU Safety &amp; Security Office</p>
         </div>
         <button class="modal-close" id="btn-close-edit-admin-profile">&times;</button>
@@ -732,11 +735,11 @@
   <!-- ============================================================
        ADMIN PORTAL ACCESS OVERLAY (GATE)
        ============================================================ -->
-  <div id="admin-login-overlay" style="position: fixed; inset: 0; background: var(--bg-primary); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 1.5rem; font-family: 'Inter', sans-serif;">
+  <div id="admin-login-overlay" style="position: fixed; inset: 0; background: var(--bg-primary); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 1.5rem; font-family: 'Plus Jakarta Sans', sans-serif;">
     <div style="background: var(--modal-bg); border: 1px solid var(--border-color); width: 100%; max-width: 440px; padding: 2.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-premium); display: flex; flex-direction: column; gap: 1.5rem;">
       <div style="text-align: center;">
-        <div style="width: 58px; height: 58px; background: var(--primary-light); color: var(--primary); font-size: 1.6rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; border: 2px solid var(--primary); font-weight: 800; font-family: 'Outfit', sans-serif;">🛡️</div>
-        <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.4rem; color: var(--secondary); margin-bottom: 0.25rem;">Security Portal Gate</h2>
+        <div style="width: 58px; height: 58px; background: var(--primary-light); color: var(--primary); font-size: 1.6rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; border: 2px solid var(--primary); font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif;">🛡️</div>
+        <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.4rem; color: var(--secondary); margin-bottom: 0.25rem;">Security Portal Gate</h2>
         <p style="font-size: 0.85rem; color: var(--text-muted);">Lead City University Campus Security &amp; Operations Command.</p>
       </div>
 
@@ -825,6 +828,6 @@
   </style>
 
   <script src="https://unpkg.com/html5-qrcode"></script>
-  <script src="admin.js?v=3.0"></script>
+  <script src="admin.js?v=3.1"></script>
 </body>
 </html>

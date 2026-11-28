@@ -115,7 +115,7 @@ function renderItems() {
   grid.innerHTML = `
     <div class="empty-state" style="padding: 4rem 2rem; border: 1px dashed var(--border-color); border-radius: var(--radius-lg); background: var(--bg-secondary); margin-top: 1rem; width: 100%;">
       <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
-      <h3 style="font-size: 1.25rem; font-family: 'Outfit', sans-serif; color: var(--secondary); margin-bottom: 0.5rem;">Access Restricted</h3>
+      <h3 style="font-size: 1.25rem; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--secondary); margin-bottom: 0.5rem;">Access Restricted</h3>
       <p class="empty-desc" style="max-width: 380px; margin: 0.5rem auto 1.5rem auto; color: var(--text-muted); font-size: 0.95rem; font-weight: 500;">
         Please log in or create an account to view lost and found listings.
       </p>

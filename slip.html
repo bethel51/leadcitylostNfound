@@ -7,17 +7,22 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=3.1">
   <style>
     body {
       background-color: var(--bg-secondary);
       color: var(--text-dark);
-      font-family: 'Inter', sans-serif;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
       padding: 1.5rem;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
     .slip-container {
       background: var(--card-bg);
@@ -47,7 +52,7 @@
       padding-bottom: 1.25rem;
     }
     .ticket-header h2 {
-      font-family: 'Outfit', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-weight: 800;
       font-size: 1.5rem;
       color: var(--primary);
@@ -91,7 +96,7 @@
     }
     .credentials-title {
       margin: 0 0 0.6rem 0;
-      font-family: 'Outfit', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 0.85rem;
       font-weight: 700;
       color: var(--primary);
@@ -149,7 +154,7 @@
     <!-- Error State -->
     <div id="error" class="error-view" style="display: none;">
       <span style="font-size: 3rem;">⚠️</span>
-      <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; margin: 1rem 0 0.5rem;">Verification Failed</h3>
+      <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.25rem; margin: 1rem 0 0.5rem;">Verification Failed</h3>
       <p id="error-msg" style="font-size: 0.9rem; color: var(--text-muted);">The requested verification tag is invalid or could not be retrieved.</p>
       <a href="index.html" class="btn btn-secondary" style="margin-top: 1.5rem; display: inline-flex; justify-content: center; padding: 0.6rem 1.5rem;">Return to Homepage</a>
     </div>

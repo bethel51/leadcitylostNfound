@@ -32,7 +32,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="LCU FindMe">
-  <link rel="stylesheet" href="style.css?v=3.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=3.1">
   <script>
     (function () {
       if (sessionStorage.getItem('lcu_findme_intro_dismissed') === 'true') {
@@ -377,7 +380,7 @@
     <div class="modal-container" style="max-width: 420px; border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-premium); border: 1px solid var(--border-color);">
       <div class="modal-header" style="background: linear-gradient(135deg, var(--primary-light), transparent); padding: 1.5rem 1.5rem 1rem; border-bottom: none;">
         <div style="display: flex; flex-direction: column;">
-          <h3 class="modal-title" style="font-size: 1.25rem; font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 0.4rem;">
+          <h3 class="modal-title" style="font-size: 1.25rem; font-family: 'Plus Jakarta Sans', sans-serif; display: flex; align-items: center; gap: 0.4rem;">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
             Verify Your Email
           </h3>
@@ -768,6 +771,6 @@
     <div class="toast-content" id="toast-message">Action completed successfully!</div>
   </div>
 
-  <script src="app.js?v=3.0"></script>
+  <script src="app.js?v=3.1"></script>
 </body>
 </html>
